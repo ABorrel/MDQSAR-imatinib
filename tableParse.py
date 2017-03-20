@@ -1,6 +1,6 @@
 from copy import deepcopy
-
-
+from numpy import mean, std
+import toolbox
 
 class CHEMBL:
     def __init__(self, pfilin):
@@ -58,8 +58,92 @@ class CHEMBL:
 
         print len(self.table)
 
+    def getOnlyIC50(self):
 
-    def delIdenticCHEMBLID(self):
+        if not "table" in dir(self):
+            self.parseCHEMBLFile()
+
+        i = 0
+        imax = len(self.table)
+        while i < imax:
+            row = self.table[i]
+            if row["PUBLISHED_TYPE"] != "IC50":
+                del self.table[i]
+                imax = imax - 1
+                continue
+            else:
+                i += 1
+
+
+    def MergeIdenticCHEMBLIDforACtivity(self):
+        """Control quality of constant available and compute mean"""
+
+        if not "table" in dir(self):
+            self.parseCHEMBLFile()
+
+        d_CHEMBLID = {}
+        for row in self.table:
+            if not row["CMPD_CHEMBLID"] in d_CHEMBLID.keys():
+                d_CHEMBLID[row["CMPD_CHEMBLID"]] = []
+            d_CHEMBLID[row["CMPD_CHEMBLID"]].append(deepcopy(row))
+
+        # case no copy
+        if len(d_CHEMBLID.keys()) == len(self.table):
+            return
+
+        i = 0
+        imax = len(d_CHEMBLID.keys())
+        while i < imax:
+            # case not problem
+            #print d_CHEMBLID.keys()[i]
+            if len(d_CHEMBLID[d_CHEMBLID.keys()[i]]) == 1:
+                i += 1
+                continue
+            else:
+                # Control the published value
+                l_PUBLISHED_VALUE = [float(d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["PUBLISHED_VALUE"]) for k in range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
+                l_PUBLISHED_UNITS = [d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["PUBLISHED_UNITS"] for k in range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
+
+                if not l_PUBLISHED_UNITS.count(l_PUBLISHED_UNITS[0]) == len(l_PUBLISHED_UNITS):
+                    l_PUBLISHED_VALUE = toolbox.convertUnit(l_PUBLISHED_VALUE, l_PUBLISHED_UNITS)
+                    #print l_PUBLISHED_UNITS
+
+                MPUBLISHED_VALUE = mean(l_PUBLISHED_VALUE)
+                SDPUBLISHED_VALUE = std(l_PUBLISHED_VALUE)
+
+                magnitudeval = len(str(int(min(l_PUBLISHED_VALUE))))
+                magnitudeSD = len(str(int(SDPUBLISHED_VALUE)))
+
+                #print magnitudeSD, magnitudeval, "l110", d_CHEMBLID.keys()[i]
+
+                if magnitudeval != magnitudeSD:
+                    del d_CHEMBLID[d_CHEMBLID.keys()[i]]
+                    imax = imax - 1
+                    continue
+
+                else:
+
+                    l_STANDARD_VALUE = [float(d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["STANDARD_VALUE"]) for k in
+                                        range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
+                    l_PCHEMBL_VALUE = [float(d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["PCHEMBL_VALUE"]) for k in
+                                       range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
+                    MSTANDARD_VALUE = mean(l_STANDARD_VALUE)
+
+
+                    d_CHEMBLID[d_CHEMBLID.keys()[i]] = [toolbox.mergeDict(d_CHEMBLID[d_CHEMBLID.keys()[i]])]
+                    d_CHEMBLID[d_CHEMBLID.keys()[i]][0]["STANDARD_VALUE"] = str(MSTANDARD_VALUE)
+                    d_CHEMBLID[d_CHEMBLID.keys()[i]][0]["PCHEMBL_VALUE"] = str(mean(l_PCHEMBL_VALUE))
+                    d_CHEMBLID[d_CHEMBLID.keys()[i]][0]["PUBLISHED_VALUE"] = str(MPUBLISHED_VALUE)
+                    i += 1
+
+        # reformate the table
+        self.table = []
+        for k in d_CHEMBLID.keys():
+            self.table.append(d_CHEMBLID[k][0])
+
+
+
+    def delIdenticCHEMBLIDByCuration(self):
         """Prefered expert curation or most recent publication"""
 
         if not "table" in dir(self):
@@ -118,13 +202,34 @@ class CHEMBL:
                         del self.table[self.table.index(d_CHEMBLID[CHEMBLID][i])]
 
 
-                print l_years
+                #print l_years
                 recent = max(l_years)
 
-                print recent, "eeeee"
+                #print recent, "eeeee"
+
+
+    def selectConfidencecore(self, cutoff = 0):
+
+        if not "table" in dir(self):
+            self.parseCHEMBLFile()
+
+        i = 0
+        imax = len(self.table)
+        while i < imax:
+            score = float(self.table[i]["CONFIDENCE_SCORE"])
+            if score < cutoff:
+                del self.table[i]
+                imax = imax - 1
+                continue
+            else:
+                i += 1
+
 
 
     def writeTable(self, pfilout):
+
+        print len(self.table)
+        print self.table[0]
 
         filout = open(pfilout, "w")
         lheader = self.table[0].keys()
@@ -132,6 +237,7 @@ class CHEMBL:
         for row in self.table:
             lw = [row[h] for h in lheader]
             filout.write("\t".join(lw) + "\n")
+
 
         filout.close()
 
