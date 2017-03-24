@@ -1,3 +1,62 @@
+from re import search
+
+
+def transformAA(aa):
+    aa = aa.upper()
+    dico_code = {"S": "SER", "T": "THR", "N": "ASN", "Q": "GLN", "E": "GLU", "D": "ASP", "K": "LYS", "R": "ARG",
+                 "H": "HIS", "M": "MET", "C": "CYS", "W": "TRP", "F": "PHE", "Y": "TYR", "A": "ALA", "V": "VAL",
+                 "L": "LEU", "I": "ILE", "P": "PRO", "G": "GLY"}
+
+    if len(aa) == 1:
+        return dico_code[aa]
+    else:
+        for aa_one in dico_code.keys():
+            if dico_code[aa_one] == aa:
+                return aa_one
+
+
+def checkENDFinalLinePDBfile(pinPDB):
+    """
+    Check if character END in end file PDB
+    args: -> path file PDB
+    return : -> NONE change directly file PDB
+    """
+    filin = open(pinPDB, "r")
+    list_lines = filin.readlines()
+    filin.close()
+    if not search("^END", list_lines[-1]):
+        if (list_lines[-1][-1] == "\n"):
+            filout = open(pinPDB, "a")
+            filout.write("END\n")
+            filout.close()
+        else:
+            filout = open(pinPDB, "a")
+            filout.write("\nEND\n")
+            filout.close()
+    elif not search("^END\n", list_lines[-1]):
+        filout.write("\n")
+        filout.close()
+    else:
+        pass
+
+
+def checkHEADERinitialLinePDBfile(pinPDB):
+    """
+    Check if character HEADER in beginning file PDB
+    args: -> path file PDB
+    return : -> NONE change directly file PDB
+    """
+
+    filin = open(pinPDB, "r")
+    element = filin.read()
+    filin.close()
+    if not search("^HEADER", element):
+        filout = open(pinPDB, "w")
+        filout.write("HEADER \n")
+        filout.write(element)
+        filout.close()
+
+
 
 
 

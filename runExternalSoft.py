@@ -93,3 +93,33 @@ def DescAnalysis(pdesc, paffinity, prout, valcor, PCA, corMatrix, hist, dendo):
 
     print cmdVisu
     system(cmdVisu)
+
+
+def MatrixMCS(pmatrix, paff, ptext):
+
+    cmdmatrix = "./matrixMCS.R " + pmatrix + " " + paff + " " + ptext
+    print cmdmatrix
+    system(cmdmatrix)
+
+
+def MDSMCS(pmatrix, paff):
+
+    cmdMDS = "./MDSMCS.R " + pmatrix + " " + paff
+    print cmdMDS
+    system(cmdMDS)
+
+
+def corPlot(pfilin):
+
+    cmdCor = "./corplot.R " + pfilin
+    print cmdCor
+    system(cmdCor)
+
+
+def babelConvertSDFtoPDB(psdf):
+
+    cmdconvert = "babel " + psdf + " " + psdf[:-4] + ".pdb 2>/dev/null"
+    print cmdconvert
+    system(cmdconvert)
+
+    return psdf[:-4] + ".pdb"

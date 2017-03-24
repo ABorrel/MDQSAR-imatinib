@@ -1,28 +1,64 @@
 from nams import nams
-
+import runExternalSoft
 
 
 
 
 class MCSMatrix:
 
-    def __init__(self, lsmiles):
+    def __init__(self, sdata):
 
-        self.lsmi = lsmiles
+        self.sdata = sdata
 
-    def computeMatrixMCS(self, pfilout):
+    def computeMatrixMCS(self, pfilout, kID="CMPD_CHEMBLID", kSMILES="CANONICAL_SMILES"):
 
-        filout = open(pfilout, "w")
+        lcmpdID = [self.sdata[i][kID] for i in range(0,len(self.sdata))]
 
         i = 0
-        imax = len(self.lsmi)
+        imax = len(self.sdata)
         dout = {}
-        while i < imax:
+        while i < (imax):
+            j = i
+            while j < imax:
+                print i,j
+                if not self.sdata[i][kID] in dout.keys():
+                    dout[self.sdata[i][kID]] = {}
+                if not self.sdata[j][kID] in dout[self.sdata[i][kID]].keys():
+                    dout[self.sdata[i][kID]][self.sdata[j][kID]] = get_Tanimoto(self.sdata[i][kSMILES], self.sdata[j][kSMILES])
+                else:
+                    dddd
+                j += 1
             i += 1
 
+        filoutTanimoto = open(pfilout + "tanimoto", "w")
+        filoutNBatomMax = open(pfilout + "maxAtom", "w")
+
+        filoutTanimoto.write("\t".join(lcmpdID) + "\n")
+        filoutNBatomMax.write("\t".join(lcmpdID) + "\n")
+
+        for cmpdID1 in lcmpdID:
+            lwTanimoto = []
+            lwMax = []
+            for cmpdID2 in lcmpdID:
+                try: lwTanimoto.append(str(dout[cmpdID1][cmpdID2][0]))
+                except: lwTanimoto.append(str(dout[cmpdID2][cmpdID1][0]))
+                try: lwMax.append(str(dout[cmpdID1][cmpdID2][1]))
+                except: lwMax.append(str(dout[cmpdID2][cmpdID1][1]))
+            filoutTanimoto.write(cmpdID1 + "\t" + "\t".join(lwTanimoto) + "\n")
+            filoutNBatomMax.write(cmpdID1 + "\t" + "\t".join(lwMax) + "\n")
+        filoutTanimoto.close()
+        filoutNBatomMax.close()
+
+        filoutaff = open(pfilout + "aff", "w")
+        filoutaff.write("pchem affinity\n")
+        for compound in self.sdata:
+            filoutaff.write(str(compound[kID]) + "\t" + str(compound["PCHEMBL_VALUE"]) + "\n")
+        filoutaff.close()
 
 
-        return
+        # plot matrix
+        runExternalSoft.MatrixMCS(pfilout + "tanimoto", pfilout + "aff", pfilout + "maxAtom")
+        runExternalSoft.MDSMCS(pfilout + "tanimoto", pfilout + "aff")
 
 
 def get_Tanimoto(smile1, smile2):
