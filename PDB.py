@@ -711,6 +711,6 @@ def convert_ListAtomtoList(latomin):
     return lout
 
 
-dtest = PDB(PDB_input="/home/aborrel/MDPockets/dataWNK/pdb_WNK1_with_lig/WNK-out-MD/MODEL-1.pdb", hydrogen=1)
-dtest.change_bfactor(dp_bfactor="/home/aborrel/MDPockets/resultWNKLig/analysis/FPIBS/FPIScore.csv")
-dtest.writePDB(pfilout="/home/aborrel/MDPockets/resultWNKLig/analysis/FPIBS/protBfact.pdb")
+#dtest = PDB(PDB_input="/home/aborrel/MDPockets/dataWNK/pdb_WNK1_with_lig/WNK-out-MD/MODEL-1.pdb", hydrogen=1)
+#dtest.change_bfactor(dp_bfactor="/home/aborrel/MDPockets/resultWNKLig/analysis/FPIBS/FPIScore.csv")
+#dtest.writePDB(pfilout="/home/aborrel/MDPockets/resultWNKLig/analysis/FPIBS/protBfact.pdb")

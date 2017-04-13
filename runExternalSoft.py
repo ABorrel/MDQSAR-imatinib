@@ -123,3 +123,4 @@ def babelConvertSDFtoPDB(psdf):
     system(cmdconvert)
 
     return psdf[:-4] + ".pdb"
+

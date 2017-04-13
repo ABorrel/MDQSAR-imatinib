@@ -80,8 +80,8 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
 
   bk = c(0,0.20,0.40,0.60,0.80,1)
 
-  png (file = paste (name_file, ".png", sep = ""), dim_x * 35, dim_y * 30)
-  par(mar=c(20,20,0.5,10))
+  png (file = paste (name_file, ".png", sep = ""), dim_x * 55, dim_y * 55)
+  par(mar=c(20,20,3,10))
   image(as.matrix(matrixIN), yaxt = "n", xaxt = "n", breaks = bk, col = c("#FFFFFF", "#FFBFBF","#FF8080", "#FF4040", "#FF0000"))
   grid(nx = nb_line, ny = nb_col, col = "black", lwd = 1, lty = 1)
   box()
@@ -111,6 +111,7 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
   axis(1,seq(0,1,(1/(nb_line-1))),rownames (matrixIN), cex.axis = 2, las = 2)
   axis(2,seq(0,1,(1/(nb_col-1))),rownames (matrixIN), cex.axis = 2, las = 2)
 
+  print(daff)
   axis(4,seq(0,1,(1/(nb_col-1))),daff[rownames(matrixIN),2], cex.axis = 2, las = 2)
 
 
@@ -131,15 +132,20 @@ ptext = args[3]
 pLSR = "0"
 
 # for test
+
+pmatrix = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_Tanimoto"
+paffinity = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_Aff"
+ptext = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_MAX"
+
 #paffinity = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/affinity"
 #pmatrix = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/matriceMCSTanimoto"
 #ptext = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/matriceMCSNbAtomDiff"
 #pLSR = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/listLSRsmiles"
 
 d = read.csv (pmatrix, header = T, sep = "\t")
-
 daff = read.table(paffinity, header = T, sep = "\t")
-
+rownames(daff) = daff[,1]
 dtext = read.table(ptext, header = T, sep = "\t")
+
 # card with texte
 cardAffinityText(d, daff, dtext, pmatrix)

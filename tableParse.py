@@ -53,6 +53,10 @@ class CHEMBL:
                 del self.table[i]
                 imax = imax - 1
                 continue
+            elif row["PUBLISHED_UNITS"] == "":
+                del self.table[i]
+                imax = imax - 1
+                continue
             else:
                 i += 1
 
@@ -224,6 +228,22 @@ class CHEMBL:
             else:
                 i += 1
 
+
+    def selectAssayType(self, assaytypeSelected):
+
+        if not "table" in dir(self):
+            self.parseCHEMBLFile()
+
+        i = 0
+        imax = len(self.table)
+        while i < imax:
+            assaytype = self.table[i]["ASSAY_TYPE"]
+            if assaytype != assaytypeSelected:
+                del self.table[i]
+                imax = imax - 1
+                continue
+            else:
+                i += 1
 
 
     def writeTable(self, pfilout):

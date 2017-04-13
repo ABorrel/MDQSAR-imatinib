@@ -88,7 +88,7 @@ def convertUnit(l_values, l_units):
     i = 0
     imax = len(l_values)
     while i < imax:
-        if l_units[i] == "uM" or l_units[i] == "10'-6M":
+        if l_units[i] == "uM" or l_units[i] == "10'-6M" or l_units[i] == "umol/L" or l_units[i] == "microM":
             lout.append(l_values[i])
             i += 1
         elif l_units[i] == "nM":
@@ -96,9 +96,45 @@ def convertUnit(l_values, l_units):
             val = val/1000
             lout.append(val)
             i += 1
+        elif l_units[i] == "10'-3microM":
+            val = float(l_values[i])
+            val = val/1000
+            lout.append(val)
+            i += 1
+
         else:
+            print "sssss",l_units[i]
             ffff
 
     #print lout
 
     return lout
+
+
+
+
+def loadMatrix(pfilin):
+    "Case of square matrix"
+
+    filin = open(pfilin, "r")
+    llinesMatrix = filin.readlines()
+    filin.close()
+
+    dout = {}
+    lcompID = llinesMatrix[0].strip().split("\t")
+    nbComp = len(lcompID)
+
+    i = 1
+    while i < nbComp:
+        if not lcompID[i] in dout.keys():
+            dout[lcompID[i]] = {}
+        j = 1
+        lval = llinesMatrix[i].strip().split("\t")
+        while j < nbComp:
+            dout[lcompID[i]][lcompID[j]] = lval[j]
+            j += 1
+        i += 1
+
+    return dout
+
+

@@ -1,65 +1,184 @@
 from nams import nams
 import runExternalSoft
+from os import path
+import toolbox
 
-
+from copy import deepcopy
 
 
 class MCSMatrix:
 
-    def __init__(self, sdata):
+    def __init__(self, sdata, prout):
 
         self.sdata = sdata
+        self.prout = prout
 
-    def computeMatrixMCS(self, pfilout, kID="CMPD_CHEMBLID", kSMILES="CANONICAL_SMILES"):
+    def computeMatrixMCS(self, kID="CMPD_CHEMBLID", kSMILES="CANONICAL_SMILES"):
 
-        lcmpdID = [self.sdata[i][kID] for i in range(0,len(self.sdata))]
+        pfiloutTanimoto = self.prout + "tanimoto"
+        pfiloutNBatomMax = self.prout + "maxAtom"
 
-        i = 0
-        imax = len(self.sdata)
-        dout = {}
-        while i < (imax):
-            j = i
-            while j < imax:
-                print i,j
-                if not self.sdata[i][kID] in dout.keys():
-                    dout[self.sdata[i][kID]] = {}
-                if not self.sdata[j][kID] in dout[self.sdata[i][kID]].keys():
-                    dout[self.sdata[i][kID]][self.sdata[j][kID]] = get_Tanimoto(self.sdata[i][kSMILES], self.sdata[j][kSMILES])
-                else:
-                    dddd
-                j += 1
-            i += 1
+        if path.exists(pfiloutTanimoto) and path.exists(pfiloutNBatomMax):
+            dMCSTanimoto = toolbox.loadMatrix(pfiloutTanimoto)
+            dMCSMax = toolbox.loadMatrix(pfiloutNBatomMax)
+            self.MCSTanimoto = dMCSTanimoto
+            self.MCSMax= dMCSMax
 
-        filoutTanimoto = open(pfilout + "tanimoto", "w")
-        filoutNBatomMax = open(pfilout + "maxAtom", "w")
+        else:
+            lcmpdID = [self.sdata[i][kID] for i in range(0, len(self.sdata))]
+            i = 0
+            imax = len(self.sdata)
+            dTanimoto = {}
+            dMaxMCS = {}
+            while i < imax:
+                j = i
+                while j < imax:
+                    print i,j
+                    if not self.sdata[i][kID] in dTanimoto.keys():
+                        dTanimoto[self.sdata[i][kID]] = {}
+                        dMaxMCS[self.sdata[i][kID]] = {}
+                    if not self.sdata[j][kID] in dTanimoto[self.sdata[i][kID]].keys():
+                        ltanimoto_max = get_Tanimoto(self.sdata[i][kSMILES], self.sdata[j][kSMILES])
+                        dMaxMCS[self.sdata[i][kID]][self.sdata[j][kID]] = ltanimoto_max[1]
+                        dTanimoto[self.sdata[i][kID]][self.sdata[j][kID]] = ltanimoto_max[0]
+                    j += 1
+                i += 1
 
-        filoutTanimoto.write("\t".join(lcmpdID) + "\n")
-        filoutNBatomMax.write("\t".join(lcmpdID) + "\n")
+            filoutTanimoto = open(self.prout + "tanimoto", "w")
+            filoutNBatomMax = open(self.prout + "maxAtom", "w")
 
-        for cmpdID1 in lcmpdID:
-            lwTanimoto = []
-            lwMax = []
-            for cmpdID2 in lcmpdID:
-                try: lwTanimoto.append(str(dout[cmpdID1][cmpdID2][0]))
-                except: lwTanimoto.append(str(dout[cmpdID2][cmpdID1][0]))
-                try: lwMax.append(str(dout[cmpdID1][cmpdID2][1]))
-                except: lwMax.append(str(dout[cmpdID2][cmpdID1][1]))
-            filoutTanimoto.write(cmpdID1 + "\t" + "\t".join(lwTanimoto) + "\n")
-            filoutNBatomMax.write(cmpdID1 + "\t" + "\t".join(lwMax) + "\n")
-        filoutTanimoto.close()
-        filoutNBatomMax.close()
+            filoutTanimoto.write("\t".join(lcmpdID) + "\n")
+            filoutNBatomMax.write("\t".join(lcmpdID) + "\n")
 
-        filoutaff = open(pfilout + "aff", "w")
-        filoutaff.write("pchem affinity\n")
-        for compound in self.sdata:
-            filoutaff.write(str(compound[kID]) + "\t" + str(compound["PCHEMBL_VALUE"]) + "\n")
-        filoutaff.close()
+            for cmpdID1 in lcmpdID:
+                lwTanimoto = []
+                lwMax = []
+                for cmpdID2 in lcmpdID:
+                    try: lwTanimoto.append(str(dTanimoto[cmpdID1][cmpdID2]))
+                    except: lwTanimoto.append(str(dTanimoto[cmpdID2][cmpdID1]))
+                    try: lwMax.append(str(dMaxMCS[cmpdID1][cmpdID2][1]))
+                    except: lwMax.append(str(dMaxMCS[cmpdID2][cmpdID1][1]))
+                filoutTanimoto.write(cmpdID1 + "\t" + "\t".join(lwTanimoto) + "\n")
+                filoutNBatomMax.write(cmpdID1 + "\t" + "\t".join(lwMax) + "\n")
+            filoutTanimoto.close()
+            filoutNBatomMax.close()
 
+        paff = self.prout + "aff"
+        if not "Aff" in dir(self):
+            daff = {}
+            for compound in self.sdata:
+                daff[compound[kID]] = compound["PCHEMBL_VALUE"]
+            self.Aff = daff
+
+
+        if not path.exists(paff):
+            filoutaff = open(paff, "w")
+            filoutaff.write("pchem affinity\n")
+            for compound in self.sdata:
+                filoutaff.write(str(compound[kID]) + "\t" + str(compound["PCHEMBL_VALUE"]) + "\n")
+            filoutaff.close()
 
         # plot matrix
-        runExternalSoft.MatrixMCS(pfilout + "tanimoto", pfilout + "aff", pfilout + "maxAtom")
-        runExternalSoft.MDSMCS(pfilout + "tanimoto", pfilout + "aff")
+        runExternalSoft.MDSMCS(pfiloutTanimoto, paff)
 
+
+    def selectAnalogsMatrix(self, compoundID, tanimotocutoff = 0.8):
+
+        if not "dMCSTanimoto" in dir(self):
+            self.computeMatrixMCS()
+
+        dTanimoto = self.MCSTanimoto[compoundID]
+        daff = self.Aff
+        dMax = {}
+
+        print len(dTanimoto.keys())
+        for cpID in dTanimoto.keys():
+            if float(dTanimoto[cpID]) < tanimotocutoff:
+                del dTanimoto[cpID]
+
+        lcID = dTanimoto.keys()
+        dTanimoto = {}
+
+
+        for cID in lcID:
+            dTanimoto[cID] = {}
+            dMax[cID] = {}
+            for cID2 in lcID:
+                dTanimoto[cID][cID2] = self.MCSTanimoto[cID][cID2]
+                dMax[cID][cID2] = self.MCSMax[cID][cID2]
+
+        # write file
+        pfiloutTanimoto = self.prout + compoundID + str(tanimotocutoff) + "_Tanimoto"
+        pfiloutDMAX = self.prout + compoundID + str(tanimotocutoff) + "_MAX"
+        filoutTanimoto = open(pfiloutTanimoto, "w")
+        filoutDMAX = open(pfiloutDMAX, "w")
+
+        filoutDMAX.write("\t".join(lcID) + "\n")
+        filoutTanimoto.write("\t".join(lcID) + "\n")
+
+        for cID in lcID:
+            filoutTanimoto.write(str(cID) + "\t" + "\t".join([str(dTanimoto[cID][i]) for i in lcID]) + "\n")
+            filoutDMAX.write(str(cID) + "\t" + "\t".join([str(dMax[cID][i]) for i in lcID]) + "\n")
+        filoutDMAX.close()
+        filoutTanimoto.close()
+
+        pfiloutAff = self.prout + compoundID + "_Aff"
+        filoutAff = open(pfiloutAff, "w")
+        filoutAff.write("ID\tIC50\n")
+        for cID in lcID:
+            filoutAff.write(str(cID) + "\t" + daff[cID] + "\n")
+        filoutAff.close()
+
+        runExternalSoft.MatrixMCS(pfiloutTanimoto, pfiloutAff, pfiloutDMAX)
+
+        return
+
+    def selectAnalogs(self, compoundID, cutoffMCS = 0.8):
+
+        lout = []
+
+        pfilout = self.prout + "analogs_" + str(compoundID) + "_" + str(cutoffMCS) + ".txt"
+        if path.exists(pfilout):
+            filin = open(pfilout, "r")
+            lcpd = filin.readlines()
+            filin.close()
+            for linecpd in lcpd:
+                lelem = linecpd.strip().split("\t")
+                dcpd = {}
+                dcpd["CMPD_CHEMBLID"] = lelem[0]
+                dcpd["CANONICAL_SMILES"] = lelem[1]
+                dcpd["Tanimoto"] = lelem[2]
+                dcpd["MaxAtom"] = lelem[3]
+                lout.append(dcpd)
+
+            self.lanalogs = lout
+            return lout
+
+
+        filout = open(pfilout, "w")
+        filout.write("CMPD_CHEMBLID\tCANONICAL_SMILES\tTanimoto\tMaxAtom\n")
+        for cp in self.sdata:
+            if cp["CMPD_CHEMBLID"] == compoundID:
+                smileref = cp["CANONICAL_SMILES"]
+                break
+
+        i = 0
+        nbcp = len(self.sdata)
+        while i < nbcp:
+            try: tanimoto = get_Tanimoto(smileref, self.sdata[i]["CANONICAL_SMILES"])
+            except:
+                i += 1
+                continue
+            if tanimoto[0] >= cutoffMCS:
+                filout.write(str(self.sdata[i]["CMPD_CHEMBLID"]) + "\t" + str(self.sdata[i]["CANONICAL_SMILES"]) + "\t"
+                             + str(tanimoto[0]) + "\t" + str(tanimoto[1]) + "\n")
+                lout = deepcopy(self.sdata[i])
+            print i, nbcp
+            i += 1
+        filout.close()
+
+        self.lanalogs = lout
+        return lout
 
 def get_Tanimoto(smile1, smile2):
     ms = nams.Nams()

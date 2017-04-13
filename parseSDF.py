@@ -57,10 +57,16 @@ class sdf:
             print chemblID
 
             if not chemblID in dscore.keys():
-                dscore[chemblID] = float(compound["r_i_docking_score"])
+                dscore[chemblID] = {}
+
+            if not "r_i_docking_score" in dscore[chemblID].keys():
+                dscore[chemblID]["r_i_docking_score"] = float(compound["r_i_docking_score"])
+                dscore[chemblID]["r_i_glide_emodel"] = float(compound["r_i_glide_emodel"])
             else:
-                if float(compound["r_i_docking_score"]) < dscore[chemblID]:
-                    dscore[chemblID] = float(compound["r_i_docking_score"])
+                if float(compound["r_i_docking_score"]) < dscore[chemblID]["r_i_docking_score"]:
+                    dscore[chemblID]["r_i_docking_score"] = float(compound["r_i_docking_score"])
+                    dscore[chemblID]["r_i_glide_emodel"] = float(compound["r_i_glide_emodel"])
+
 
         self.docking = dscore
 
