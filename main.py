@@ -4,6 +4,7 @@ import pathFolder
 import runExternalSoft
 import MCS
 import parseSDF
+import MD
 import FPI
 import PDB
 
@@ -143,51 +144,84 @@ def FPIMatrix(sdocking, pprotein, prFPI):
 # case where we consider the binding affinity #
 ###############################################
 
-#pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
-#pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
+pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
+pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
 
 # gleevec = CHEMBL941
- # outlier = CHEMBL2382016
+# outlier = CHEMBL2382016
 
 #ltab = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean)
 
-# matrix of MCS #
+
+#################
+# Analyse NAMS  #
+#################
 #mcs = MCS.MCSMatrix(ltab, pathFolder.analyses("MCS"))
 #mcs.computeMatrixMCS()
 #mcs.selectAnalogsMatrix(compoundID="CHEMBL941")
 
+
+####################
+#  Molecular Desc  #
+####################
 #pdesc = pathFolder.analyses(psub="desc") + "tableDesc.csv"
 #plog = pathFolder.analyses(psub="desc") + "log.txt"
 #MolecularDesc(ltab, pdesc, plog)
-
 #AnalyseDesc(pdesc, pCHEMBLClean, pathFolder.analyses("desc"), corcoef=0.7)
 
-#psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
-#prDockingPose = "/home/aborrel/imitanib/results/dockingpose/"
-#prFPI = pathFolder.analyses("dockingFPI")
-#pdockingAnalysis = pathFolder.analyses("docking")
-#pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
 
+
+
+######################
+#  Docking analysis  #
+######################
+pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
+prDockingPose = "/home/aborrel/imitanib/results/dockingpose/"
 #sdocking = parseSDF.sdf(psdfDoking)
 #sdocking.parseSDF()
 #sdocking.splitPoses(prDockingPose)
+#pdockingAnalysis = pathFolder.analyses("docking")
+
+
 #dscore = sdocking.get_dockingscore()
 #dockingScoreAnalysis(dscore, ltab, pdockingAnalysis)
 
-# FPI by pose
+
+###############
+# FPI by pose #
+###############
+#prFPI = pathFolder.analyses("dockingFPI")
 #FPIMatrix(sdocking, pprotein, prFPI)
 
 
 
+###############################
+# MD based on docking poses   #
+###############################
 
+prMD = "/home/aborrel/imitanib/results/MD-ABL/"
+pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
+
+# parameter MD
+timeMD = "1000.0"
+timeframe = "10.0"
+stepWait = 3
+
+# 1. Merge poses and proteins
+cMD = MD.MD(prMD, timeMD, timeframe, stepWait)
+cMD.initialisation(prDockingPose, pprotein)
+cMD.runMultipleMD()
+
+##########################################
 # case where we consider the Cell lines  #
 ##########################################
 
-pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-K562.txt"
-pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-K562_filtered.txt"
+#pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-K562.txt"
+#pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-K562_filtered.txt"
 
 
-ltableCpd = CleanCHEMBLFileCellLine(pCHEMBL, pCHEMBLClean)
+#ltableCpd = CleanCHEMBLFileCellLine(pCHEMBL, pCHEMBLClean)
 
-mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS-K562"))
-mcs.selectAnalogs(compoundID="CHEMBL941")
+#mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS-K562"))
+#mcs.selectAnalogs(compoundID="CHEMBL941")

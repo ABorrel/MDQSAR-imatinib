@@ -1,5 +1,5 @@
 from re import search
-
+from shutil import copyfile
 
 def transformAA(aa):
     aa = aa.upper()
@@ -136,5 +136,46 @@ def loadMatrix(pfilin):
         i += 1
 
     return dout
+
+
+def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
+
+    # CFG file
+    copyfile("./Desmond.cfg", pcfgout)
+
+    filincfg = open(pcfgout, "r")
+    llinescfg = filincfg.readlines()
+    filincfg.close()
+
+    # modifie CFG file
+    filoutcfg = open(pcfgout, "w")
+    flagtime = 0
+    for linecfg in llinescfg:
+        if search("^time = ", linecfg):
+            filoutcfg.write("time = " + str(timeMD) + "\n")
+            flagtime = 1
+        elif search("^   interval = ", linecfg) and flagtime == 1:
+            filoutcfg.write("   interval = " + str(intervalFrame) + "\n")
+        else:
+            filoutcfg.write(linecfg)
+    filoutcfg.close()
+
+
+    # MSJ file
+    copyfile("./Desmond.msj", pmsjout)
+
+    filinmsj = open(pmsjout, "r")
+    llinesmsj = filinmsj.readlines()
+    filinmsj.close()
+
+    # modifie MSJ file
+    filoutmsj = open(pmsjout, "w")
+    for linemsj in llinesmsj:
+        if search("^   cfg_file = ", linemsj):
+            # need only the file name
+            filoutmsj.write("   cfg_file = \"" + str(pcfgout.split("/")[-1]) + "\"\n")
+        else:
+            filoutmsj.write(linemsj)
+    filoutmsj.close()
 
 

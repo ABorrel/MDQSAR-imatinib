@@ -138,10 +138,14 @@ class MCSMatrix:
         lout = []
 
         pfilout = self.prout + "analogs_" + str(compoundID) + "_" + str(cutoffMCS) + ".txt"
-        if path.exists(pfilout):
-            filin = open(pfilout, "r")
+        pfiloutglobal = self.prout + "MCSglobal_" + str(compoundID) + "_" + str(cutoffMCS) + ".txt"
+        if path.exists(pfiloutglobal):
+            filin = open(pfiloutglobal, "r")
             lcpd = filin.readlines()
             filin.close()
+
+            filout = open(pfilout, "w")
+            filout.write("CMPD_CHEMBLID\tCANONICAL_SMILES\tTanimoto\tMaxAtom\n")
             for linecpd in lcpd:
                 lelem = linecpd.strip().split("\t")
                 dcpd = {}
@@ -149,14 +153,22 @@ class MCSMatrix:
                 dcpd["CANONICAL_SMILES"] = lelem[1]
                 dcpd["Tanimoto"] = lelem[2]
                 dcpd["MaxAtom"] = lelem[3]
-                lout.append(dcpd)
 
+
+                if dcpd["Tanimoto"] >= cutoffMCS:
+                    filout.write(str(dcpd["CMPD_CHEMBLID"]) + "\t" + str(dcpd["CANONICAL_SMILES"]) + "\t" +
+                                str(dcpd["Tanimoto"]) + "\t" + str(dcpd["MaxAtom"]) + "\n")
+                    lout.append(dcpd)
+
+            filout.close()
             self.lanalogs = lout
             return lout
 
 
         filout = open(pfilout, "w")
+        filoutglobal = open(pfiloutglobal, "w")
         filout.write("CMPD_CHEMBLID\tCANONICAL_SMILES\tTanimoto\tMaxAtom\n")
+        filoutglobal.write("CMPD_CHEMBLID\tCANONICAL_SMILES\tTanimoto\tMaxAtom\n")
         for cp in self.sdata:
             if cp["CMPD_CHEMBLID"] == compoundID:
                 smileref = cp["CANONICAL_SMILES"]
@@ -169,13 +181,19 @@ class MCSMatrix:
             except:
                 i += 1
                 continue
+
+            filoutglobal.write(str(self.sdata[i]["CMPD_CHEMBLID"]) + "\t" + str(self.sdata[i]["CANONICAL_SMILES"]) + "\t"
+                         + str(tanimoto[0]) + "\t" + str(tanimoto[1]) + "\n")
+
             if tanimoto[0] >= cutoffMCS:
                 filout.write(str(self.sdata[i]["CMPD_CHEMBLID"]) + "\t" + str(self.sdata[i]["CANONICAL_SMILES"]) + "\t"
                              + str(tanimoto[0]) + "\t" + str(tanimoto[1]) + "\n")
                 lout = deepcopy(self.sdata[i])
             print i, nbcp
             i += 1
+
         filout.close()
+        filoutglobal.close()
 
         self.lanalogs = lout
         return lout

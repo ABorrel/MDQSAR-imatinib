@@ -12,6 +12,7 @@ from urllib import urlretrieve
 from shutil import move
 import random
 
+import runExternalSoft
 
 PRPDBDATABSE = "/home/PDB/"
 
@@ -50,6 +51,10 @@ class PDB:
         else:
             print "ERROR -> PDB input l.48 in PDB"
         #print self.filePDB
+        if PDB_input[-3:] == "sdf":
+            pfilePDB = runExternalSoft.babelConvertSDFtoPDB(PDB_input)
+            self.filePDB = pfilePDB
+
         if not path.exists(self.filePDB):# case of PDB do not exisit in the folder
             if self.download_PDB() == 0:
                 self.llines = []
@@ -347,6 +352,25 @@ class PDB:
                 i = i + 1
 
 
+
+    def addLigand(self, plig):
+
+
+        print plig
+        if not "latom" in dir(self):
+            self.get_lAtoms()
+
+        clig = PDB(plig, hydrogen=1)
+        latomlig = clig.get_lAtoms()
+        print len(latomlig)
+
+        print len(self.latom)
+        self.latom = self.latom + latomlig
+        print len(self.latom)
+
+
+
+
     def writePDB (self, pfilout, latoms=""):
         """
         Need add header
@@ -357,11 +381,18 @@ class PDB:
         filout = open(pfilout, "w")
 
         if latoms == "":
-            latoms = self.get_lAtoms()
+            if not "latom" in dir(self):
+                latoms = self.get_lAtoms()
+            else:
+                latoms = self.latom
 
         for atom in latoms:
             filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
         filout.close()
+
+
+
+
 
 
 
