@@ -57,7 +57,7 @@ class MD:
 
         nbMD = len(self.lMD.keys())
         i = 0
-        step = 0
+        step = 1
         while i < nbMD:
             jobname = self.lMD.keys()[i]
             #system builder
@@ -65,8 +65,8 @@ class MD:
             self.lMD[jobname]["pcms"] = pcms
             #GDESMON
             if step == self.stepWait:
-                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=1) # add a existance criteria
-                step = 0
+                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=1)# add a existance criteria
+                step = 1
             else:
                 runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)
                 step += 1

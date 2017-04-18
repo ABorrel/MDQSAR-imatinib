@@ -153,7 +153,10 @@ def multisimSystemBuilder(jobname, pMAE, WAIT=1):
     copyfile("./systembuilder.msj", pmsj)
 
     # move in directory
-    prsource =
+    prsource = getcwd()
+    prrun = path.dirname(pMAE)
+    chdir(prrun)
+    print getcwd()
 
     if WAIT == 1 :
         cmdMUL = MULTISMIM + " -JOBNAME " + str(jobname) + " -m " + str(pmsj) + " " + str(pMAE) + " -o " + pcms + " -WAIT"
@@ -167,11 +170,11 @@ def multisimSystemBuilder(jobname, pMAE, WAIT=1):
 
     if not path.exists(pcms):
         # go back in source folder
-
+        chdir(prsource)
         return "ERROR - System Builder"
     else:
         # go back in source folder
-
+        chdir(prsource)
         return pcms
 
 
@@ -181,13 +184,22 @@ def multisimGDesmond(jobname, pcms, timeMDns, frameInverval, WAIT=1):
     pmsj = prDM + jobname + ".msj"
     pcfg = prDM + jobname + ".cfg"
 
+    # write file
     toolbox.writeFilesParamaterDesmond(pmsj, pcfg, timeMDns, frameInverval)
+
+    # move on run folder
+    prsource = getcwd()
+    prrun = path.dirname(pcms)
+    chdir(prrun)
+
+
     cmdDesmond = MULTISMIM + " -JOBNAME " + str(jobname) + " -maxjob 1 -cpu 1 -m " + str(pmsj) + " -c " + str(pcfg) + " " + str(pcms) + " -mode umbrella -set stage[1].set_family.md.jlaunch_opt=[\"-gpu\"] -o " + pcms[:-4] + "-out.cms"
 
     if WAIT == 1:
         cmdDesmond = cmdDesmond + " -WAIT"
     print cmdDesmond
     system(cmdDesmond)
+    chdir(prsource)
 
 
 def concateneStructure(pPDBprot, pligSDF, pmaeComplex):

@@ -158,6 +158,7 @@ def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
             filoutcfg.write("   interval = " + str(intervalFrame) + "\n")
         else:
             filoutcfg.write(linecfg)
+    filoutcfg.write("\n")
     filoutcfg.close()
 
 
@@ -176,6 +177,7 @@ def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
             filoutmsj.write("   cfg_file = \"" + str(pcfgout.split("/")[-1]) + "\"\n")
         else:
             filoutmsj.write(linemsj)
+    filoutmsj.write("\n")
     filoutmsj.close()
 
 
