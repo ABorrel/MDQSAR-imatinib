@@ -4,11 +4,11 @@ from re import search
 import toolbox
 from time import sleep
 
-LIGPREP = "/opt/schrodinger2016-4/ligprep"
+LIGPREP = "/opt/schrodinger2016-3/ligprep"
 PADEL = "/home/aborrel/softwares/padel/PaDEL-Descriptor.jar"
-STRUCTCONVERT = "/opt/schrodinger2016-4/utilities/structconvert"
-MULTISMIM = "/opt/schrodinger2016-4/utilities/multisim"
-STRUCTCAT = "/opt/schrodinger2016-4/utilities/structcat"
+STRUCTCONVERT = "/opt/schrodinger2016-3/utilities/structconvert"
+MULTISMIM = "/opt/schrodinger2016-3/utilities/multisim"
+STRUCTCAT = "/opt/schrodinger2016-3/utilities/structcat"
 
 
 def runLigprep(psmilin, forcefield="OPLS3", stereoisoster=1):

@@ -1,10 +1,10 @@
 from os import listdir, remove, makedirs
 
-PR_REF = "/home/aborrel/imitanib/"
-PR_RESULT = "/home/aborrel/imitanib/results/"
-PR_TEMP3D = "/home/aborrel/imitanib/results/temp3D/"
-PR_COMPOUNDS = "/home/aborrel/imitanib/results/compounds/"
-PR_ANALYSIS = "/home/aborrel/imitanib/results/analysis/"
+PR_REF = "/data/aborrel/imatinib/"
+PR_RESULT = "/data/aborrel/imatinib/results/"
+PR_TEMP3D = "/data/aborrel/imatinib/results/temp3D/"
+PR_COMPOUNDS = "/data/aborrel/imatinib/results/compounds/"
+PR_ANALYSIS = "/data/aborrel/imatinib/results/analysis/"
 
 
 def cleanFolder(prin=PR_TEMP3D):
