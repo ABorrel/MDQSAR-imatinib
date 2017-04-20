@@ -1,5 +1,7 @@
 from re import search
 from shutil import copyfile
+from os import listdir
+from time import sleep
 
 def transformAA(aa):
     aa = aa.upper()
@@ -181,3 +183,28 @@ def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
     filoutmsj.close()
 
 
+def parralelLaunch(lprMD, maxJob, wait=6):
+
+    # control number of run
+    flag = 0
+    while len(lprMD) >= maxJob:
+        i = 0
+        imax = len(lprMD)
+        while i < imax:
+            lfilesMD = listdir(lprMD[i])
+            for fileMD in lfilesMD:
+                if search("-out\.cms", fileMD):
+                    del lprMD[i]
+                    imax = imax - 1
+                    flag = 1
+                    break
+            if flag == 1:
+                flag = 0
+                continue
+            else:
+                i += 1
+
+        if len(lprMD) >= maxJob:
+            sleep(wait)# wait 10 min
+
+    return lprMD

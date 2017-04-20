@@ -148,6 +148,9 @@ def convertPDBtoMAE(pPDB):
 def multisimSystemBuilder(jobname, pMAE, WAIT=1):
 
     pcms = pMAE[:-4] + ".cms"
+    if path.exists(pcms) and path.getsize(pcms) > 0:
+        return pcms
+
     # cp script
     pmsj = path.dirname(pMAE) + "/systembuilder.msj"
     copyfile("./systembuilder.msj", pmsj)
@@ -184,6 +187,11 @@ def multisimGDesmond(jobname, pcms, timeMDns, frameInverval, WAIT=1):
     pmsj = prDM + jobname + ".msj"
     pcfg = prDM + jobname + ".cfg"
 
+    # control if out cms exisits
+    pcmsout = pcms[:-4] + "-out.cms"
+    if path.exists(pcmsout) and path.getsize(pcmsout) > 0:
+        return "EXIST"
+
     # write file
     toolbox.writeFilesParamaterDesmond(pmsj, pcfg, timeMDns, frameInverval)
 
@@ -201,10 +209,14 @@ def multisimGDesmond(jobname, pcms, timeMDns, frameInverval, WAIT=1):
     system(cmdDesmond)
     chdir(prsource)
 
+    return "DONE"
 
 def concateneStructure(pPDBprot, pligSDF, pmaeComplex):
 
+    if path.exists(pmaeComplex) and path.getsize(pmaeComplex) > 0:
+        return pmaeComplex
     cmdStructcat = STRUCTCAT + " " + str(pPDBprot) + " " + str(pligSDF) + " -omae " + str(pmaeComplex)
+
     print cmdStructcat
     system(cmdStructcat)
 

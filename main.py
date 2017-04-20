@@ -204,9 +204,9 @@ prMD = "/home/aborrel/imitanib/results/MD-ABL/"
 pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
 
 # parameter MD
-timeMD = "1000.0"
+timeMD = "50.0"
 timeframe = "10.0"
-stepWait = 3
+stepWait = 2
 
 # 1. Merge poses and proteins
 cMD = MD.MD(prMD, timeMD, timeframe, stepWait)
