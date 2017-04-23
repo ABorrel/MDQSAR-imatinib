@@ -22,7 +22,7 @@ class MD:
         nameProt = pProt.split("/")[-1][0:-4]
 
         dinit = {}
-        for lig in llig[:50]: ###### !!! block to 50
+        for lig in llig[:10]: ###### !!! block to 50
             namecpd = lig.split(".")[0]
             print namecpd, nameProt
             nameFolder = namecpd + "_" + nameProt
