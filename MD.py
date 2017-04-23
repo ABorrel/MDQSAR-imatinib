@@ -2,6 +2,7 @@ from os import path, listdir, makedirs
 
 import PDB
 import runExternalSoft
+import toolbox
 
 
 class MD:
@@ -22,7 +23,7 @@ class MD:
         nameProt = pProt.split("/")[-1][0:-4]
 
         dinit = {}
-        for lig in llig[:10]: ###### !!! block to 50
+        for lig in llig[:30]: # add change
             namecpd = lig.split(".")[0]
             print namecpd, nameProt
             nameFolder = namecpd + "_" + nameProt
@@ -41,7 +42,7 @@ class MD:
             else:
                 dinit[nameFolder] = {}
                 dinit[nameFolder]["pfolder"] = pfolder
-                dinit[nameFolder]["complexMAE"] = pMAE # complex in input of MD
+                dinit[nameFolder]["complexMAE"] = pMAE# complex in input of MD
                 dinit[nameFolder]["ligandSDF"] = prLigand + lig
                 dinit[nameFolder]["protPrep"] = pProt
 
@@ -58,16 +59,15 @@ class MD:
         nbMD = len(self.lMD.keys())
         i = 0
         step = 1
+        lMDfolder = []
         while i < nbMD:
             jobname = self.lMD.keys()[i]
             #system builder
             pcms = runExternalSoft.multisimSystemBuilder(jobname, self.lMD[jobname]["complexMAE"], WAIT=1)
             self.lMD[jobname]["pcms"] = pcms
+            lMDfolder.append(path.dirname(pcms) + "/")
+            print len(lMDfolder)
             #GDESMON
-            if step == self.stepWait:
-                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=1)# add a existance criteria
-                step = 1
-            else:
-                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)
-                step += 1
+            runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
+            lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
             i += 1
