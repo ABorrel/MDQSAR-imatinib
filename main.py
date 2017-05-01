@@ -1,11 +1,11 @@
 import tableParse
-#import liganddescriptors
+import liganddescriptors
 import pathFolder
 import runExternalSoft
-#import MCS
+import MCS
 import parseSDF
 import MD
-#import FPI
+import FPI
 import PDB
 
 
