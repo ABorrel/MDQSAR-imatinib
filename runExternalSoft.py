@@ -1,14 +1,31 @@
-from os import system, path, remove, getcwd, chdir
+from os import system, path, remove, getcwd, chdir, makedirs
 from shutil import copyfile
 from re import search
-import toolbox
 from time import sleep
 
-LIGPREP = "/opt/schrodinger2016-3/ligprep"
+import toolbox
+import PDB
+import pathFolder
+
+
+LIGPREP = "/opt/schrodinger2016-4/ligprep"
 PADEL = "/home/aborrel/softwares/padel/PaDEL-Descriptor.jar"
-STRUCTCONVERT = "/opt/schrodinger2016-3/utilities/structconvert"
-MULTISMIM = "/opt/schrodinger2016-3/utilities/multisim"
-STRUCTCAT = "/opt/schrodinger2016-3/utilities/structcat"
+TMalign = "/home/aborrel/softwares/TMalign/TMalign"
+SHAEP = "/home/aborrel/softwares/shaep/shaep"
+
+
+# for home computer
+STRUCTCONVERT = "/opt/schrodinger2016-4/utilities/structconvert"
+MULTISMIM = "/opt/schrodinger2016-4/utilities/multisim"
+STRUCTCAT = "/opt/schrodinger2016-4/utilities/structcat"
+RUN = "/opt/schrodinger2016-4/run"
+
+# for monster
+#LIGPREP = "/opt/schrodinger2016-3/ligprep"
+#STRUCTCONVERT = "/opt/schrodinger2016-3/utilities/structconvert"
+#MULTISMIM = "/opt/schrodinger2016-3/utilities/multisim"
+#STRUCTCAT = "/opt/schrodinger2016-3/utilities/structcat"
+#RUN = "/opt/schrodinger2016-3/run"
 
 
 def runLigprep(psmilin, forcefield="OPLS3", stereoisoster=1):
@@ -217,7 +234,7 @@ def concateneStructure(pPDBprot, pligSDF, pmaeComplex):
         return pmaeComplex
     cmdStructcat = STRUCTCAT + " " + str(pPDBprot) + " " + str(pligSDF) + " -omae " + str(pmaeComplex)
 
-    print cmdStructcat
+    #print cmdStructcat
     system(cmdStructcat)
 
     if path.exists(pmaeComplex) and path.getsize(pmaeComplex) > 0:
@@ -227,6 +244,64 @@ def concateneStructure(pPDBprot, pligSDF, pmaeComplex):
         return "ERROR"
 
 
+def centerMD(ppcms, ptrj):
+
+    cmd = RUN + " -FROM desmond center.py -asl \"protein\" " + ppcms + " " + ptrj[0:-4] + "_center " + ptrj
+    print cmd
+    system(cmd)
+
+    return ptrj[0:-4] + "_center"
+
+
+def extractFrame(ppcms, ptrj, prframes):
+
+    cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -o pdb -b " + str(prframes) + "frame"
+
+    print(cmd)
+    system(cmd)
 
 
 
+def runTMalign(ppr1, ppr2, prout, debug=1):
+
+    pathFolder.createFolder(prout)
+
+    spdb1 = PDB.PDB(ppr1, hydrogen=1)
+    spdb1.removeChain()
+    ppr1 = spdb1.writePDB(prout + path.basename(ppr1))
+
+    spdb2 = PDB.PDB(ppr2, hydrogen=1)
+    spdb2.removeChain()
+    ppr2 = spdb2.writePDB(prout + path.basename(ppr2))
+
+    cmd_run = TMalign + " " + str(ppr1) + " " + str(ppr2) + " -o " + prout + "align.out -m " + prout + "matrix.out" + " > " + prout + "RMSD"
+    if debug:
+        print cmd_run
+    system(cmd_run)
+
+    return [prout + "align.out", prout + "align.out_all", prout + "align.out_atm",
+            prout + "align.out_all_atm", prout + "matrix.out", prout + "RMSD"]
+
+
+def runShaep(p_struct1, p_struct2, p_out, clean=0):
+
+    if clean == 1:
+        if path.exists(p_out):
+            remove(p_out)
+        else:
+            pass
+    elif path.exists(p_out):
+        return p_out
+
+    # run
+    cmd = SHAEP + " --output-file " + p_out + " " + p_struct1 + " " + p_struct2 + " --noOptimization"
+    print cmd
+    system(cmd)
+    cmd_rm = "rm " + p_out[0:-4] + "_hits.txt"
+
+    try:
+        system(cmd_rm)
+    except:
+        pass
+
+    return p_out

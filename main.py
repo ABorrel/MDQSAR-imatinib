@@ -175,9 +175,17 @@ pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filt
 ######################
 #  Docking analysis  #
 ######################
-pprotein = "/data/aborrel/imatinib/2hyy_dock.pdb"
-psdfDoking = "/data/aborrel/imatinib/results/dockingpose.sdf"
-prDockingPose = "/data/aborrel/imatinib/results/dockingpose/"
+
+# home
+pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
+prDockingPose = "/home/aborrel/imitanib/results/dockingpose/"
+
+# monster
+#pprotein = "/data/aborrel/imatinib/2hyy_dock.pdb"
+#psdfDoking = "/data/aborrel/imatinib/results/dockingpose.sdf"
+#prDockingPose = "/data/aborrel/imatinib/results/dockingpose/"
+
 #sdocking = parseSDF.sdf(psdfDoking)
 #sdocking.parseSDF()
 #sdocking.splitPoses(prDockingPose)
@@ -200,8 +208,14 @@ prDockingPose = "/data/aborrel/imatinib/results/dockingpose/"
 # MD based on docking poses   #
 ###############################
 
-prMD = "/data/aborrel/imatinib/results/MD-ABL/"
-pprotein = "/data/aborrel/imatinib/2hyy_MD.pdb"
+# home
+prMD = "/home/aborrel/imitanib/results/MD-ABL/"
+pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
+
+# monster
+#prMD = "/data/aborrel/imatinib/results/MD-ABL/"
+#pprotein = "/data/aborrel/imatinib/2hyy_MD.pdb"
+
 
 # parameter MD
 timeMD = "15000.0"
@@ -211,7 +225,10 @@ stepWait = 16
 # 1. Merge poses and proteins
 cMD = MD.MD(prMD, timeMD, timeframe, stepWait)
 cMD.initialisation(prDockingPose, pprotein)
-cMD.runMultipleMD()
+#cMD.runMultipleMD()
+
+cMD.extractFrame()
+cMD.analyseAllMD()
 
 ##########################################
 # case where we consider the Cell lines  #

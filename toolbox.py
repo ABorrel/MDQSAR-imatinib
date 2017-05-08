@@ -1,4 +1,4 @@
-from re import search
+from re import search, sub
 from shutil import copyfile
 from os import listdir
 from time import sleep
@@ -208,3 +208,24 @@ def parralelLaunch(lprMD, maxJob, wait=6):
             sleep(wait)# wait 10 min
 
     return lprMD
+
+
+def loadMatrixTMalign(pmatrix):
+
+    dmatrix = {}
+    filin = open(pmatrix, "r")
+    list_lines = filin.readlines()
+    filin.close()
+
+    m = 1
+    for line_file in list_lines[2:5]:
+        line_format = sub("[ ]{2,}", " ", line_file.strip())
+        line_format = line_format.split(" ")
+        dmatrix["t" + str(m)] = float(line_format[1])
+        dmatrix["u" + str(m) + "1"] = float(line_format[2])
+        dmatrix["u" + str(m) + "2"] = float(line_format[3])
+        dmatrix["u" + str(m) + "3"] = float(line_format[4])
+        m += 1
+
+    return dmatrix
+

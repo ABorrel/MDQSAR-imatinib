@@ -13,6 +13,7 @@ from shutil import move
 import random
 
 import runExternalSoft
+import toolbox
 
 PRPDBDATABSE = "/home/PDB/"
 
@@ -368,6 +369,23 @@ class PDB:
         self.latom = self.latom + latomlig
         print len(self.latom)
 
+    def removeChain(self):
+
+        if not "latom" in dir(self):
+            self.get_lAtoms()
+
+        for atom in self.latom:
+            atom.chainID = ""
+
+    def get_lig(self, nameLig):
+
+        if not "byres" in self.__dict__:
+            self.get_byres()
+
+        for res in self.byres.keys():
+            if search(nameLig, res):
+                # !! only first out
+                return self.byres[res]
 
 
 
@@ -390,6 +408,7 @@ class PDB:
             filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
         filout.close()
 
+        return pfilout
 
 
 
@@ -471,6 +490,27 @@ class Atom:
 
     def add_dist(self, dist):
         self.dist = dist
+
+
+    def applyMatrixRotTransloc(self, matrixin):
+
+        if not type(matrixin) == dict:
+            matrix_transloc = toolbox.loadMatrixTMalign(matrixin)
+        else:
+            matrix_transloc = matrixin
+
+        atomx = matrix_transloc["t1"] + matrix_transloc["u11"] * float(self.x) + matrix_transloc["u12"] * float(
+                self.y) + matrix_transloc["u13"] * float(self.z)
+        atomy = matrix_transloc["t2"] + matrix_transloc["u21"] * float(self.x) + matrix_transloc["u22"] * float(self.y) + \
+                    matrix_transloc["u23"] * float(self.z)
+        atomz = matrix_transloc["t3"] + matrix_transloc["u31"] * float(self.x) + matrix_transloc["u32"] * float(self.y) + \
+                    matrix_transloc["u33"] * float(self.z)
+
+        self.x = atomx
+        self.y = atomy
+        self.z = atomz
+
+
 
     def get_centre2atoms(self, atom):
 
@@ -624,6 +664,8 @@ class Atom:
         filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" % (
             self.recoder, self.serial, self.name, self.char, self.resName, self.chainID, self.resSeq, self.iCode, self.x,
             self.y, self.z, self.occupancy, self.Bfact, self.element, self.charge))
+
+
 
 
 class MD_PDB:

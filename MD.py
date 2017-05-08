@@ -3,6 +3,8 @@ from os import path, listdir, makedirs
 import PDB
 import runExternalSoft
 import toolbox
+import MDanalysis
+import pathFolder
 
 
 class MD:
@@ -19,6 +21,7 @@ class MD:
 
         # create folder for DM
         llig = listdir(prLigand)
+        llig = ["CHEMBL207986.1.pdb", "CHEMBL384304.1.pdb"] # !!!!!!!!!!!
 
         nameProt = pProt.split("/")[-1][0:-4]
 
@@ -28,8 +31,8 @@ class MD:
             print namecpd, nameProt
             nameFolder = namecpd + "_" + nameProt
             pfolder = self.prDM + nameFolder + "/"
-            if not path.exists(pfolder):
-                makedirs(pfolder)
+
+            pathFolder.createFolder(pfolder)
 
             #create PDB file as input
             pMAE = pfolder + "complexInit.mae"
@@ -49,7 +52,7 @@ class MD:
         self.lMD = dinit
 
 
-    def runMultipleMD(self):
+    def runMultipleMD(self, runMD = 1):
 
 
         if not "lMD" in dir(self):
@@ -58,7 +61,6 @@ class MD:
 
         nbMD = len(self.lMD.keys())
         i = 0
-        step = 1
         lMDfolder = []
         while i < nbMD:
             jobname = self.lMD.keys()[i]
@@ -68,6 +70,55 @@ class MD:
             lMDfolder.append(path.dirname(pcms) + "/")
             print len(lMDfolder)
             #GDESMON
-            runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
-            lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
+            if runMD == 1:
+                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
+                self.lMD[jobname]["pcms-out"] = pcms[0:-4] + "-out.cms"
+                self.lMD[jobname]["trj"] = path.dirname(pcms) + "/" + jobname + "_trj"
+                lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
+            else:
+                if path.exists(pcms[0:-4] + "-out.cms"):
+                    self.lMD[jobname]["pcms-out"] = pcms[0:-4] + "-out.cms"
+                    self.lMD[jobname]["trj"] = path.dirname(pcms) + "/" + jobname + "_trj"
             i += 1
+
+
+
+
+    def extractFrame(self):
+        """Extract frame and wrap water"""
+
+        # launch DM to build result structure
+        self.runMultipleMD(runMD=0)
+
+        # for MD launch
+        for jobname in self.lMD.keys():
+            print jobname
+            if "pcms-out" in self.lMD[jobname].keys():
+                prframes = path.dirname(self.lMD[jobname]["pcms-out"]) + "/framesMD/"
+                if not path.exists(prframes):
+                    makedirs(prframes)
+                if len(listdir(prframes)) == 0:
+                    centerMD = runExternalSoft.centerMD(self.lMD[jobname]["pcms-out"], self.lMD[jobname]["trj"])
+                    self.lMD[jobname]["pcms-out"] = centerMD + "-out.cms"
+                    self.lMD[jobname]["trj"] = centerMD + "_trj"
+                    runExternalSoft.extractFrame(self.lMD[jobname]["pcms-out"], self.lMD[jobname]["trj"], prframes)
+                self.lMD[jobname]["prframe"] = prframes
+
+
+
+    def analyseAllMD(self, RMSD=1, nameLig="UNK"):
+
+        lanalysis = []
+        for MDID in self.lMD.keys():
+            cMDanalysis = MDanalysis.trajectoryAnalysis(self.lMD[MDID]["pfolder"], float(self.MDtime)/float(self.interval))
+            if RMSD == 1:
+                cMDanalysis.Superimposed()
+                cMDanalysis.ligAnalysis(nameLig)
+            lanalysis.append(cMDanalysis)
+
+
+
+
+
+
+
