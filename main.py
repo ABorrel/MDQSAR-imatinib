@@ -228,7 +228,7 @@ cMD.initialisation(prDockingPose, pprotein)
 #cMD.runMultipleMD()
 
 cMD.extractFrame()
-cMD.analyseAllMD()
+cMD.analyseAllMD(ligAnalysis=0)
 
 ##########################################
 # case where we consider the Cell lines  #

@@ -10,24 +10,24 @@ source("dendocircular.R")
 #     MAIN     #
 ################
 
-args <- commandArgs(TRUE)
-pdesc = args[1]
-pdata = args[2] #to take affinity
-prout = args[3]
-valcor = as.double(args[4])
-plotPCA = args[5]
-corMatrix = args[6]
-histplot = args[7]
-circularDendo = args[8]
+#args <- commandArgs(TRUE)
+#pdesc = args[1]
+#pdata = args[2] #to take affinity
+#prout = args[3]
+#valcor = as.double(args[4])
+#plotPCA = args[5]
+#corMatrix = args[6]
+#histplot = args[7]
+#circularDendo = args[8]
 
-#pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDesc.csv"
-#pdata = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
-#prout = "/home/aborrel/imitanib/results/analysis/desc/"
-#plotPCA = 0
-#corMatrix = 0
-#histplot = 0
-#circularDendo = 1
-#valcor = 0.70
+pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDesc.csv"
+pdata = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
+prout = "/home/aborrel/imitanib/results/analysis/desc/"
+plotPCA = 1
+corMatrix = 0
+histplot = 0
+circularDendo = 1
+valcor = 0.90
 
 # Opening
 ddata = read.csv(pdata, sep = "\t", header = TRUE)

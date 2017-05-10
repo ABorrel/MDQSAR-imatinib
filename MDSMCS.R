@@ -12,7 +12,7 @@ MDSbyAff = function(matin, aff, pout){
   dataplot = fit$points
   dataplot = dataplot[names(aff),]
   
-  lcolaff <- colorRampPalette(c("lightgreen", "red"))
+  lcolaff <- colorRampPalette(c("red", "lightgreen"))
   lcolaff = lcolaff(dim(fit$points)[1])
   
   png(paste(pout, "MDSplot.png"), 800, 800)
@@ -36,8 +36,8 @@ args = commandArgs(TRUE)
 pmatrix = args[1]
 paffinity = args[2]
 
-#pmatrix="/home/aborrel/imitanib/results/analysis/MCS/_tanimoto"
-#paffinity = "/home/aborrel/imitanib/results/analysis/MCS/_aff"
+pmatrix="/home/aborrel/imitanib/results/analysis/MCS/tanimoto"
+paffinity = "/home/aborrel/imitanib/results/analysis/MCS/aff"
 
 dmatrix = read.table(pmatrix, sep="\t", header=TRUE)
 daff = read.table(paffinity, sep="\t", header=TRUE, stringsAsFactors = F)

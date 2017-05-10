@@ -262,7 +262,7 @@ class PDB:
                 if atomadd.element == "H" and self.hydrogen != 0:
                     l_out.append(atomadd)
                 elif atomadd.element != "H":
-                    l_out.append (atomadd)
+                    l_out.append(atomadd)
         self.latom = l_out
         return l_out
 

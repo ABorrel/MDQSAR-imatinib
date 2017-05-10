@@ -15,11 +15,11 @@ dendogramCircle = function(ddes, daff, pfilout){
     geom_tippoint(aes(color=PCHEMBL_VALUE), alpha=0.75, size=1)+
     scale_color_continuous(low='red', high='lightgreen') +
     theme(legend.position="right")+
-    theme(plot.margin = unit(c(0,0,0,0), "cm"))+
-    geom_treescale(x = 75, y = 75, width = NULL, offset = NULL,
+    theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+    geom_treescale(x = 5, y = 5, width = 10, offset = NULL,
                  color = "white", linesize = 1E-100, fontsize = 1E-100)
   print(t4)
-  ggsave(pfilout, dpi=300, height = 7, width = 7)
+  ggsave(pfilout, dpi=300, height = 8, width = 9)
   
 }
 

@@ -65,8 +65,6 @@ class trajectoryAnalysis:
                 TMalignScore.write(str(nframe2) + "\t" + str(dalign["RMSD"]) + "\t" + str(dalign["TMscore1"]) + "\n")
                 move(lsuperimposed[-2], self.matrixTranslocRot + str(nframe1) + "_" + str(nframe2))
                 i += 1
-
-
         TMalignScore.close()
 
 
@@ -100,7 +98,6 @@ class trajectoryAnalysis:
             filoutSheap.write("Frame\tESPscore\tshape\n")
 
         nb_frame = int(self.nbframe)
-        nb_frame = 10
         i = 1
         dRMSFatom = {}
         while i < nb_frame:
@@ -158,4 +155,47 @@ class trajectoryAnalysis:
                             break
                 filoutRMSF.write(str(average(ldist)) + "\n")
             filoutRMSF.close()
+
+
+
+    def protResRMSF(self):
+
+        self.prprotRMSD = self.prRMSD + "protMD/"
+        pathFolder.createFolder(self.prprotRMSD)
+        pfiloutRMSF = self.prprotRMSD + "resRMSF"
+        filoutRMSF = open(pfiloutRMSF, "w")
+        filoutRMSF.write("NameRes\tall\tmain chain\tside chain\tHeavy atom\n")
+
+        pframe0 = self.prframe + "frame_" + str("%05d" % (0)) + ".pdb"
+        cframe0 = PDB.PDB(pframe0, hydrogen=1)
+        cframe0.get_byres()
+
+        nb_frame = int(self.nbframe)
+        i = 1
+        dRMSFres= {}
+        while i < nb_frame:
+            print "Process MD lig", i, nb_frame
+            pframei = self.prframe + "frame_" + str("%05d" % (i)) + ".pdb"
+            pmatrixi = self.matrixTranslocRot + str("%05d" % (0)) + "_" + str("%05d" % (i))
+            matrixload = toolbox.loadMatrixTMalign(pmatrixi)
+
+            cframei = PDB.PDB(pframei, hydrogen=1)
+            cframei.get_lAtoms()
+            for atomligi in cframei.latom:
+                atomligi.applyMatrixRotTransloc(matrixload)
+
+            cframei.get_byres()
+
+            for resname in cframei.byres:
+                res = resname.split("_")[0]
+                if res in PDB.LRES:
+                    if not resname in dRMSFres.keys():
+                        dRMSFres[resname] = []
+                    RMSDRes = calculate.RMSDTwoList(cframe0.byres[resname], cframei.byres[resname])
+                    dRMSFres[resname].append(RMSDRes)
+            i += 1
+
+        for resname in dRMSFres.keys():
+            filoutRMSF.write(str(resname) + "\t" + str(average(dRMSFres[resname])) + "\n")
+        filoutRMSF.close()
 

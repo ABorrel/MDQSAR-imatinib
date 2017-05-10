@@ -106,13 +106,15 @@ class MD:
 
 
 
-    def analyseAllMD(self, RMSD=1, nameLig="UNK"):
+    def analyseAllMD(self, RMSD=1, ligAnalysis=1, nameLig="UNK"):
 
         lanalysis = []
         for MDID in self.lMD.keys():
             cMDanalysis = MDanalysis.trajectoryAnalysis(self.lMD[MDID]["pfolder"], float(self.MDtime)/float(self.interval))
+            cMDanalysis.Superimposed()
             if RMSD == 1:
-                cMDanalysis.Superimposed()
+                cMDanalysis.protResRMSF()
+            if ligAnalysis == 1:
                 cMDanalysis.ligAnalysis(nameLig)
             lanalysis.append(cMDanalysis)
 

@@ -110,13 +110,16 @@ PCAplot = function (din, path_result){
   
   color_arrow = col.desc[rownames(cp)]
   par(mar=c(8,8,8,8))
+  colorplot = rep("black", dim(data_plot)[1])
+  names(colorplot) = rownames(data_plot)
+  colorplot["CHEMBL941"] = "red"
   plot(data_plot[,1],data_plot[,2], pch=20, main = paste (var_cap[1],var_cap[2], sep = "_" ), xlab = paste("CP1: ", signif (var_cap[1], 4), "%", sep = ""), ylab = paste("CP2: ", signif (var_cap[2], 4), "%", sep = ""), cex.lab = 4, cex.main = 4, cex.axis = 1.75, cex = 4, type = "n")
-  text (data_plot[,1],data_plot[,2], label = rownames (din), cex = 1.2)
+  text (data_plot[,1],data_plot[,2], label = rownames (din), cex = 1.2, col = colorplot)
   abline(h=0,v=0)
   warnings ()
   dev.off()
   
-  colpoint <- colorRampPalette(c("blue", "red"))
+  colpoint <- colorRampPalette(c("red", "lightgreen"))
   
   png (paste (path_result, "_color.png", sep = ""), 1700, 1500)
   factor = factorACP (data_plot, cp)
