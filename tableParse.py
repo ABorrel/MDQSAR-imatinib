@@ -62,7 +62,7 @@ class CHEMBL:
 
         print len(self.table)
 
-    def getOnlyIC50(self):
+    def getOnlyIC50(self, typeAff = "IC50"):
 
         if not "table" in dir(self):
             self.parseCHEMBLFile()
@@ -71,7 +71,7 @@ class CHEMBL:
         imax = len(self.table)
         while i < imax:
             row = self.table[i]
-            if row["PUBLISHED_TYPE"] != "IC50":
+            if row["PUBLISHED_TYPE"] != typeAff:
                 del self.table[i]
                 imax = imax - 1
                 continue

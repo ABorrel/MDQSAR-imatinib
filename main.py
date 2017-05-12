@@ -38,6 +38,35 @@ def CleanCHEMBLFileProtAff(pfilin, pfilout):
     return table.table
 
 
+def CleanCHEMBLFileProtAffIC50(pfilin, pfilout):
+
+    # add short cut if filtered table exist !!!!!
+
+    table = tableParse.CHEMBL(pfilin)
+    table.parseCHEMBLFile()
+    print len(table.table), "Init"
+
+    table.selectConfidencecore(cutoff=9)
+    print len(table.table), "prot confidence"
+
+    table.getOnlyExactConstant()
+    print len(table.table), "strict value"
+
+    table.getOnlyIC50()
+    print len(table.table), "IC50"
+
+    table.MergeIdenticCHEMBLIDforACtivity()
+    print len(table.table), "Repetition"
+
+    table.selectAssayType("B")
+    print len(table.table), "Type assay"
+
+    table.writeTable(pfilout)
+
+
+    return table.table
+
+
 def CleanCHEMBLFileCellLine(pfilin, pfilout):
 
     # add short cut if filtered table exist !!!!!
@@ -135,6 +164,40 @@ def FPIMatrix(sdocking, pprotein, prFPI):
             j = j + 1
         i = i + 1
 
+def computeFPIBSBased(cMDs, prout, nameLig):
+
+    dout = {}
+    prtempFPI = pathFolder.createFolder(prout + "tempFPI/")
+    for nameMD in cMDs.lMD.keys():
+        prtempMDFPI = pathFolder.createFolder(prtempFPI + nameMD + "/")
+
+        dout[nameMD] = {}
+        prframes = cMDs.lMD[nameMD]["prframe"]
+
+        i = 0
+        imax = float(cMDs.MDtime)/float(cMDs.interval)
+        #imax = 10 # !!!!!!!!!!!!!!!!!!!!!!!!
+        dcFpI = {}
+        while i <= imax:
+            frameName = "frame_" + str("%05d" % (i)) + ".pdb"
+            pframe = prframes + "/" + frameName
+
+            pFPItemp = pathFolder.createFolder(prtempMDFPI + frameName[0:-4] + "/")
+            dframe = PDB.PDB(pframe, hydrogen=1)
+
+            CFPI = FPI.ligFPI(dframe, pFPItemp, ligID=nameLig)
+            CFPI.computeFPI()
+            dcFpI[frameName] = CFPI
+
+            i += 1
+
+        FPIMD = FPI.CompareFPIMD(dcFpI, prtempMDFPI)
+        FPIMD.MDprop()
+        FPIMD.pobaFPI()
+        #FPIMD.MDtanimoto() # useless if only ligand is considered
+
+
+    return dout
 
 
 ##########
@@ -223,12 +286,26 @@ timeframe = "10.0"
 stepWait = 16
 
 # 1. Merge poses and proteins
-cMD = MD.MD(prMD, timeMD, timeframe, stepWait)
-cMD.initialisation(prDockingPose, pprotein)
-#cMD.runMultipleMD()
+#cMDs = MD.MD(prMD, timeMD, timeframe, stepWait)
+#cMDs.initialisation(prDockingPose, pprotein)
+#cMD.runMultipleMD() # run MD
 
-cMD.extractFrame()
-cMD.analyseAllMD(ligAnalysis=0)
+# 2. analyse MD
+# name ligand for the MD
+#namelig = "UNK"# classic name given by glide
+
+#cMDs.extractFrame()
+#cMD.analyseAllMD(RMSD=1, ligAnalysis=0, nameLig=namelig)
+
+
+# 3. FPI computation
+# ligand + BS based
+#prFPI = pathFolder.analyses("MD_FPI")
+#computeFPIBSBased(cMDs, prFPI, namelig)
+
+
+
+
 
 ##########################################
 # case where we consider the Cell lines  #
@@ -239,6 +316,34 @@ cMD.analyseAllMD(ligAnalysis=0)
 
 
 #ltableCpd = CleanCHEMBLFileCellLine(pCHEMBL, pCHEMBLClean)
+
+#mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS-K562"))
+#mcs.selectAnalogs(compoundID="CHEMBL941")
+
+
+
+##########################################
+# case where we consider the Cell lines  #
+##########################################
+
+pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
+pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filteredKI.txt"
+
+
+ltableCpd = CleanCHEMBLFileProtAffIC50(pCHEMBL, pCHEMBLClean)
+
+#### docking ####
+#################
+pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
+
+sdocking = parseSDF.sdf(psdfDoking)
+sdocking.parseSDF()
+#sdocking.splitPoses(prDockingPose)
+pdockingAnalysis = pathFolder.analyses("dockingKI")
+
+dscore = sdocking.get_dockingscore()
+dockingScoreAnalysis(dscore, ltableCpd, pdockingAnalysis)
 
 #mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS-K562"))
 #mcs.selectAnalogs(compoundID="CHEMBL941")

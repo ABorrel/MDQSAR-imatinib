@@ -229,3 +229,24 @@ def loadMatrixTMalign(pmatrix):
 
     return dmatrix
 
+
+
+def loadTableFPI(pfileFPI):
+
+    dout = {}
+    filin = open(pfileFPI, "r")
+    llineFPI = filin.readlines()
+    for lineFPI in llineFPI[1:]:
+        lelem = lineFPI.strip().split("\t")
+        resID = lelem[0]
+        lrespocket = lelem[1].split("-")
+        lFPI = lelem[2].split("-")
+        i = 0
+        while i < len(lrespocket):
+            if not resID in dout.keys():
+                dout[resID] = {}
+            dout[resID][lrespocket[i]] = lFPI[i]
+            i += 1
+    filin.close()
+    return dout
+

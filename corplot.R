@@ -41,9 +41,9 @@ plotCor = function(din, vblack){
 ############
 
 args <- commandArgs(TRUE)
-#p_filin = args[1]
+p_filin = args[1]
 
-p_filin = "~/imitanib/results/analysis/docking/ScoreVSAff.txt"
+#p_filin = "~/imitanib/results/analysis/docking/ScoreVSAff.txt"
 
 din = read.csv (p_filin, header = TRUE, sep = "\t")
 rownames(din) = din[,1]

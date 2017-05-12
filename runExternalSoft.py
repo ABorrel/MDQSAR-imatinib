@@ -148,6 +148,15 @@ def babelConvertSDFtoPDB(psdf):
     return psdf[:-4] + ".pdb"
 
 
+def babelPDBtoMOL2(ppdbin):
+    pfilout = ppdbin[0:-4] + ".mol2"
+    cmd_convert = "babel  " + ppdbin + " " + pfilout
+    #print cmd_convert
+    system(cmd_convert + " 2> /dev/null")
+    return pfilout
+
+
+
 def convertPDBtoMAE(pPDB):
 
     pMAE = pPDB[:-4] + ".mae"

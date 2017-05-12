@@ -19,7 +19,7 @@ PRPDBDATABSE = "/home/PDB/"
 
 R = random.random() # corse random
 LRES = ["ALA", "ILE", "LEU", "VAL", "MET", "CYS", "PHE", "TRP", "TYR", "HIS", "THR", "SER", "ASN", "GLN", "ASP", "GLU",
-        "ARG", "LYS", "PRO", "GLY"]
+        "ARG", "LYS", "PRO", "GLY", "TP3"]
 #LTYPE = ["Oox", "Oh", "Oph",  "Oc", "Ow", "Nam", "Nim", "Ngu", "NaI", "Car", "Su", "Xot"]
 MAXCONNECT = 2.0
 MAXDISTBYRES = 12
@@ -116,7 +116,7 @@ class PDB:
                             flagres=0
 
 
-    def get_BSfromLatom(self, latomin, dpocket=4.5, dmax=12, dmin=2, delconnected=1):
+    def get_BSfromLatom(self, latomin, dpocket=4.5, dmax=12, dmin=2, delconnected=1, water=0):
 
         lout = []
         lresconnected = []
@@ -126,6 +126,8 @@ class PDB:
 
         for atomin in latomin:
             for res in self.byres.keys():
+                if water == 0 and search("HOH", res) or search("TP3", res):
+                    continue
                 for atomres in self.byres[res]:
                     disttest = atomres.euclidiendist(atomin)
                     if disttest < dmin and delconnected == 1:
@@ -322,7 +324,7 @@ class PDB:
         :param d_bfactor: dictionary with residue and atom serial bfactor (*100 on score)
         :return: NONE
         """
-        if path.exists(dp_bfactor):
+        if type(dp_bfactor) == str and path.exists(dp_bfactor):
             d_bfactor = {}
             filin = open(dp_bfactor, "r")
             llines = filin.readlines()
@@ -344,12 +346,12 @@ class PDB:
                 k_in = atom.resName + "_" + str(atom.resSeq) + "_" + str(atom.chainID)
                 if k_in in d_bfactor:
                     if d_bfactor[k_in] == 1.00:
-                        atom.Bfact = 0.00
+                        atom.Bfact = 99.99
                     else :
-                        try: atom.Bfact = abs(100 - float(d_bfactor[k_in]*99.0))
-                        except: atom.Bfact = 0.00
+                        try: atom.Bfact = abs(float(d_bfactor[k_in]*99.0))
+                        except: atom.Bfact = 99.99
                 else:
-                    atom.Bfact = 00.0
+                    atom.Bfact = 99.99
                 i = i + 1
 
 
@@ -389,27 +391,34 @@ class PDB:
 
 
 
-    def writePDB (self, pfilout, latoms=""):
+
+    def writePDB (self, pfilout, latoms="", model=0):
         """
         Need add header
         :param pfilout: path of file to write
         :return:
         """
 
-        filout = open(pfilout, "w")
-
-        if latoms == "":
-            if not "latom" in dir(self):
-                latoms = self.get_lAtoms()
+        if model == 1:
+            if path.exists(pfilout):
+                filout = open(pfilout, "a")
             else:
-                latoms = self.latom
-
+                filout = open(pfilout, "w")
+        else:
+            # control if exit
+            if path.exists(pfilout) and path.getsize(pfilout) > 10:
+                return
+            else:
+                filout = open(pfilout, "w")
+        if latoms == "":
+            latoms = self.get_lAtoms()
+        if model == 1:
+            filout.write("MODEL\n")
         for atom in latoms:
             filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
+        if model == 1:
+            filout.write("ENDMDL\n")
         filout.close()
-
-        return pfilout
-
 
 
 

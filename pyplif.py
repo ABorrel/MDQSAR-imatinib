@@ -8,15 +8,15 @@ from bitarray import bitarray
 
 from ring import *
 from interactions import *
-
+import runExternalSoft
 
 def get_FPI(pligPDB, ppocketPDB, lres, filout):
 
     x = time()
 
     # convert PDB to mol2
-    pligmol2 = runOtherProg.babelPDBtoMOL2(pligPDB)
-    ppocketMol2 = runOtherProg.babelPDBtoMOL2(ppocketPDB)
+    pligmol2 = runExternalSoft.babelPDBtoMOL2(pligPDB)
+    ppocketMol2 = runExternalSoft.babelPDBtoMOL2(ppocketPDB)
 
     # opening the molecule files
     conv = OBConversion()
