@@ -4,7 +4,9 @@ from os import path
 def parseOutputTMalign(p_filin):
     # print p_filin
     if not path.exists(p_filin):
+        print "ERROR l-7 Parse TMalign"
         return {}
+
     d_out = {}
 
     try:

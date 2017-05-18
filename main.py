@@ -9,7 +9,7 @@ import FPI
 import PDB
 
 
-def CleanCHEMBLFileProtAff(pfilin, pfilout):
+def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
 
     # add short cut if filtered table exist !!!!!
 
@@ -23,8 +23,8 @@ def CleanCHEMBLFileProtAff(pfilin, pfilout):
     table.getOnlyExactConstant()
     print len(table.table), "strict value"
 
-    #table.getOnlyIC50()
-    #print len(table.table), "IC50"
+    table.getByTypeOfAff(ltypeAff)
+    print len(table.table), ltypeAff
 
     table.MergeIdenticCHEMBLIDforACtivity()
     print len(table.table), "Repetition"
@@ -32,34 +32,9 @@ def CleanCHEMBLFileProtAff(pfilin, pfilout):
     table.selectAssayType("B")
     print len(table.table), "Type assay"
 
-    table.writeTable(pfilout)
-
-
-    return table.table
-
-
-def CleanCHEMBLFileProtAffIC50(pfilin, pfilout):
-
-    # add short cut if filtered table exist !!!!!
-
-    table = tableParse.CHEMBL(pfilin)
-    table.parseCHEMBLFile()
-    print len(table.table), "Init"
-
-    table.selectConfidencecore(cutoff=9)
-    print len(table.table), "prot confidence"
-
-    table.getOnlyExactConstant()
-    print len(table.table), "strict value"
-
-    table.getOnlyIC50()
-    print len(table.table), "IC50"
-
-    table.MergeIdenticCHEMBLIDforACtivity()
-    print len(table.table), "Repetition"
-
-    table.selectAssayType("B")
-    print len(table.table), "Type assay"
+    # remove some biassay
+    table.removeBA(lBAout)
+    print len(table.table)
 
     table.writeTable(pfilout)
 
@@ -67,7 +42,8 @@ def CleanCHEMBLFileProtAffIC50(pfilin, pfilout):
     return table.table
 
 
-def CleanCHEMBLFileCellLine(pfilin, pfilout):
+
+def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
 
     # add short cut if filtered table exist !!!!!
 
@@ -84,8 +60,8 @@ def CleanCHEMBLFileCellLine(pfilin, pfilout):
     table.MergeIdenticCHEMBLIDforACtivity()
     print len(table.table), "Repetition"
 
-    table.getOnlyIC50()
-    print len(table.table), "IC50"
+    table.getByTypeOfAff(ltypeaff)
+    print len(table.table), ltypeaff
 
     table.writeTable(pfilout)
 
@@ -114,12 +90,12 @@ def MolecularDesc(ltable, pfilout, plog):
 
 def AnalyseDesc(pdesc, pdata, prout, PCA="1", dendo="1", cormatrix="1", hist="1", corcoef=0.0):
 
-    runExternalSoft.DescAnalysis(pdesc, pdata, prout, corcoef, PCA, cormatrix, hist, dendo )
+    runExternalSoft.DescAnalysis(pdesc, pdata, prout, corcoef, PCA, cormatrix, hist, dendo)
 
     return
 
 
-def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, prout):
+def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
 
     pfilout = prout + "ScoreVSAff.txt"
     filout = open(pfilout, "w")
@@ -132,7 +108,7 @@ def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, prout):
         except: pass
     filout.close()
 
-    runExternalSoft.corPlot(pfilout)
+    runExternalSoft.corPlot(pfilout, ptableCHEMBL)
 
 
 def FPIMatrix(sdocking, pprotein, prFPI):
@@ -203,6 +179,14 @@ def computeFPIBSBased(cMDs, prout, nameLig):
 ##########
 #  MAIN  #
 ##########
+
+
+###############
+#  CONSTANT   #
+###############
+
+lBAout = ["CHEMBL3705971"]
+lBAout = []
 
 # case where we consider the binding affinity #
 ###############################################
@@ -286,22 +270,22 @@ timeframe = "10.0"
 stepWait = 16
 
 # 1. Merge poses and proteins
-#cMDs = MD.MD(prMD, timeMD, timeframe, stepWait)
-#cMDs.initialisation(prDockingPose, pprotein)
-#cMD.runMultipleMD() # run MD
+cMDs = MD.MD(prMD, timeMD, timeframe, stepWait)
+cMDs.initialisation(prDockingPose, pprotein)
+cMDs.runMultipleMD() # run MD
 
 # 2. analyse MD
 # name ligand for the MD
-#namelig = "UNK"# classic name given by glide
+namelig = "UNK"# classic name given by glide
 
-#cMDs.extractFrame()
-#cMD.analyseAllMD(RMSD=1, ligAnalysis=0, nameLig=namelig)
+cMDs.extractFrame()
+cMDs.analyseAllMD(RMSD=1, ligAnalysis=0, nameLig=namelig)
 
 
 # 3. FPI computation
 # ligand + BS based
-#prFPI = pathFolder.analyses("MD_FPI")
-#computeFPIBSBased(cMDs, prFPI, namelig)
+prFPI = pathFolder.analyses("MD_FPI")
+computeFPIBSBased(cMDs, prFPI, namelig)
 
 
 
@@ -322,29 +306,75 @@ stepWait = 16
 
 
 
-##########################################
-# case where we consider the Cell lines  #
-##########################################
+###############
+# Docking SP  #
+###############
 
-pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
-pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filteredKI.txt"
+#pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
+#pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filteredKI.txt"
 
 
-ltableCpd = CleanCHEMBLFileProtAffIC50(pCHEMBL, pCHEMBLClean)
+#ltableCpd = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50"])
 
-#### docking ####
-#################
-pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
-psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
+#### docking SP ####
+####################
 
-sdocking = parseSDF.sdf(psdfDoking)
-sdocking.parseSDF()
+
+#pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+#psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
+
+#sdocking = parseSDF.sdf(psdfDoking)
+#sdocking.parseSDF()
 #sdocking.splitPoses(prDockingPose)
-pdockingAnalysis = pathFolder.analyses("dockingKI")
+#pdockingAnalysis = pathFolder.analyses("dockingKI")
 
-dscore = sdocking.get_dockingscore()
-dockingScoreAnalysis(dscore, ltableCpd, pdockingAnalysis)
+#dscore = sdocking.get_dockingscore()
+#dockingScoreAnalysis(dscore, ltableCpd, pdockingAnalysis)
 
 #mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS-K562"))
 #mcs.selectAnalogs(compoundID="CHEMBL941")
 
+
+
+#### docking XP ####
+####################
+pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
+pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+psdfDoking = "/home/aborrel/imitanib/dockingXP/PoseXP.sdf"
+
+# docking parsing #
+###################
+sdocking = parseSDF.sdf(psdfDoking)
+sdocking.parseSDF()
+dscore = sdocking.get_dockingscore()
+
+
+# select affinity from CHEMBL
+
+# all affinity #
+################
+pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_allAff.txt"
+ltableCpdAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Kd", "Ki"], lBAout)
+pdockingXPAnalysis = pathFolder.analyses("dockingXPAll")
+dockingScoreAnalysis(dscore, ltableCpdAll, pCHEMBLClean, pdockingXPAnalysis)
+
+# IC50 #
+########
+pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_IC50.txt"
+ltableCpdIC50 = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50"], lBAout)
+pdockingXPAnalysis = pathFolder.analyses("dockingXPIC50")
+dockingScoreAnalysis(dscore, ltableCpdIC50, pCHEMBLClean, pdockingXPAnalysis)
+
+# Kd #
+######
+pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_Kd.txt"
+ltableCpdKd = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["Kd"], lBAout)
+pdockingXPAnalysis = pathFolder.analyses("dockingXPKd")
+dockingScoreAnalysis(dscore, ltableCpdKd, pCHEMBLClean, pdockingXPAnalysis)
+
+# Ki #
+######
+pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_Ki.txt"
+ltableCpdKi = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["Ki"], lBAout)
+pdockingXPAnalysis = pathFolder.analyses("dockingXPKi")
+dockingScoreAnalysis(dscore, ltableCpdKi, pCHEMBLClean, pdockingXPAnalysis)

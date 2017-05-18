@@ -132,9 +132,9 @@ def MDSMCS(pmatrix, paff):
     system(cmdMDS)
 
 
-def corPlot(pfilin):
+def corPlot(pfilin, pchembl):
 
-    cmdCor = "./corplot.R " + pfilin
+    cmdCor = "./corplot.R " + pfilin + " " + pchembl
     print cmdCor
     system(cmdCor)
 
@@ -277,7 +277,10 @@ def runTMalign(ppr1, ppr2, prout, debug=1):
 
     spdb1 = PDB.PDB(ppr1, hydrogen=1)
     spdb1.removeChain()
+    print len(spdb1.latom)
     ppr1 = spdb1.writePDB(prout + path.basename(ppr1))
+    print ppr1
+
 
     spdb2 = PDB.PDB(ppr2, hydrogen=1)
     spdb2.removeChain()

@@ -95,8 +95,7 @@ class MD:
             print jobname
             if "pcms-out" in self.lMD[jobname].keys():
                 prframes = path.dirname(self.lMD[jobname]["pcms-out"]) + "/framesMD/"
-                if not path.exists(prframes):
-                    makedirs(prframes)
+                pathFolder.createFolder(prframes)
                 if len(listdir(prframes)) == 0:
                     centerMD = runExternalSoft.centerMD(self.lMD[jobname]["pcms-out"], self.lMD[jobname]["trj"])
                     self.lMD[jobname]["pcms-out"] = centerMD + "-out.cms"

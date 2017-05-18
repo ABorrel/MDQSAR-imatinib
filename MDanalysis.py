@@ -57,8 +57,6 @@ class trajectoryAnalysis:
                 continue
             else:
                 pathFolder.createFolder(prtemp, clean=1) # clean folder temp
-                print pframe1
-                print pframe2
 
                 lsuperimposed = runExternalSoft.runTMalign(pframe1, pframe2, prtemp)
                 dalign = parseTMalign.parseOutputTMalign(lsuperimposed[-1])

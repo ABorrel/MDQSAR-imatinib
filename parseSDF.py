@@ -49,12 +49,16 @@ class sdf:
 
         dscore = {}
         for compound in self.lc:
-            print compound.keys()
-            print compound["s_m_entry_name"]
-            print compound["r_i_docking_score"]
+            # case where protein is included, case of XP docking
+            if not "r_i_docking_score" in compound.keys():
+                continue
+
+            #print compound.keys()
+            #print compound["s_m_entry_name"]
+            #print compound["r_i_docking_score"]
 
             chemblID = compound["s_m_entry_name"].split(".")[0]
-            print chemblID
+            #print chemblID
 
             if not chemblID in dscore.keys():
                 dscore[chemblID] = {}
@@ -73,10 +77,6 @@ class sdf:
         return self.docking
 
 
-
-    def keepOnlyBestPoses(self):
-
-        return
 
     def splitPoses(self, prDockingPose):
 

@@ -414,12 +414,14 @@ class PDB:
             latoms = self.get_lAtoms()
         if model == 1:
             filout.write("MODEL\n")
+
         for atom in latoms:
             filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
         if model == 1:
             filout.write("ENDMDL\n")
         filout.close()
 
+        return pfilout
 
 
 
@@ -695,7 +697,7 @@ class MD_PDB:
         lmodel = stread.split("MODEL")
         print len(lmodel)
 
-        i = 2# remove first model
+        i = 2# remove first model => why check !!!!
         imax = len(lmodel)
         #imax = 3 ############ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         while i <= imax:

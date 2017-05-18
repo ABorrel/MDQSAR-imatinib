@@ -1,4 +1,5 @@
 from copy import deepcopy
+from doctest import debug
 from numpy import mean, std
 import toolbox
 
@@ -62,7 +63,7 @@ class CHEMBL:
 
         print len(self.table)
 
-    def getOnlyIC50(self, typeAff = "IC50"):
+    def getByTypeOfAff(self, ltypeAff =["IC50"]):
 
         if not "table" in dir(self):
             self.parseCHEMBLFile()
@@ -71,7 +72,7 @@ class CHEMBL:
         imax = len(self.table)
         while i < imax:
             row = self.table[i]
-            if row["PUBLISHED_TYPE"] != typeAff:
+            if not row["PUBLISHED_TYPE"] in ltypeAff:
                 del self.table[i]
                 imax = imax - 1
                 continue
@@ -246,6 +247,28 @@ class CHEMBL:
                 i += 1
 
 
+
+    def removeBA(self, lBAout, debug=1):
+
+        if not "table" in dir(self):
+            self.parseCHEMBLFile()
+
+        if debug==1: print lBAout
+
+        i = 0
+        imax = len(self.table)
+        while i < imax:
+            assayID = self.table[i]["ASSAY_CHEMBLID"]
+            if assayID in lBAout:
+                del self.table[i]
+                imax = imax - 1
+                continue
+            else:
+                i += 1
+
+
+
+
     def writeTable(self, pfilout):
 
         print len(self.table)
@@ -260,7 +283,6 @@ class CHEMBL:
 
 
         filout.close()
-
 
 
 

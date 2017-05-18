@@ -3,7 +3,7 @@ source ("tool.R")
 source("cardMatrix.R")
 source("PCAplot.R")
 source("dendocircular.R")
-
+source("clustering.R")
 
 
 ################
@@ -23,16 +23,17 @@ source("dendocircular.R")
 pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDesc.csv"
 pdata = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
 prout = "/home/aborrel/imitanib/results/analysis/desc/"
-plotPCA = 1
+plotPCA = 0
 corMatrix = 0
 histplot = 0
-circularDendo = 1
+circularDendo = 0
+optimal_clustering = 1
 valcor = 0.90
 
 # Opening
 ddata = read.csv(pdata, sep = "\t", header = TRUE)
 #print(dim(ddata))
-daffinity = ddata[,c("CMPD_CHEMBLID", "PCHEMBL_VALUE")]
+daffinity = ddata[,c("CMPD_CHEMBLID", "PCHEMBL_VALUE", "ASSAY_CHEMBLID")]
 #print (daffinity)
 #lcolaff <- colorRampPalette(c("white", "red"))
 #lcolaff = lcolaff[dim(daffinity)[1]]
@@ -70,6 +71,10 @@ if (histplot == 1){
   histDataOne(data1 = dglobal, paste(prout, "histDesc_", valcor, ".pdf", sep = ""))
 }
 
+if (optimal_clustering ==1 ){
+  optimalCluters(dglobal, prout, "silhouette")
+}
+
 if (circularDendo == 1){
-  dendogramCircle(dglobal, daffinity, paste(prout, "dendo_", valcor, ".png", sep = ""))
+  dendogramCircle(dglobal, daffinity, paste(prout, "dendo_", valcor, sep = ""))
 }
