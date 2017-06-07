@@ -72,7 +72,23 @@ if (histplot == 1){
 }
 
 if (optimal_clustering ==1 ){
-  optimalCluters(dglobal, prout, "silhouette")
+  
+  lmetclustering = c("hclust", "kmeans")
+  lmetagregation = c("ward.D2", "ward", "complete", "single", "average")
+  lmetoptimal = c("silhouette", "wss", "gap_stat")
+  
+  for(metclustering in lmetclustering){
+    if (metclustering == "kmeans"){
+      lmetagregation = c("ward.D2")
+    }else{
+      lmetagregation = c("ward.D2", "ward", "complete", "single", "average")
+    }
+    for (metagregation in lmetagregation){
+      for(metoptimal in lmetoptimal){
+        optimalCluters(dglobal, prout, metclustering, metoptimal, metagregation)
+      }
+    }
+  }
 }
 
 if (circularDendo == 1){
