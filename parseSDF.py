@@ -1,5 +1,5 @@
 from re import search
-
+import pathFolder
 
 
 
@@ -79,6 +79,8 @@ class sdf:
 
 
     def splitPoses(self, prDockingPose):
+
+        pathFolder.createFolder(prDockingPose)
 
         self.prposes = prDockingPose
         self.lposefiles = []

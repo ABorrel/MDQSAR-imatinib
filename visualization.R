@@ -74,14 +74,14 @@ if (histplot == 1){
 if (optimal_clustering ==1 ){
   
   lmetclustering = c("hclust", "kmeans")
-  lmetagregation = c("ward.D2", "ward", "complete", "single", "average")
+  lmetagregation = c("ward.D2", "ward.D", "complete", "single", "average")
   lmetoptimal = c("silhouette", "wss", "gap_stat")
   
   for(metclustering in lmetclustering){
     if (metclustering == "kmeans"){
       lmetagregation = c("ward.D2")
     }else{
-      lmetagregation = c("ward.D2", "ward", "complete", "single", "average")
+      lmetagregation = c("ward.D2", "ward.D", "complete", "single", "average")
     }
     for (metagregation in lmetagregation){
       for(metoptimal in lmetoptimal){

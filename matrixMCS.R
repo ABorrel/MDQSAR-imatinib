@@ -119,6 +119,67 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
   dev.off()
 }
 
+cardAffinityTextVar = function(matrixIN, daff, dtext ,name_file){
+  
+  nb_col = dim(matrixIN)[2]
+  nb_line = dim(matrixIN)[1]
+  
+  dim_x = nb_line
+  dim_y = nb_col
+  
+  if (nb_col == 1){
+    return ()
+  }
+  if (nb_line == 1){
+    return ()
+  }
+  
+  if (nb_col < 30){
+    dim_x = 30
+  }
+  
+  if (nb_line < 30){
+    dim_y = 30
+  }
+  
+  bk = seq(min(matrixIN), max(matrixIN), length.out = 6)
+  
+  png (file = paste (name_file, ".png", sep = ""), dim_x * 55, dim_y * 55)
+  par(mar=c(20,20,3,10))
+  image(as.matrix(matrixIN), yaxt = "n", xaxt = "n", breaks = bk, col = c("#FFFFFF", "#FFBFBF","#FF8080", "#FF4040", "#FF0000"))
+  grid(nx = nb_line, ny = nb_col, col = "black", lwd = 1, lty = 1)
+  box()
+  # place les petites barres
+  axis(1,seq(0,1,(1/(nb_line-1))), labels = FALSE)
+  axis(2,seq(0,1,(1/(nb_col-1))), labels = FALSE)
+  
+  axis(4,seq(0,1,(1/(nb_col-1))), labels = FALSE)
+  
+  # place les positions en fonction du cut
+  ecart1 = 1/(nb_line-1)
+  ecart2 = 1/(nb_col-1)
+  list_L1 = generateLegend (nb_line,1)
+  list_L2 = generateLegend (nb_col,1)
+  
+  nbcol = dim(matrixIN)[2]
+  nbline = dim(matrixIN)[1]
+  for (i in seq(0,nbline-1)){
+    for (j in seq(0, nbcol-1)){
+      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = dtext[i+1,j+1], cex = 1.5)
+    }
+  }
+  
+  # place les legendes
+  posX = generatePosition(list_L1, ecart1)
+  posY = generatePosition(list_L2, ecart2)
+  axis(1,seq(0,1,(1/(nb_line-1))),rownames (matrixIN), cex.axis = 2, las = 2)
+  axis(2,seq(0,1,(1/(nb_col-1))),rownames (matrixIN), cex.axis = 2, las = 2)
+  
+  axis(4,seq(0,1,(1/(nb_col-1))),daff[rownames(matrixIN),2], cex.axis = 2, las = 2)
+  #legend ("right", fill = c("black", "darkred", "red", "darkmagenta", "darkorchid","deepskyblue", "cyan", "white"), legend = c("0-2", "2-3", "3-4", "4-5", "5-6","6-7", "7-8", "> 10"), bg = addTrans ("#FFFFFF", 120) )
+  dev.off()
+}
+
 
 
 ###########
@@ -133,9 +194,9 @@ pLSR = "0"
 
 # for test
 
-pmatrix = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_Tanimoto"
-paffinity = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_Aff"
-ptext = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_MAX"
+#pmatrix = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_Tanimoto"
+#paffinity = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_Aff"
+#ptext = "/home/aborrel/imitanib/results/analysis/MCS/CHEMBL941_MAX"
 
 #paffinity = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/affinity"
 #pmatrix = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/matriceMCSTanimoto"
@@ -147,5 +208,18 @@ daff = read.table(paffinity, header = T, sep = "\t")
 rownames(daff) = daff[,1]
 dtext = read.table(ptext, header = T, sep = "\t")
 
+# change color with difference of affinity
+ddiff = data.frame()
+for(i in seq(1,dim(daff)[1])){
+  for (j in seq(1,dim(daff)[1])){
+    ddiff[i,j] = abs(daff[i,2] - daff[j,2])
+  }
+}
+colnames(ddiff) = colnames(d)
+rownames(ddiff) = rownames(d)
+
+# card text not correlation
+
 # card with texte
-cardAffinityText(d, daff, dtext, pmatrix)
+cardAffinityTextVar(ddiff, daff, dtext, pmatrix)
+#cardAffinityText(d, daff, dtext, pmatrix)

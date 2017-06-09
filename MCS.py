@@ -1,9 +1,11 @@
+from multiprocessing.sharedctypes import class_cache
+
 from nams import nams
 import runExternalSoft
 from os import path
 import toolbox
-
 from copy import deepcopy
+import pathFolder
 
 
 class MCSMatrix:
@@ -19,6 +21,7 @@ class MCSMatrix:
         pfiloutNBatomMax = self.prout + "maxAtom"
 
         if path.exists(pfiloutTanimoto) and path.exists(pfiloutNBatomMax):
+            print "in"
             dMCSTanimoto = toolbox.loadMatrix(pfiloutTanimoto)
             dMCSMax = toolbox.loadMatrix(pfiloutNBatomMax)
             self.MCSTanimoto = dMCSTanimoto
@@ -132,6 +135,86 @@ class MCSMatrix:
         runExternalSoft.MatrixMCS(pfiloutTanimoto, pfiloutAff, pfiloutDMAX)
 
         return
+
+
+    def selectCluster(self, pfilecluster):
+
+        prout = self.prout + "-".join(pfilecluster[0:-4].split("_")[1:]) + "/"
+        pathFolder.createFolder(prout)
+
+        if not "dMCSTanimoto" in dir(self):
+            self.computeMatrixMCS()
+
+        filecluster = open(pfilecluster, "r")
+        llinesCluster = filecluster.readlines()
+        filecluster.close()
+        dcluster = {}
+
+        for lineCluster in llinesCluster[1:]:
+            cluster = lineCluster.strip().split(",")[-1].replace("\"", "")
+            print cluster
+            if not cluster in dcluster.keys():
+                dcluster[cluster] = []
+            compoundID = lineCluster.strip().split("\"")[1]
+            dcluster[cluster].append(compoundID)
+
+        dTanimoto = self.MCSTanimoto
+        daff = self.Aff
+
+        # reduce matrix
+        for cluster in dcluster.keys():
+            lcpd = dcluster[cluster]
+            # tanimoto temp
+            dtanimotocluster = {}
+            daffcluster = deepcopy(daff)
+            dMaxcluster = {}
+
+            pfiloutclustertanimoto = prout + str(cluster) + "_Tanimoto"
+            pfiloutclusterDmax = prout + str(cluster) + "_MAX"
+            pfiloutclusterAff= prout + str(cluster) + "_aff"
+
+
+            for cpID in lcpd:
+                dtanimotocluster[cpID] = {}
+                dMaxcluster[cpID] = {}
+                for cpID2 in lcpd:
+                    try:
+                        dtanimotocluster[cpID][cpID2] = dTanimoto[cpID][cpID2]
+                        dMaxcluster[cpID][cpID2] = self.MCSMax[cpID][cpID2]
+                    except:
+                        del dMaxcluster[cpID]
+                        del dtanimotocluster[cpID]
+                        break
+
+            # write file
+            filoutTanimoto = open(pfiloutclustertanimoto, "w")
+            filoutDMAX = open(pfiloutclusterDmax, "w")
+            filoutAff = open(pfiloutclusterAff, "w")
+
+            filoutDMAX.write("\t".join(lcpd) + "\n")
+            filoutTanimoto.write("\t".join(lcpd) + "\n")
+
+
+            for cID in lcpd:
+                if not cID in dtanimotocluster.keys():
+                    continue
+                filoutTanimoto.write(str(cID) + "\t" + "\t".join([str(dtanimotocluster[cID][i]) for i in lcpd]) + "\n")
+                filoutDMAX.write(str(cID) + "\t" + "\t".join([str(dMaxcluster[cID][i]) for i in lcpd]) + "\n")
+            filoutDMAX.close()
+            filoutTanimoto.close()
+
+
+            filoutAff.write("ID\tIC50\n")
+            for cID in lcpd:
+                try: filoutAff.write(str(cID) + "\t" + daff[cID] + "\n")
+                except:continue
+            filoutAff.close()
+
+            runExternalSoft.MatrixMCS(pfiloutclustertanimoto, pfiloutclusterAff, pfiloutclusterDmax)
+
+        self.clusters = dcluster
+
+
 
     def selectAnalogs(self, compoundID, cutoffMCS = 0.8):
 
