@@ -1,4 +1,5 @@
 from os import listdir, remove, makedirs, path
+from shutil import rmtree
 
 
 # for personal computer
@@ -21,7 +22,9 @@ def cleanFolder(prin=PR_TEMP3D):
     if len(lfiles) != 0:
         for filin in lfiles:
             # problem with folder
-            remove(prin + filin)
+            try: remove(prin + filin)
+            except: rmtree(prin + filin)
+
     return prin
 
 
@@ -34,8 +37,6 @@ def createFolder(prin, clean=0):
         cleanFolder(prin)
 
     return prin
-
-
 
 
 def analyses(psub):

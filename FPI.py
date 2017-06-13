@@ -71,12 +71,12 @@ class ligFPI:
         self.prFPI = prFPI
         self.lig = ligID
 
-    def computeFPI(self):
+    def computeFPI(self, clean=0):
 
         pfileFPI = self.prFPI + "FPIlig.csv"
 
         # if file exsit => load PFI
-        if path.exists(pfileFPI) and path.getsize(pfileFPI) > 50:
+        if path.exists(pfileFPI) and path.getsize(pfileFPI) > 50 and clean==0:
             dout = toolbox.loadTableFPI(pfileFPI)
             self.pfileFPI = pfileFPI
             self.FPI = dout

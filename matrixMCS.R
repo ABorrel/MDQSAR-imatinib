@@ -101,7 +101,7 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
   nbline = dim(matrixIN)[1]
   for (i in seq(0,nbline-1)){
     for (j in seq(0, nbcol-1)){
-      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = dtext[i+1,j+1], cex = 1.5)
+      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = round(dtext[i+1,j+1], digits = 1), cex = 1.5)
     }
   }
 
@@ -190,7 +190,7 @@ args = commandArgs(TRUE)
 pmatrix = args[1]
 paffinity = args[2]
 ptext = args[3]
-pLSR = "0"
+probMatrix = as.integer(args[4])
 
 # for test
 
@@ -208,18 +208,23 @@ daff = read.table(paffinity, header = T, sep = "\t")
 rownames(daff) = daff[,1]
 dtext = read.table(ptext, header = T, sep = "\t")
 
-# change color with difference of affinity
-ddiff = data.frame()
-for(i in seq(1,dim(daff)[1])){
-  for (j in seq(1,dim(daff)[1])){
-    ddiff[i,j] = abs(daff[i,2] - daff[j,2])
+
+if (probMatrix == 1){
+  cardAffinityText(d, daff, dtext, pmatrix)
+}else if (probMatrix == 0){
+  cardAffinityTextVar(d, daff, dtext, pmatrix)
+}else if (probMatrix == 3){
+  # change color with difference of affinity
+  ddiff = data.frame()
+  for(i in seq(1,dim(daff)[1])){
+    for (j in seq(1,dim(daff)[1])){
+      ddiff[i,j] = abs(daff[i,2] - daff[j,2])
+    }
   }
+  
+  colnames(ddiff) = colnames(d)
+  rownames(ddiff) = rownames(d)
+  
+  # card with texte
+  cardAffinityTextVar(ddiff, daff, dtext, pmatrix)
 }
-colnames(ddiff) = colnames(d)
-rownames(ddiff) = rownames(d)
-
-# card text not correlation
-
-# card with texte
-cardAffinityTextVar(ddiff, daff, dtext, pmatrix)
-#cardAffinityText(d, daff, dtext, pmatrix)

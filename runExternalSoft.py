@@ -118,9 +118,9 @@ def DescAnalysis(pdesc, paffinity, prout, valcor, PCA, corMatrix, hist, dendo):
     system(cmdVisu)
 
 
-def MatrixMCS(pmatrix, paff, ptext):
+def MatrixMCS(pmatrix, paff, ptext, probmatrix=1):
 
-    cmdmatrix = "./matrixMCS.R " + pmatrix + " " + paff + " " + ptext
+    cmdmatrix = "./matrixMCS.R " + pmatrix + " " + paff + " " + ptext + " " + str(probmatrix)
     print cmdmatrix
     system(cmdmatrix)
 
@@ -142,9 +142,12 @@ def corPlot(pfilin, pchembl):
 def babelConvertSDFtoPDB(psdf):
 
     cmdconvert = "babel " + psdf + " " + psdf[:-4] + ".pdb 2>/dev/null"
-    print cmdconvert
-    system(cmdconvert)
 
+    if path.exists(psdf[:-4] + ".pdb") and path.getsize(psdf[:-4] + ".pdb") > 0:
+        return psdf[:-4] + ".pdb"
+    else:
+        print cmdconvert
+        system(cmdconvert)
     return psdf[:-4] + ".pdb"
 
 
@@ -296,6 +299,11 @@ def runTMalign(ppr1, ppr2, prout, debug=1):
 
 
 def runShaep(p_struct1, p_struct2, p_out, clean=0):
+
+    print p_struct1
+    print p_struct2
+    print p_out
+
 
     if clean == 1:
         if path.exists(p_out):

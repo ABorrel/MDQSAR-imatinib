@@ -1,6 +1,6 @@
 from multiprocessing.sharedctypes import class_cache
 
-from nams import nams
+#from nams import nams
 import runExternalSoft
 from os import path
 import toolbox
@@ -132,14 +132,17 @@ class MCSMatrix:
             filoutAff.write(str(cID) + "\t" + daff[cID] + "\n")
         filoutAff.close()
 
-        runExternalSoft.MatrixMCS(pfiloutTanimoto, pfiloutAff, pfiloutDMAX)
+        runExternalSoft.MatrixMCS(pfiloutTanimoto, pfiloutAff, pfiloutDMAX, 1)
 
         return
 
 
-    def selectCluster(self, pfilecluster):
+    def selectCluster(self, pfilecluster, prout=""):
 
-        prout = self.prout + "-".join(pfilecluster[0:-4].split("_")[1:]) + "/"
+        if prout == "":
+            prout = self.prout + "-".join(pfilecluster[0:-4].split("_")[1:]).replace(".", "") + "/"
+        else:
+            prout = prout + "-".join(pfilecluster[0:-4].split("_")[1:]).replace(".","") + "/MCS/"
         pathFolder.createFolder(prout)
 
         if not "dMCSTanimoto" in dir(self):
@@ -210,7 +213,7 @@ class MCSMatrix:
                 except:continue
             filoutAff.close()
 
-            runExternalSoft.MatrixMCS(pfiloutclustertanimoto, pfiloutclusterAff, pfiloutclusterDmax)
+            runExternalSoft.MatrixMCS(pfiloutclustertanimoto, pfiloutclusterAff, pfiloutclusterDmax, 1)
 
         self.clusters = dcluster
 

@@ -405,8 +405,11 @@ mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS"))
 for filein in listdir(pdesc):
     if search("Table", filein):
         ccluster = cpdClustering.AnalyseClusterCpd(pfilecluster=pdesc+filein, proutcluster=prcluster, prdockingpose=prDockingPoseXP)
-        ccluster.superimposedPoseCluster()
-        #mcs.selectCluster(pfilecluster = pdesc + filein)
+        #ccluster.superimposedPoseCluster()
+        #mcs.selectCluster(pfilecluster=pdesc+filein, prout=prcluster)#maybe pass in ccluster init -> need to change the folder
+        #ccluster.ShaepMatrix()
+        ccluster.FPIbycluster(pprot=pprotein)
+
         dddd
 
 

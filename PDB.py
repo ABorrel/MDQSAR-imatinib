@@ -355,6 +355,19 @@ class PDB:
                 i = i + 1
 
 
+    def renameAtom(self):
+
+        dcountatom = {}
+
+        if not "latom" in dir(self):
+            self.get_lAtoms()
+
+        for atom in self.latom:
+            if not atom.name in dcountatom.keys():
+                dcountatom[atom.name] = 0
+            dcountatom[atom.name] += 1
+            atom.name = atom.name + str(dcountatom[atom.name])
+
 
     def addLigand(self, plig):
 
