@@ -381,9 +381,7 @@ class CompareFPIMD:
         print imax, "NB frame (l135-analysis)"
 
         while i < imax:
-
             lresbyFrame = self.dFPI[self.dFPI.keys()[i]].FPI.keys()
-
             for resbyFrame in lresbyFrame:
                 if not resbyFrame in dresPocket.keys():
                     dresPocket[resbyFrame] = []
@@ -436,7 +434,7 @@ class CompareFPIMD:
             for res in dres.keys():
                 lbit = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
                 for FPI in dres[res]:
-                    for j in range(0, 6):
+                    for j in range(0, 7):
                         lbit[j] += int(FPI[j])
 
                 print len(dres[res])

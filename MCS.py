@@ -213,7 +213,7 @@ class MCSMatrix:
                 except:continue
             filoutAff.close()
 
-            runExternalSoft.MatrixMCS(pfiloutclustertanimoto, pfiloutclusterAff, pfiloutclusterDmax, 1)
+            runExternalSoft.MatrixMCS(pfiloutclustertanimoto, pfiloutclusterAff, pfiloutclusterDmax, 3)# option 3 to compute the difference of affinity
 
         self.clusters = dcluster
 

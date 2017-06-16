@@ -125,8 +125,13 @@ class AnalyseClusterCpd:
         proutFPI = self.prout + "/FPI/"
         pathFolder.createFolder(proutFPI)
 
+        pfiloutaveragecluster = proutFPI + "meansInteraction"
+        filoutaveragecluster = open(pfiloutaveragecluster, "w")
         lresglobal = []
+
         for cluster in self.clusters.keys():
+            if not cluster in d_FPI.keys():
+                d_FPI[cluster] = {}
             lposecluster = []
             for compound in self.clusters[cluster]:
                 for poseAll in lposesAll:
@@ -143,7 +148,7 @@ class AnalyseClusterCpd:
                 CFPI = FPI.ligFPI(cProt, prFPItemp, ligID="LIG")
                 CFPI.computeFPI(clean=1)
                 print CFPI
-                d_FPI[posecluster] = CFPI
+                d_FPI[cluster][posecluster] = CFPI
 
                 ligID = CFPI.FPI.keys()[0]
                 for resBS in CFPI.FPI[ligID]:
@@ -158,14 +163,34 @@ class AnalyseClusterCpd:
             for pose in lposecluster:
                 filout.write(pose.split("/")[-1])
                 for resBS in lResBS:
-                    if not resBS in d_FPI[pose].FPI[ligID].keys():
+                    if not resBS in d_FPI[cluster][pose].FPI[ligID].keys():
                         filout.write("\t0000000")
                     else:
-                        filout.write("\t" + str(d_FPI[pose].FPI[ligID][resBS]))
+                        filout.write("\t" + str(d_FPI[cluster][pose].FPI[ligID][resBS]))
                 filout.write("\n")
             filout.close()
 
 
+        # average interaction
+        filoutaveragecluster.write("Clusters\t" + "\t".join(lresglobal) + "\n")
+        for cluster in d_FPI.keys():
+            filoutaveragecluster.write(str(cluster))
 
-        return
+            for resglobal in lresglobal:
+                lbit = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                #
+                for pose in d_FPI[cluster].keys():
+                    if resglobal in d_FPI[cluster][pose].FPI[ligID].keys():
+                        for i in range(0, 7):
+                            print lbit[i] , d_FPI[cluster][pose].FPI[ligID][resglobal][i]
+                            lbit[i] = float(lbit[i]) + float(d_FPI[cluster][pose].FPI[ligID][resglobal][i])
+                        for i in range(0, 7):
+                            lbit[i] = str(lbit[i] / len(d_FPI[cluster].keys()))
+                    else:
+                        lbit = [str(i) for i in lbit]
+                filoutaveragecluster.write("\t" + " ".join(lbit))
+            filoutaveragecluster.write("\n")
+        filoutaveragecluster.close()
+
+
 

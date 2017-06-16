@@ -228,7 +228,7 @@ pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filt
 
 # home
 pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
-psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
+psdfDoking = "/home/aborrel/imitanib/docking/dockingSP_2hyy/dockingpose.sdf"
 prDockingPoseSP = "/home/aborrel/imitanib/results/dockingposeSP/"
 
 # monster
@@ -349,7 +349,7 @@ ltableCpd = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], 
 
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
 pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
-psdfDoking = "/home/aborrel/imitanib/dockingXP/PoseXP.sdf"
+psdfDoking = "/home/aborrel/imitanib/docking/dockingXP_2hyy/PoseXP.sdf"
 prDockingPoseXP = "/home/aborrel/imitanib/results/dockingposeXP/"
 
 # docking parsing #
@@ -405,11 +405,8 @@ mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS"))
 for filein in listdir(pdesc):
     if search("Table", filein):
         ccluster = cpdClustering.AnalyseClusterCpd(pfilecluster=pdesc+filein, proutcluster=prcluster, prdockingpose=prDockingPoseXP)
-        #ccluster.superimposedPoseCluster()
-        #mcs.selectCluster(pfilecluster=pdesc+filein, prout=prcluster)#maybe pass in ccluster init -> need to change the folder
-        #ccluster.ShaepMatrix()
+        ccluster.superimposedPoseCluster()
+        mcs.selectCluster(pfilecluster=pdesc+filein, prout=prcluster)#maybe pass in ccluster init -> need to change the folder
+        ccluster.ShaepMatrix()
         ccluster.FPIbycluster(pprot=pprotein)
-
-        dddd
-
 
