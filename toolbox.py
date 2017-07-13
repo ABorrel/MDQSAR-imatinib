@@ -250,3 +250,116 @@ def loadTableFPI(pfileFPI):
     filin.close()
     return dout
 
+def selectMinimalEnergyLigPrep(psdfin, psdfout):
+
+    # case of only one
+    filin = open(psdfin, "r")
+    readfile = filin.read()
+    filin.close()
+
+    lsdf = readfile.split("$$$$\n")[:-1]
+
+
+    if len(lsdf) == 1:
+        copy(psdfin, psdfout)
+
+    else:
+        #find with the lower energy
+        lenergy = []
+        for sdfin in lsdf:
+            energy = sdfin.split("> <r_lp_Energy>\n")[-1].split("\n")[0]
+            print energy
+            lenergy.append(float(energy))
+
+        # take minimal energy
+        ibest = lenergy.index(min(lenergy))
+        print ibest
+        filout = open(psdfout, "w")
+        filout.write(lsdf[ibest] + "$$$$\n")
+        filout.close()
+
+    return psdfout
+
+
+def parseKrakenX(pfilin):
+
+    dout = {}
+    filin = open(pfilin, "r")
+    lines = filin.readlines()
+    filin.close()
+    lheader = lines[0].replace("  ", " ").strip().split(" ")
+
+    i = 1
+    nbcpd = len(lines)
+
+    while i < nbcpd:
+        lvalue = lines[i].replace("  ", " ").strip().split(" ")
+        name = lvalue[0].split(".")[0]
+        print name, i
+        lvalue = lvalue[1:]
+
+        dout[name] = {}
+
+        if len(lvalue) != len(lheader):
+            print len(lvalue), len(lheader), "Difference length"
+            fff
+        else:
+            for j in range(0, len(lheader)):
+                dout[name][lheader[j]] = lvalue[j]
+
+        i += 1
+
+    return dout
+
+
+def loadTable(pfilin, din={}):
+
+    filin = open(pfilin, "r")
+    linesDesc = filin.readlines()
+    filin.close()
+    ldesc = linesDesc[0].strip().split("\t")[1:]
+
+    nbcpd = len(linesDesc)
+    i = 1
+    while i < nbcpd:
+        lval = linesDesc[i].strip().split("\t")
+        nameCpd = lval[0]
+        if not nameCpd in din:
+            din[nameCpd] = {}
+
+        j = 0
+        while j < len(ldesc):
+            din[nameCpd][ldesc[j]] = lval[j+1]
+            j +=1
+
+        i+=1
+
+    return din
+
+def writeTableDesc(ddesc, pfilout):
+
+    ldesc = []
+    for cpdID in ddesc.keys():
+        if ldesc == []:
+            ldesc = ddesc[cpdID].keys()
+        else:
+            for desc in ddesc[cpdID].keys():
+                if not desc in ldesc:
+                    ldesc.append(desc)
+
+
+    filout = open(pfilout, "w")
+    filout.write("ID\t" + "\t".join(ldesc) + "\n")
+    for cpdID in ddesc.keys():
+        filout.write(str(cpdID))
+        for desc in ldesc:
+            try: filout.write("\t" + str(ddesc[cpdID][desc]))
+            except: filout.write("\tNA")
+        filout.write("\n")
+
+    filout.close()
+
+
+
+
+

@@ -2,6 +2,7 @@ from os import system, path, remove, getcwd, chdir, makedirs
 from shutil import copyfile
 from re import search
 from time import sleep
+import subprocess
 
 import toolbox
 import PDB
@@ -19,6 +20,7 @@ STRUCTCONVERT = "/opt/schrodinger2016-4/utilities/structconvert"
 MULTISMIM = "/opt/schrodinger2016-4/utilities/multisim"
 STRUCTCAT = "/opt/schrodinger2016-4/utilities/structcat"
 RUN = "/opt/schrodinger2016-4/run"
+KRAKENX = "/home/aborrel/softwares/KRAKENX/dist/KrakenX.jar"
 
 # for monster
 #LIGPREP = "/opt/schrodinger2016-3/ligprep"
@@ -56,16 +58,35 @@ def runLigprep(psmilin, forcefield="OPLS3", stereoisoster=1):
     return psmilin[0:-4] + ".sdf"
 
 
-def runPadel(prin=""):
-    """Input include a folder of sdf file"""
-    if prin == "":
-        return "ERROR - Padel Input"
-    else:
-        cmd = "java -jar " + PADEL + " -maxruntime 100 -3d -dir " + str(prin) + " -file " + prin + "tem.desc"
-        print cmd
-        system(cmd)
+def runKrakenX(prtemp, lcpd, pdesc):
 
-    return prin + "tem.desc"
+    if path.exists(pdesc) and path.getsize(pdesc) > 100:
+        return pdesc
+
+    else:
+
+        filparmIn = open("params_template.txt", "r")
+        parmKrakenX = filparmIn.read()
+        filparmIn.close()
+
+        lst = open(prtemp + "sdf.lst", "w")
+        lst.write("\n".join(lcpd))
+        lst.close()
+
+        pparm = prtemp + "param.txt"
+        filparTmp = open(pparm, "w")
+        filparTmp.write(parmKrakenX%(prtemp + "sdf.lst", pdesc))
+        filparTmp.close()
+        cmdKrakenX = "java -jar " + KRAKENX + " " + pparm
+
+        prsource = getcwd()
+        chdir(prtemp)
+        print "RUN ---- "
+        print cmdKrakenX
+        #system("/home/aborrel/imitanib/results/analysis/desc/temp3D/test.sh")
+        chdir(prsource)
+
+    #return pdesc
 
 
 def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):

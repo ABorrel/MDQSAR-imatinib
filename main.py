@@ -1,3 +1,5 @@
+from Tix import _dummyComboBox
+
 import tableParse
 import liganddescriptors
 import pathFolder
@@ -71,24 +73,6 @@ def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
 
     return table.table
 
-
-
-
-
-def MolecularDesc(ltable, pfilout, plog):
-
-    logfile = open(plog, "w")
-
-    for compound in ltable:
-        dcompound = liganddescriptors.Descriptors(compound, logfile)
-
-        if dcompound.log == "ERROR":
-            continue
-
-        dcompound.get_descriptorOD1D()
-        dcompound.get_descriptor2D()
-
-        dcompound.writeTablesDesc(pfilout)
 
 
 def AnalyseDesc(pdesc, pdata, prout, PCA="1", dendo="1", cormatrix="1", hist="1", corcoef=0.0):
@@ -191,16 +175,37 @@ def computeFPIBSBased(cMDs, prout, nameLig):
 lBAout = ["CHEMBL3705971"]
 lBAout = []
 
+# gleevec = CHEMBL941
+# outlier = CHEMBL2382016
+
+
+###################
+# Docking folder  #
+###################
+
+pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+
+# SP #
+######
+psdfDokingSP = "/home/aborrel/imitanib/docking/dockingSP_2hyy/dockingpose.sdf"
+prDockingPoseSP = "/home/aborrel/imitanib/results/dockingposeSP/"
+
+# XP #
+######
+psdfDokingXP = "/home/aborrel/imitanib/docking/dockingXP_2hyy/PoseXP.sdf"
+prDockingPoseXP = "/home/aborrel/imitanib/results/dockingposeXP/"
+
+
 # case where we consider the binding affinity #
 ###############################################
 
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
 pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
 
-# gleevec = CHEMBL941
-# outlier = CHEMBL2382016
 
-#ltab = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean)
+# Load table from CHEMBL #
+##########################
+ltab = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], lBAout)
 
 
 #################
@@ -214,9 +219,9 @@ pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filt
 ####################
 #  Molecular Desc  #
 ####################
-#pdesc = pathFolder.analyses(psub="desc") + "tableDesc.csv"
-#plog = pathFolder.analyses(psub="desc") + "log.txt"
-#MolecularDesc(ltab, pdesc, plog)
+pdesc = pathFolder.analyses(psub="desc") + "tableDesc"
+plog = pathFolder.analyses(psub="desc") + "log.txt"
+pdescglobal = liganddescriptors.MolecularDesc(ltab, pdesc, prDockingPoseXP, plog)# add docking XP
 #AnalyseDesc(pdesc, pCHEMBLClean, pathFolder.analyses("desc"), corcoef=0.7)
 
 
@@ -226,12 +231,9 @@ pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filt
 #  Docking analysis -SP docking  #
 ##################################
 
-# home
-pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
-psdfDoking = "/home/aborrel/imitanib/docking/dockingSP_2hyy/dockingpose.sdf"
-prDockingPoseSP = "/home/aborrel/imitanib/results/dockingposeSP/"
 
-# monster
+# monster #
+###########
 #pprotein = "/data/aborrel/imatinib/2hyy_dock.pdb"
 #psdfDoking = "/data/aborrel/imatinib/results/dockingpose.sdf"
 #prDockingPoseSP = "/data/aborrel/imatinib/results/dockingposeSP/"
@@ -319,14 +321,11 @@ namelig = "UNK"# classic name given by glide
 #pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filteredKI.txt"
 
 
-ltableCpd = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], lBAout)
+#ltableCpd = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], lBAout)
 
 #### docking SP ####
 ####################
 
-
-#pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
-#psdfDoking = "/home/aborrel/imitanib/results/dockingpose.sdf"
 
 #sdocking = parseSDF.sdf(psdfDoking)
 #sdocking.parseSDF()
@@ -349,16 +348,15 @@ ltableCpd = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], 
 
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
 pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
-psdfDoking = "/home/aborrel/imitanib/docking/dockingXP_2hyy/PoseXP.sdf"
-prDockingPoseXP = "/home/aborrel/imitanib/results/dockingposeXP/"
+
 
 # docking parsing #
 ###################
 
-sdocking = parseSDF.sdf(psdfDoking)
-sdocking.parseSDF()
-sdocking.splitPoses(prDockingPoseXP)
-dscore = sdocking.get_dockingscore()
+#sdocking = parseSDF.sdf(psdfDoking)
+#sdocking.parseSDF()
+#sdocking.splitPoses(prDockingPoseXP)
+#dscore = sdocking.get_dockingscore()
 
 # select affinity from CHEMBL
 
@@ -396,17 +394,16 @@ dscore = sdocking.get_dockingscore()
 #################
 
 
-
 # by cluster
-pdesc = pathFolder.analyses("desc")
-prcluster = pathFolder.analyses("clusterOut")
+#pdesc = pathFolder.analyses("desc")
+#prcluster = pathFolder.analyses("clusterOut")
 
-mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS"))
-for filein in listdir(pdesc):
-    if search("Table", filein):
-        ccluster = cpdClustering.AnalyseClusterCpd(pfilecluster=pdesc+filein, proutcluster=prcluster, prdockingpose=prDockingPoseXP)
-        ccluster.superimposedPoseCluster()
-        mcs.selectCluster(pfilecluster=pdesc+filein, prout=prcluster)#maybe pass in ccluster init -> need to change the folder
-        ccluster.ShaepMatrix()
-        ccluster.FPIbycluster(pprot=pprotein)
+#mcs = MCS.MCSMatrix(ltableCpd, pathFolder.analyses("MCS"))
+#for filein in listdir(pdesc):
+#    if search("Table", filein):
+#        ccluster = cpdClustering.AnalyseClusterCpd(pfilecluster=pdesc+filein, proutcluster=prcluster, prdockingpose=prDockingPoseXP)
+#        ccluster.superimposedPoseCluster()
+#        mcs.selectCluster(pfilecluster=pdesc+filein, prout=prcluster)#maybe pass in ccluster init -> need to change the folder
+#        ccluster.ShaepMatrix()
+#        ccluster.FPIbycluster(pprot=pprotein)
 
