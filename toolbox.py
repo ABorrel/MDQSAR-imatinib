@@ -347,7 +347,6 @@ def writeTableDesc(ddesc, pfilout):
                 if not desc in ldesc:
                     ldesc.append(desc)
 
-
     filout = open(pfilout, "w")
     filout.write("ID\t" + "\t".join(ldesc) + "\n")
     for cpdID in ddesc.keys():

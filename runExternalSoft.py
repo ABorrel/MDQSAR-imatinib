@@ -130,10 +130,10 @@ def PCAplot(pfildesc, pfildata, corcoef, prout):
 
     return
 
-def DescAnalysis(pdesc, paffinity, prout, valcor, PCA, corMatrix, hist, dendo):
+def DescAnalysis(pdesc, paffinity, prout, valcor, PCA, corMatrix, hist, dendo, clustering):
 
     cmdVisu = "./visualization.R " + str(pdesc) + " " + str(paffinity) + " " + str(prout) + " " + str(valcor) + " " + \
-        str(PCA) + " " + str(corMatrix) + " " + str(hist) + " " + str(dendo)
+        str(PCA) + " " + str(corMatrix) + " " + str(hist) + " " + str(dendo) + " " + str(clustering)
 
     print cmdVisu
     system(cmdVisu)

@@ -365,6 +365,10 @@ separeData = function (data, descriptor_class){
 
 openData = function (pfilin, valcor, prout, vexclude){
 	desc = read.csv (pfilin, header = TRUE, sep = "\t")
+	rownames(desc) = desc[,1]
+	vexclude = which(colnames(desc)==vexclude)	
+	cexclude = desc[,vexclude]
+	desc = desc[,-vexclude]
 	#print("ddddd")
 	#print (desc)
 	#print(dim(desc))
@@ -377,18 +381,14 @@ openData = function (pfilin, valcor, prout, vexclude){
 	#rownames (desc) = seq (1, dim(desc)[1])
 	desc = na.omit(desc)
   #print (dim(desc))
-  cexclude = desc[,vexclude]
-  #print(dim(desc))
-  desc = desc[,-vexclude]
+
   
 	# dell when sd = 0
-
 	sd_desc =apply (desc[,1:(dim(desc)[2])], 2, sd)
 
 	#print (sd_desc)
 	#print ("--------")
 	sd_0 = which (sd_desc == 0)
-
 	#print (sd_0)
 
 	#print ("------------")
@@ -399,7 +399,6 @@ openData = function (pfilin, valcor, prout, vexclude){
 		#print (as.factor (sd_0))
 		#desc = desc[,-sd_0]
 		desc=subset(desc,select=-sd_0)
-		cexclude = subset(cexclude,select=-sd_0)
 		#print(dim(desc_new))
 	}
 	if (valcor != 0){
@@ -411,8 +410,13 @@ openData = function (pfilin, valcor, prout, vexclude){
 		desc = desc[,descriptor]
 		#print (dim(desc))
 	}
-  desc = cbind(cexclude, desc)
-  #print(dim(desc))
+	
+	# again with SD null
+	sd_desc =apply (desc[,1:(dim(desc)[2])], 2, sd)
+	sd_0 = which (sd_desc == 0)
+	if (length(sd_0) != 0){
+	  desc=subset(desc,select=-sd_0)
+	}
 	return (list((desc),colnames (desc)))
 }
 

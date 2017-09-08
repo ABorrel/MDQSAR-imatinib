@@ -391,6 +391,10 @@ class Descriptors:
 
 def MolecularDesc(lcpd, pfiloutdesc, prdocking = "", D1D = 1, D3D = 1, plog = "log.txt"):
 
+    # add criteria not run if all descriptor file exist
+    if path.exists(pfiloutdesc + "all.desc"):
+        return pfiloutdesc + "all.desc"
+
     logfile = open(plog, "w")
 
     pdesc2D = pfiloutdesc + "2D.csv"
@@ -423,4 +427,5 @@ def MolecularDesc(lcpd, pfiloutdesc, prdocking = "", D1D = 1, D3D = 1, plog = "l
 
     print ddesc.keys()
     toolbox.writeTableDesc(ddesc, pfiloutdesc + "all.desc")
+    return pfiloutdesc + "all.desc"
 

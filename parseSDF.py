@@ -19,6 +19,8 @@ class sdf:
         # print handle_read
 
         l_compound = handle_read.split("$$$$\n")[:-1]
+        if len(l_compound) == 0:
+            l_compound = handle_read.split("$$$$\n")
 
         for compound in l_compound:
             dcompound = {}

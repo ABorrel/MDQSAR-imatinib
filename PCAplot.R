@@ -7,6 +7,7 @@ generatePCAcoords = function(din){
   
   dinScale = scale(din)
   data.cor=cor(dinScale)
+  print(data.cor)
   data.eigen=eigen(data.cor)
   lambda = data.eigen$values
   var_cap = lambda/sum(lambda)*100

@@ -403,9 +403,23 @@ class PDB:
                 return self.byres[res]
 
 
+    def buildConectMatrix(self, latoms, cutoff = 1.7):
+        if latoms == "":
+            latoms = self.latom
+
+        for atom in latoms:
+            if atom.recoder == "HETATM":
+                atom.conect = []
+            for atom2 in latoms:
+                if atom2.recoder != "HETATM":
+                    continue
+                if atom2.euclidiendist(atom) <= cutoff:
+                    if not atom2.serial in atom.conect and atom.serial != atom2.serial:
+                        atom.conect.append(atom2.serial)
 
 
-    def writePDB (self, pfilout, latoms="", model=0):
+
+    def writePDB (self, pfilout, latoms="", conect = 0, model=0):
         """
         Need add header
         :param pfilout: path of file to write
@@ -430,6 +444,19 @@ class PDB:
 
         for atom in latoms:
             filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
+
+        if conect == 1:
+            for atom in latoms:
+                if atom.recoder == "HETATM":
+                    if not "conect" in dir(atom):
+                        self.buildConectMatrix(latoms)
+
+                    filout.write("CONNECT")
+                    filout.write("%5s" % (str(atom.serial)))
+                    for serial in atom.conect:
+                        filout.write('%5s' % (str(serial)))
+                    filout.write("\n")
+
         if model == 1:
             filout.write("ENDMDL\n")
         filout.close()
