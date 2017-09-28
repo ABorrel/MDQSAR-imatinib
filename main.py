@@ -206,12 +206,13 @@ pprotein = "/data/aborrel/imatinib/2hyy_MD.pdb"
 # parameter MD
 timeMD = "15000.0"
 timeframe = "10.0"
-stepWait = 16
+stepWait = 9
+randomGPU = 3 #maybe integrate in initialization, code clearity
 
 # 1. Merge poses and proteins
 cMD = MD.MD(prMD, timeMD, timeframe, stepWait)
 cMD.initialisation(prDockingPose, pprotein)
-cMD.runMultipleMD()
+cMD.runMultipleMD(randomGPU)
 
 ##########################################
 # case where we consider the Cell lines  #

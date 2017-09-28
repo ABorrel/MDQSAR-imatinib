@@ -1,4 +1,5 @@
 from os import path, listdir, makedirs
+from random import randint
 
 import PDB
 import runExternalSoft
@@ -49,7 +50,7 @@ class MD:
         self.lMD = dinit
 
 
-    def runMultipleMD(self):
+    def runMultipleMD(self, randomGPU=1):
 
 
         if not "lMD" in dir(self):
@@ -68,6 +69,10 @@ class MD:
             lMDfolder.append(path.dirname(pcms) + "/")
             print len(lMDfolder)
             #GDESMON
-            runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
+            if randomGPU != 0:
+                HOSTGPU = "gpu" + str(randint(1, randomGPU))
+                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0, HOST=HOSTGPU)# add a existance criteria
+            else:
+                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
             lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
             i += 1

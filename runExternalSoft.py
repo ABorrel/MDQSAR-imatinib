@@ -181,7 +181,7 @@ def multisimSystemBuilder(jobname, pMAE, WAIT=1):
         return pcms
 
 
-def multisimGDesmond(jobname, pcms, timeMDns, frameInverval, WAIT=1):
+def multisimGDesmond(jobname, pcms, timeMDns, frameInverval, WAIT=1, HOST="gpu1"):
 
     prDM = path.dirname(pcms) + "/"
     pmsj = prDM + jobname + ".msj"
@@ -201,7 +201,7 @@ def multisimGDesmond(jobname, pcms, timeMDns, frameInverval, WAIT=1):
     chdir(prrun)
 
 
-    cmdDesmond = MULTISMIM + " -JOBNAME " + str(jobname) + " -maxjob 1 -cpu 1 -m " + str(pmsj) + " -c " + str(pcfg) + " " + str(pcms) + " -mode umbrella -set stage[1].set_family.md.jlaunch_opt=[\"-gpu\"] -o " + pcms[:-4] + "-out.cms"
+    cmdDesmond = MULTISMIM + " -JOBNAME " + str(jobname) + " -maxjob 1 -cpu 1 -m " + str(pmsj) + " -c " + str(pcfg) + " " + str(pcms) + " -mode umbrella -set stage[1].set_family.md.jlaunch_opt=[\"-gpu\"] -o " + pcms[:-4] + "-out.cms -HOST " + str(HOST)
 
     if WAIT == 1:
         cmdDesmond = cmdDesmond + " -WAIT"
