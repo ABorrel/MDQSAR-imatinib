@@ -1,4 +1,5 @@
 from os import path, listdir, makedirs
+from random import randint
 
 import PDB
 import runExternalSoft
@@ -52,7 +53,7 @@ class MD:
         self.lMD = dinit
 
 
-    def runMultipleMD(self, runMD = 1):
+    def runMultipleMD(self, randomGPU=1):
 
 
         if not "lMD" in dir(self):
@@ -61,6 +62,7 @@ class MD:
 
         nbMD = len(self.lMD.keys())
         i = 0
+        step = 1
         lMDfolder = []
         while i < nbMD:
             jobname = self.lMD.keys()[i]
@@ -70,15 +72,12 @@ class MD:
             lMDfolder.append(path.dirname(pcms) + "/")
             print len(lMDfolder)
             #GDESMON
-            if runMD == 1:
-                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
-                self.lMD[jobname]["pcms-out"] = pcms[0:-4] + "-out.cms"
-                self.lMD[jobname]["trj"] = path.dirname(pcms) + "/" + jobname + "_trj"
-                lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
+            if randomGPU != 0:
+                HOSTGPU = "gpu" + str(randint(1, randomGPU))
+                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0, HOST=HOSTGPU)# add a existance criteria
             else:
-                if path.exists(pcms[0:-4] + "-out.cms"):
-                    self.lMD[jobname]["pcms-out"] = pcms[0:-4] + "-out.cms"
-                    self.lMD[jobname]["trj"] = path.dirname(pcms) + "/" + jobname + "_trj"
+                runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
+            lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
             i += 1
 
 
