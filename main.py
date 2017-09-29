@@ -202,7 +202,7 @@ CORCOEF = 0.7
 
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
 pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
-ltab = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], lBAout)
+#ltab = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], lBAout)
 
 
 
@@ -343,6 +343,7 @@ lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prD
 # home
 prMD = "/home/aborrel/imitanib/results/MD-ABL/"
 pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
+pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
 
 # monster
 #prMD = "/data/aborrel/imatinib/results/MD-ABL/"
@@ -353,18 +354,19 @@ pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
 timeMD = "15000.0"
 timeframe = "10.0"
 stepWait = 9
-randomGPU = 3 #maybe integrate in initialization, code clearity
+nbGPU = 3#maybe integrate in initialization, code clearity
+nbCPU = 10
 
 # 1. Merge poses and proteins
-#cMDs = MD.MD(prMD, timeMD, timeframe, stepWait)
-#cMDs.initialisation(prDockingPoseSP, pprotein)
-#cMDs.runMultipleMD() # run MD
+cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU)
+cMDs.initialisation(prDockingPoseSP, pprotein)
+cMDs.runMultipleMD()# run MD
 
 # 2. analyse MD
 # name ligand for the MD
 namelig = "UNK"# classic name given by glide
 
-#cMDs.extractFrame()
+cMDs.extractFrame()
 #cMDs.analyseAllMD(RMSD=1, ligAnalysis=0, nameLig=namelig)
 
 
@@ -375,10 +377,6 @@ namelig = "UNK"# classic name given by glide
 
 
 
-
-cMD = MD.MD(prMD, timeMD, timeframe, stepWait)
-cMD.initialisation(prDockingPose, pprotein)
-cMD.runMultipleMD(randomGPU)
 
 ##########################################
 # case where we consider the Cell lines  #
@@ -477,16 +475,16 @@ pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
 
 
 # by cluster
-pdesc = pathFolder.analyses("desc") + "CorDesc" + str(CORCOEF) + "/"
-prcluster = pathFolder.analyses("clusterOut")
+#pdesc = pathFolder.analyses("desc") + "CorDesc" + str(CORCOEF) + "/"
+#prcluster = pathFolder.analyses("clusterOut")
 
 #mcs = MCS.MCSMatrix(ltab, pathFolder.analyses("MCS"))
-for filein in listdir(pdesc):
-    if search("Table", filein):
-        ccluster = cpdClustering.AnalyseClusterCpd(ltab, pfilecluster=pdesc+filein, proutcluster=prcluster, lprdockingpose=lprpose)
+#for filein in listdir(pdesc):
+#    if search("Table", filein):
+        #ccluster = cpdClustering.AnalyseClusterCpd(ltab, pfilecluster=pdesc+filein, proutcluster=prcluster, lprdockingpose=lprpose)
         #mcs.selectCluster(pfilecluster=pdesc+filein, prout=prcluster)#maybe pass in ccluster init -> need to change the folder
         #ccluster.summarize()
-        ccluster.superimposedPoseCluster()
+        #ccluster.superimposedPoseCluster()
         #ccluster.ShaepMatrix()
         #ccluster.FPIbycluster(pprot=pprotein)
 

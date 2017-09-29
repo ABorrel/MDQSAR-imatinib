@@ -183,7 +183,7 @@ def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
     filoutmsj.close()
 
 
-def parralelLaunch(lprMD, maxJob, wait=6):
+def parallelLaunch(lprMD, maxJob, regexout, wait=6):
 
     # control number of run
     flag = 0
@@ -193,7 +193,7 @@ def parralelLaunch(lprMD, maxJob, wait=6):
         while i < imax:
             lfilesMD = listdir(lprMD[i])
             for fileMD in lfilesMD:
-                if search("-out\.cms", fileMD):
+                if search(regexout, fileMD):
                     del lprMD[i]
                     imax = imax - 1
                     flag = 1
@@ -205,6 +205,7 @@ def parralelLaunch(lprMD, maxJob, wait=6):
                 i += 1
 
         if len(lprMD) >= maxJob:
+            print "Break " + str(wait) + "s"
             sleep(wait)# wait 10 min
 
     return lprMD

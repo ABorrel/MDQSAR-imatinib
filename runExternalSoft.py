@@ -9,17 +9,17 @@ import PDB
 import pathFolder
 
 
-LIGPREP = "/opt/schrodinger2016-4/ligprep"
+LIGPREP = "/opt/schrodinger2017-1/ligprep"
 PADEL = "/home/aborrel/softwares/padel/PaDEL-Descriptor.jar"
 TMalign = "/home/aborrel/softwares/TMalign/TMalign"
 SHAEP = "/home/aborrel/softwares/shaep/shaep"
 
 
 # for home computer
-STRUCTCONVERT = "/opt/schrodinger2016-4/utilities/structconvert"
-MULTISMIM = "/opt/schrodinger2016-4/utilities/multisim"
-STRUCTCAT = "/opt/schrodinger2016-4/utilities/structcat"
-RUN = "/opt/schrodinger2016-4/run"
+STRUCTCONVERT = "/opt/schrodinger2017-1/utilities/structconvert"
+MULTISMIM = "/opt/schrodinger2017-1/utilities/multisim"
+STRUCTCAT = "/opt/schrodinger2017-1/utilities/structcat"
+RUN = "/opt/schrodinger2017-1/run"
 KRAKENX = "/home/aborrel/softwares/KRAKENX/dist/KrakenX.jar"
 
 # for monster
@@ -279,7 +279,9 @@ def concateneStructure(pPDBprot, pligSDF, pmaeComplex):
 
 def centerMD(ppcms, ptrj):
 
-    cmd = RUN + " -FROM desmond center.py -asl \"protein\" " + ppcms + " " + ptrj[0:-4] + "_center " + ptrj
+    # control existance
+
+    cmd = RUN + " -FROM desmond center.py " + ppcms + " " + ptrj[0:-4] + "_center " + ptrj
     print cmd
     system(cmd)
 

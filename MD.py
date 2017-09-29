@@ -9,11 +9,14 @@ import pathFolder
 
 
 class MD:
-    def __init__(self, prDM, timeMD, timeframe, stepWait):
+    def __init__(self, prDM, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU):
         self.prDM = prDM
         self.stepWait = stepWait
         self.MDtime = timeMD
         self.interval = timeframe
+        self.pranalysis = pranalysis
+        self.nbGPU = nbGPU
+        self.nbCPU = nbCPU
 
     def initialisation(self, prLigand, pProt):
         """Prot need to be prep before MD !!!!"""
@@ -22,7 +25,6 @@ class MD:
 
         # create folder for DM
         llig = listdir(prLigand)
-        llig = ["CHEMBL207986.1.pdb", "CHEMBL384304.1.pdb"] # !!!!!!!!!!!
 
         nameProt = pProt.split("/")[-1][0:-4]
 
@@ -53,7 +55,7 @@ class MD:
         self.lMD = dinit
 
 
-    def runMultipleMD(self, randomGPU=1):
+    def runMultipleMD(self):
 
 
         if not "lMD" in dir(self):
@@ -62,7 +64,6 @@ class MD:
 
         nbMD = len(self.lMD.keys())
         i = 0
-        step = 1
         lMDfolder = []
         while i < nbMD:
             jobname = self.lMD.keys()[i]
@@ -71,35 +72,47 @@ class MD:
             self.lMD[jobname]["pcms"] = pcms
             lMDfolder.append(path.dirname(pcms) + "/")
             print len(lMDfolder)
-            #GDESMON
-            if randomGPU != 0:
-                HOSTGPU = "gpu" + str(randint(1, randomGPU))
+            #GDESMOND
+            if self.nbGPU != 0:
+                HOSTGPU = "gpu" + str(randint(1, self.nbGPU))
                 runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0, HOST=HOSTGPU)# add a existance criteria
             else:
                 runExternalSoft.multisimGDesmond(jobname, pcms, self.MDtime, self.interval, WAIT=0)# add a existance criteria
-            lMDfolder = toolbox.parralelLaunch(lMDfolder, self.stepWait)# control number of parralel job
+            lMDfolder = toolbox.parallelLaunch(lMDfolder, self.nbGPU, "-out\.cms", self.stepWait)# control number of parralel job
             i += 1
 
+        # recup frame
+        for jobname in self.lMD.keys():
+            #control if out exist
+            pcmsout = self.lMD[jobname]["pfolder"] + jobname + "-out.cms"
+            prtrj = self.lMD[jobname]["pfolder"] + jobname + "_trj"
+            if path.exists(pcmsout) and path.getsize(pcmsout) > 100:
+                self.lMD[jobname]["pcmsout"] = pcmsout
 
+            if path.exists(prtrj):
+                self.lMD[jobname]["prtrj"] = prtrj
 
 
     def extractFrame(self):
         """Extract frame and wrap water"""
 
-        # launch DM to build result structure
-        self.runMultipleMD(runMD=0)
+        print self.lMD["CHEMBL3617738_2hyy_MD"].keys()
+        print self.lMD["CHEMBL3617738_2hyy_MD"]["ligandSDF"]
+        print self.lMD["CHEMBL3617738_2hyy_MD"]["pcmsout"]
+
+        nbjreceiptboob = len(self.lMD.keys())
 
         # for MD launch
         for jobname in self.lMD.keys():
             print jobname
-            if "pcms-out" in self.lMD[jobname].keys():
-                prframes = path.dirname(self.lMD[jobname]["pcms-out"]) + "/framesMD/"
+            if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
+                prframes = self.pranalysis + str(jobname) + "/framesMD/"
                 pathFolder.createFolder(prframes)
-                if len(listdir(prframes)) == 0:
-                    centerMD = runExternalSoft.centerMD(self.lMD[jobname]["pcms-out"], self.lMD[jobname]["trj"])
-                    self.lMD[jobname]["pcms-out"] = centerMD + "-out.cms"
-                    self.lMD[jobname]["trj"] = centerMD + "_trj"
-                    runExternalSoft.extractFrame(self.lMD[jobname]["pcms-out"], self.lMD[jobname]["trj"], prframes)
+                if len(listdir(prframes)) == 0:# control if frame exist
+                    centerMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"])
+                    self.lMD[jobname]["pcmsout"] = centerMD + "-out.cms"
+                    self.lMD[jobname]["prtrj"] = centerMD + "_trj"
+                    runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes)
                 self.lMD[jobname]["prframe"] = prframes
 
 
