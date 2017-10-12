@@ -1,4 +1,4 @@
-from os import system, path, remove, getcwd, chdir, makedirs
+from os import system, path, remove, getcwd, chdir, makedirs, listdir, removedirs
 from shutil import copyfile
 from re import search
 from time import sleep
@@ -16,10 +16,10 @@ SHAEP = "/home/aborrel/softwares/shaep/shaep"
 
 
 # for home computer
-STRUCTCONVERT = "/opt/schrodinger2017-1/utilities/structconvert"
-MULTISMIM = "/opt/schrodinger2017-1/utilities/multisim"
-STRUCTCAT = "/opt/schrodinger2017-1/utilities/structcat"
-RUN = "/opt/schrodinger2017-1/run"
+STRUCTCONVERT = "/opt/schrodinger2017-3/utilities/structconvert"
+MULTISMIM = "/opt/schrodinger2017-3/utilities/multisim"
+STRUCTCAT = "/opt/schrodinger2017-3/utilities/structcat"
+RUN = "/opt/schrodinger2017-3/run"
 KRAKENX = "/home/aborrel/softwares/KRAKENX/dist/KrakenX.jar"
 
 # for monster
@@ -277,23 +277,45 @@ def concateneStructure(pPDBprot, pligSDF, pmaeComplex):
         return "ERROR"
 
 
-def centerMD(ppcms, ptrj):
+def centerMD(ppcms, ptrj, wait = 0):
 
     # control existance
+    pouttrj = ptrj[0:-4] + "_center_trj"
+    poutcms = ptrj[0:-4] + "_center-out.cms"
 
-    cmd = RUN + " -FROM desmond center.py " + ppcms + " " + ptrj[0:-4] + "_center " + ptrj
-    print cmd
-    system(cmd)
+    #try: removedirs(pouttrj)
+    #except: pass
+    #try: remove(poutcms)
+    #except: pass
+    #return [poutcms, pouttrj]
 
-    return ptrj[0:-4] + "_center"
+    #print ptrj[0:-4]
+    if path.exists(pouttrj) and path.exists(poutcms):
+        return [poutcms, pouttrj]
+    else:
+        if wait == 1:
+            cmd = RUN + " -FROM desmond center.py -t " + ptrj + " " + ppcms + " " + ptrj[0:-4] + "_center"
+        else:
+            cmd = RUN + " -FROM desmond center.py -t " + ptrj + " " + ppcms + " " + ptrj[0:-4] + "_center&"
+        print cmd
+        system(cmd)
+    return [poutcms, pouttrj]
 
 
-def extractFrame(ppcms, ptrj, prframes):
+def extractFrame(ppcms, ptrj, prframes, step=10, MDtime=15000):
 
-    cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -o pdb -b " + str(prframes) + "frame"
-
-    print(cmd)
-    system(cmd)
+    #control numbr of frame extracted
+    nbframeth = int(float(MDtime) / (step*10))
+    nbframe = len(listdir(prframes))
+    print nbframeth, nbframe
+    if nbframe >= nbframeth:
+        print "l.302 - cut"
+        return prframes
+    else:
+        cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(step) + "' -o pdb -b " + str(prframes) + "frame 2>/dev/null&"
+        print(cmd)
+        system(cmd)
+        return prframes
 
 
 

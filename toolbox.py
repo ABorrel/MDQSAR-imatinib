@@ -183,18 +183,18 @@ def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
     filoutmsj.close()
 
 
-def parallelLaunch(lprMD, maxJob, regexout, wait=6):
+def parallelLaunch(lprout, maxJob, regexout, wait=6):
 
     # control number of run
     flag = 0
-    while len(lprMD) >= maxJob:
+    while len(lprout) >= maxJob:
         i = 0
-        imax = len(lprMD)
+        imax = len(lprout)
         while i < imax:
-            lfilesMD = listdir(lprMD[i])
+            lfilesMD = listdir(lprout[i])
             for fileMD in lfilesMD:
                 if search(regexout, fileMD):
-                    del lprMD[i]
+                    del lprout[i]
                     imax = imax - 1
                     flag = 1
                     break
@@ -204,11 +204,11 @@ def parallelLaunch(lprMD, maxJob, regexout, wait=6):
             else:
                 i += 1
 
-        if len(lprMD) >= maxJob:
+        if len(lprout) >= maxJob:
             print "Break " + str(wait) + "s"
-            sleep(wait)# wait 10 min
+            sleep(wait)
 
-    return lprMD
+    return lprout
 
 
 def loadMatrixTMalign(pmatrix):

@@ -19,7 +19,7 @@ PRPDBDATABSE = "/home/PDB/"
 
 R = random.random() # corse random
 LRES = ["ALA", "ILE", "LEU", "VAL", "MET", "CYS", "PHE", "TRP", "TYR", "HIS", "THR", "SER", "ASN", "GLN", "ASP", "GLU",
-        "ARG", "LYS", "PRO", "GLY", "TP3"]
+        "ARG", "LYS", "PRO", "GLY", "T3P"]
 #LTYPE = ["Oox", "Oh", "Oph",  "Oc", "Ow", "Nam", "Nim", "Ngu", "NaI", "Car", "Su", "Xot"]
 MAXCONNECT = 2.0
 MAXDISTBYRES = 12
@@ -78,13 +78,15 @@ class PDB:
         # extract lig
         if lligatoms == []:
             for resName in self.byres.keys():
-                if not resName.split("_")[0] in LRES:
-                   if not resName in self.lgd.keys():
-                       self.lgd[resName] = self.byres[resName]
+                nameAtom = resName.split("_")[0]
+                if not nameAtom in LRES:
+                    if not resName in self.lgd.keys():
+                        self.lgd[resName] = self.byres[resName]
 
         # case where ligand is extract from a another protein
         else:
             self.lgd["XXX"] = lligatoms
+
         self.pockets = {}
         self.pocketsRES = {}
         # define pocket
@@ -442,8 +444,20 @@ class PDB:
         if model == 1:
             filout.write("MODEL\n")
 
+
+        # have to put HETATOM in the end of the file
+        lHET = []
         for atom in latoms:
-            filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
+            if atom.recoder == "HETATM":
+                lHET.append(atom)
+            else:
+                filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" %(atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode, atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
+
+        for atom in lHET:
+            filout.write("%-6s%5s %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n" % (
+            atom.recoder, atom.serial, atom.name, atom.char, atom.resName, atom.chainID, atom.resSeq, atom.iCode,
+            atom.x, atom.y, atom.z, atom.occupancy, atom.Bfact, atom.element, atom.charge))
+
 
         if conect == 1:
             for atom in latoms:

@@ -68,3 +68,12 @@ def RMSDTwoList(l_atom1, l_atom2):
 
 
 
+def RMSFTwoAtom(atom1, atom2):
+
+
+    Sx = (float(atom2.x) - float(atom1.x)) * (float(atom2.x)- float(atom1.x))
+    Sy = (float(atom2.y) - float(atom1.y)) * (float(atom2.y) - float(atom1.y))
+    Sz = (float(atom2.z) - float(atom1.z)) * (float(atom2.z) - float(atom1.z))
+
+    SS = sqrt((Sx+ Sy + Sz))
+    return SS

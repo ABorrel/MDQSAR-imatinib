@@ -344,6 +344,7 @@ lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prD
 prMD = "/home/aborrel/imitanib/results/MD-ABL/"
 pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
 pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
+BSCutoff = 6.0
 
 # monster
 #prMD = "/data/aborrel/imatinib/results/MD-ABL/"
@@ -356,18 +357,30 @@ timeframe = "10.0"
 stepWait = 9
 nbGPU = 3#maybe integrate in initialization, code clearity
 nbCPU = 10
+stepFrame = 10# reduce the number of extracted frames
 
 # 1. Merge poses and proteins
-cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU)
+cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
 cMDs.initialisation(prDockingPoseSP, pprotein)
 cMDs.runMultipleMD()# run MD
 
-# 2. analyse MD
+# 2. Preparation MD
 # name ligand for the MD
 namelig = "UNK"# classic name given by glide
 
+# extract frame
+cMDs.centerFrame()
 cMDs.extractFrame()
-#cMDs.analyseAllMD(RMSD=1, ligAnalysis=0, nameLig=namelig)
+
+# extract BS and ligand
+cMDs.extractLigBSbyFrame(BSCutoff, namelig)
+
+
+# 3. compute RMSD
+cMDs.analyseRMSD()
+
+
+
 
 
 # 3. FPI computation

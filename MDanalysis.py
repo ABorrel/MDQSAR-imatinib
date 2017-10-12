@@ -14,56 +14,106 @@ import parseShaep
 
 class trajectoryAnalysis:
 
-    def __init__(self, prMD, nbframe):
-        self.prMD = prMD
-        self.pranalyse = prMD + "analysis/"
-        self.prframe = prMD + "framesMD/"
-        self.nbframe = nbframe
-
-        pathFolder.createFolder(self.pranalyse, clean=0)
+    def __init__(self, dMD, stepFrame):
+        self.dMD = dMD
+        self.stepFrame = stepFrame
 
 
-    def Superimposed(self):
+    def RMSDProt(self):
 
-        self.prRMSD = self.pranalyse + "RMSDs/"
-        self.matrixTranslocRot = self.prRMSD + "matrix/"
-        prtemp = self.prRMSD + "temp/"
+        prRMSDprot = self.dMD["prRMSD"] + "protein/"
+        pathFolder.createFolder(prRMSDprot)
+        if not "prSuperMatrix" in dir(self):
+            self.Superimpose(0)
+        else:
 
-        pathFolder.createFolder(self.prRMSD)
-        pathFolder.createFolder(self.matrixTranslocRot)
+
+
+
+            i = self.stepFrame
+            imax = int(len(listdir(self.dMD["prframe"]))) * self.stepFrame
+            print imax
+            while i < imax:
+                print i, imax
+                nframe1 = str("%05d" % (refFrame))
+                nframe2 = str("%05d" % (i))
+                pframe1 = self.dMD["prframe"] + "frame_" + nframe1 + ".pdb"
+                pframe2 = self.dMD["prframe"] + "frame_" + nframe2 + ".pdb"
+
+                # control if existing
+                pmatrix = prSuperimposed + str(nframe1) + "_" + str(nframe2)
+                if path.exists(pmatrix) and path.getsize(pmatrix) > 0:
+                    i += self.stepFrame
+                    continue
+                else:
+                    pathFolder.createFolder(prtemp, clean=1)  # clean folder temp
+
+                    lsuperimposed = runExternalSoft.runTMalign(pframe1, pframe2, prtemp)
+                    dalign = parseTMalign.parseOutputTMalign(lsuperimposed[-1])
+                    TMalignScore.write(str(nframe2) + "\t" + str(dalign["RMSD"]) + "\t" + str(dalign["TMscore1"]) + "\n")
+                    move(lsuperimposed[-2], pmatrix)
+                    i += self.stepFrame
+            TMalignScore.close()
+
+
+
+
+
+
+        return
+
+
+    def RMSFLigAtom(self):
+
+        return
+
+
+    def Superimpose(self, refFrame):
+
+        prSuperimposed = self.dMD["prRMSD"] + "superimpose/"
+        pathFolder.createFolder(prSuperimposed)
+        self.prSuperMatrix = prSuperimposed
+
+        prtemp = self.dMD["prRMSD"] + "temp/"
         pathFolder.createFolder(prtemp)
 
-        pTMalignScore = self.prRMSD + "TMalignScore"
+        pTMalignScore = self.dMD["prRMSD"] + "TMalignScore"
         if not path.exists(pTMalignScore):
             TMalignScore = open(pTMalignScore, "w")
             TMalignScore.write("Frame\tRMSD\tTMscore\n")
         else:
             TMalignScore = open(pTMalignScore, "a")
 
-        i = 1
-        imax = float(self.nbframe)
-        imax = int(imax)
+
+        i = self.stepFrame
+        imax = int(len(listdir(self.dMD["prframe"]))) * self.stepFrame
+        print imax
         while i < imax:
             print i, imax
-            nframe1 = str("%05d" % (0))
+            nframe1 = str("%05d" % (refFrame))
             nframe2 = str("%05d" % (i))
-            pframe1 = self.prframe + "frame_" + nframe1 + ".pdb"
-            pframe2 = self.prframe + "frame_" + nframe2 + ".pdb"
+            pframe1 = self.dMD["prframe"] + "frame_" + nframe1 + ".pdb"
+            pframe2 = self.dMD["prframe"] + "frame_" + nframe2 + ".pdb"
 
             # control if existing
-            pmatrix = self.matrixTranslocRot + str(nframe1) + "_" + str(nframe2)
+            pmatrix = prSuperimposed + str(nframe1) + "_" + str(nframe2)
             if path.exists(pmatrix) and path.getsize(pmatrix) > 0:
-                i += 1
+                i += self.stepFrame
                 continue
             else:
-                pathFolder.createFolder(prtemp, clean=1) # clean folder temp
+                pathFolder.createFolder(prtemp, clean=1)  # clean folder temp
 
                 lsuperimposed = runExternalSoft.runTMalign(pframe1, pframe2, prtemp)
                 dalign = parseTMalign.parseOutputTMalign(lsuperimposed[-1])
                 TMalignScore.write(str(nframe2) + "\t" + str(dalign["RMSD"]) + "\t" + str(dalign["TMscore1"]) + "\n")
-                move(lsuperimposed[-2], self.matrixTranslocRot + str(nframe1) + "_" + str(nframe2))
-                i += 1
+                move(lsuperimposed[-2], pmatrix)
+                i += self.stepFrame
         TMalignScore.close()
+
+
+
+
+
 
 
     def ligAnalysis(self, ligName, RMSD=1, shaepScore=0):

@@ -1,5 +1,8 @@
 from os import path, listdir, makedirs
+from pymol.preset import default_polar_contacts
 from random import randint
+from  multiprocessing import Process, Lock, Manager
+import pprint
 
 import PDB
 import runExternalSoft
@@ -8,8 +11,9 @@ import MDanalysis
 import pathFolder
 
 
+
 class MD:
-    def __init__(self, prDM, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU):
+    def __init__(self, prDM, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame):
         self.prDM = prDM
         self.stepWait = stepWait
         self.MDtime = timeMD
@@ -17,6 +21,7 @@ class MD:
         self.pranalysis = pranalysis
         self.nbGPU = nbGPU
         self.nbCPU = nbCPU
+        self.stepFrame = stepFrame
 
     def initialisation(self, prLigand, pProt):
         """Prot need to be prep before MD !!!!"""
@@ -96,38 +101,96 @@ class MD:
     def extractFrame(self):
         """Extract frame and wrap water"""
 
-        print self.lMD["CHEMBL3617738_2hyy_MD"].keys()
-        print self.lMD["CHEMBL3617738_2hyy_MD"]["ligandSDF"]
-        print self.lMD["CHEMBL3617738_2hyy_MD"]["pcmsout"]
-
-        nbjreceiptboob = len(self.lMD.keys())
-
         # for MD launch
-        for jobname in self.lMD.keys():
-            print jobname
+        lprframe = []
+        i = 1
+        for jobname in self.lMD.keys()[:5]:
+            print jobname, i
             if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
                 prframes = self.pranalysis + str(jobname) + "/framesMD/"
+                lprframe.append(prframes)
                 pathFolder.createFolder(prframes)
                 if len(listdir(prframes)) == 0:# control if frame exist
-                    centerMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"])
-                    self.lMD[jobname]["pcmsout"] = centerMD + "-out.cms"
-                    self.lMD[jobname]["prtrj"] = centerMD + "_trj"
-                    runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes)
+                    runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes, step=self.stepFrame, MDtime=self.MDtime)
+                    lprframe = toolbox.parallelLaunch(lprframe, self.nbCPU, str(int(float(self.MDtime) / 10)))
+
                 self.lMD[jobname]["prframe"] = prframes
+            i += 1
+            #print self.lMD[jobname]
 
 
 
-    def analyseAllMD(self, RMSD=1, ligAnalysis=1, nameLig="UNK"):
+    def centerFrame(self):
+
+        lpcenter = []
+        i=0
+        for jobname in self.lMD.keys()[:5]:
+            if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
+                if len(lpcenter) >= (self.nbCPU -2):
+                    loutcenterMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], wait=1)
+                else:
+                    loutcenterMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], wait=0)
+                i += 1
+                self.lMD[jobname]["pcmsout"] = loutcenterMD[0]
+                self.lMD[jobname]["prtrj"] = loutcenterMD[1]
+                lpcenter.append(path.dirname(self.lMD[jobname]["pcmsout"]))
+                toolbox.parallelLaunch(lpcenter, self.nbCPU, "center")
+                print jobname, len(lpcenter), i
+            print self.lMD[jobname]
+
+
+
+
+
+    def extractLigBSbyFrame(self, BSCutoff, namelig):
+
+        for jobname in self.lMD.keys()[:5]:
+            print self.lMD[jobname]
+            if "prframe" in self.lMD[jobname].keys():
+                self.lMD[jobname]["prBSs"] = self.pranalysis + str(jobname) + "/BSs/"
+                pathFolder.createFolder(self.lMD[jobname]["prBSs"])
+                self.lMD[jobname]["prLig"] = self.pranalysis + str(jobname) + "/lig/"
+                pathFolder.createFolder(self.lMD[jobname]["prLig"])
+
+                lpframe = [self.lMD[jobname]["prframe"] + i for i in listdir(self.lMD[jobname]["prframe"])]
+                nb_frame = len(listdir(self.lMD[jobname]["prframe"]))
+
+                if len(listdir(self.lMD[jobname]["prLig"])) == nb_frame and len(listdir(self.lMD[jobname]["prBSs"])) == nb_frame:
+                    continue
+                else:
+
+                    for pframe in lpframe:
+                        cPDB = PDB.PDB(pframe)
+                        latomlig = cPDB.get_lig(namelig)
+
+                        cPDB.get_BSfromlig(dpocket=BSCutoff)
+                        # add step of rename atom
+                        pLGD = self.lMD[jobname]["prLig"] + "LGD_" + pframe.split("_")[-1]
+                        pBS = self.lMD[jobname]["prBSs"] + "BS_" + pframe.split("_")[-1]
+
+                        cPDB.writePDB(pLGD, latomlig, conect=1)
+                        cPDB.writePDB(pBS, cPDB.pocketsRES["UNK_900_A"])# default in schrodinger
+
+
+
+    def analyseRMSD(self):
 
         lanalysis = []
-        for MDID in self.lMD.keys():
-            cMDanalysis = MDanalysis.trajectoryAnalysis(self.lMD[MDID]["pfolder"], float(self.MDtime)/float(self.interval))
-            cMDanalysis.Superimposed()
-            if RMSD == 1:
-                cMDanalysis.protResRMSF()
-            if ligAnalysis == 1:
-                cMDanalysis.ligAnalysis(nameLig)
-            lanalysis.append(cMDanalysis)
+        for jobname in self.lMD.keys()[:5]:
+            prRMSD = self.pranalysis + str(jobname) + "/RMSDs/"
+            self.lMD[jobname]["prRMSD"] = prRMSD
+
+            cMDanalysis = MDanalysis.trajectoryAnalysis(self.lMD[jobname], self.stepFrame)
+            cMDanalysis.Superimpose(0)
+
+
+
+            #cMDanalysis.Superimposed()
+            #if RMSD == 1:
+            #    cMDanalysis.protResRMSF()
+            #if ligAnalysis == 1:
+            #    cMDanalysis.ligAnalysis(nameLig)
+            #lanalysis.append(cMDanalysis)
 
 
 
