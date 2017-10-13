@@ -104,13 +104,14 @@ class MD:
         # for MD launch
         lprframe = []
         i = 1
-        for jobname in self.lMD.keys()[:5]:
+        for jobname in self.lMD.keys():
             print jobname, i
             if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
                 prframes = self.pranalysis + str(jobname) + "/framesMD/"
                 lprframe.append(prframes)
                 pathFolder.createFolder(prframes)
-                if len(listdir(prframes)) == 0:# control if frame exist
+                nbframeth = float(self.MDtime)/(int(self.stepFrame))/10 +1
+                if len(listdir(prframes)) <= int(nbframeth):# control if frame exist
                     runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes, step=self.stepFrame, MDtime=self.MDtime)
                     lprframe = toolbox.parallelLaunch(lprframe, self.nbCPU, str(int(float(self.MDtime) / 10)))
 
@@ -124,7 +125,7 @@ class MD:
 
         lpcenter = []
         i=0
-        for jobname in self.lMD.keys()[:5]:
+        for jobname in self.lMD.keys():
             if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
                 if len(lpcenter) >= (self.nbCPU -2):
                     loutcenterMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], wait=1)
@@ -144,7 +145,7 @@ class MD:
 
     def extractLigBSbyFrame(self, BSCutoff, namelig):
 
-        for jobname in self.lMD.keys()[:5]:
+        for jobname in self.lMD.keys():
             print self.lMD[jobname]
             if "prframe" in self.lMD[jobname].keys():
                 self.lMD[jobname]["prBSs"] = self.pranalysis + str(jobname) + "/BSs/"
@@ -155,7 +156,7 @@ class MD:
                 lpframe = [self.lMD[jobname]["prframe"] + i for i in listdir(self.lMD[jobname]["prframe"])]
                 nb_frame = len(listdir(self.lMD[jobname]["prframe"]))
 
-                if len(listdir(self.lMD[jobname]["prLig"])) == nb_frame and len(listdir(self.lMD[jobname]["prBSs"])) == nb_frame:
+                if len(listdir(self.lMD[jobname]["prLig"])) >= nb_frame and len(listdir(self.lMD[jobname]["prBSs"])) >= nb_frame:
                     continue
                 else:
 
@@ -175,26 +176,15 @@ class MD:
 
     def analyseRMSD(self):
 
-        lanalysis = []
-        for jobname in self.lMD.keys()[:5]:
+        for jobname in self.lMD.keys():
             prRMSD = self.pranalysis + str(jobname) + "/RMSDs/"
             self.lMD[jobname]["prRMSD"] = prRMSD
 
-            cMDanalysis = MDanalysis.trajectoryAnalysis(self.lMD[jobname], self.stepFrame)
+            cMDanalysis = MDanalysis.trajectoryAnalysis(self.lMD[jobname], self.MDtime, self.interval, self.stepFrame)
             cMDanalysis.Superimpose(0)
-
-
-
-            #cMDanalysis.Superimposed()
-            #if RMSD == 1:
-            #    cMDanalysis.protResRMSF()
-            #if ligAnalysis == 1:
-            #    cMDanalysis.ligAnalysis(nameLig)
-            #lanalysis.append(cMDanalysis)
-
-
-
-
+            cMDanalysis.RMSDProt()
+            cMDanalysis.protResRMSF()
+            cMDanalysis.ligRMSFShaEP()
 
 
 

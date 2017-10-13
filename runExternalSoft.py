@@ -370,3 +370,32 @@ def runShaep(p_struct1, p_struct2, p_out, clean=0):
         pass
 
     return p_out
+
+
+
+def runscatterplotRMSD(pfilout):
+
+    cmd = "./plotRMSD.R " + str(pfilout)
+    print cmd
+    system(cmd)
+
+
+def runScatterplotRMSF(pfilin):
+
+    cmd = "./plotRMSF.R " + pfilin
+    print cmd
+    system(cmd)
+
+
+def scatterplotShaEP(pfilin):
+
+    cmd = "./plotShaEP.R " + pfilin
+    print cmd
+    system(cmd)
+
+
+def RMSFLig(pfilin):
+
+    cmd = "./plotRMSFlig.R " + pfilin
+    print cmd
+    system(cmd)

@@ -20,6 +20,8 @@ PRPDBDATABSE = "/home/PDB/"
 R = random.random() # corse random
 LRES = ["ALA", "ILE", "LEU", "VAL", "MET", "CYS", "PHE", "TRP", "TYR", "HIS", "THR", "SER", "ASN", "GLN", "ASP", "GLU",
         "ARG", "LYS", "PRO", "GLY", "T3P"]
+LRESSHORT = ["ALA", "ILE", "LEU", "VAL", "MET", "CYS", "PHE", "TRP", "TYR", "HIS", "THR", "SER", "ASN", "GLN", "ASP", "GLU",
+        "ARG", "LYS", "PRO", "GLY"]
 #LTYPE = ["Oox", "Oh", "Oph",  "Oc", "Ow", "Nam", "Nim", "Ngu", "NaI", "Car", "Su", "Xot"]
 MAXCONNECT = 2.0
 MAXDISTBYRES = 12
@@ -269,6 +271,29 @@ class PDB:
                     l_out.append(atomadd)
         self.latom = l_out
         return l_out
+
+    def get_atomProt(self):
+
+        try:
+            self.latomProt
+        except:
+            pass
+
+        try:
+            self.latom
+        except:
+            self.get_lAtoms()
+
+        self.latomProt  = []
+        self.latomHet = []
+
+        for atom in self.latom:
+            if atom.recoder == "ATOM":
+                self.latomProt.append(atom)
+            else:
+                self.latomHet.append(atom)
+
+
 
     def get_byres(self):
 
