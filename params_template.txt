@@ -15,7 +15,7 @@ mopacLocn=/opt/mopac/MOPAC2016.exe
 
 
 # MOPAC Hamiltonian to be used
-mopachamiltonian=PM3
+mopachamiltonian=PM7
 
 # Descriptor List
 # Indicate Yes/No or yes/no or Y/N or y/n and add additional parameters where required
@@ -23,7 +23,7 @@ mopachamiltonian=PM3
 
 # Calculate EVA descriptors
 # Assumes that the mopac files have the vibrational frequencies
-EVA=Yes
+EVA=No
 evaSigma=2
 evaL=1
 evaMinVal=1
@@ -31,7 +31,7 @@ evaMaxVal=4000
 
 
 # Calculate EEVA descriptors
-EEVA=Yes
+EEVA=No
 eevaSigma=2
 eevaL=1
 eevaMinVal=-45

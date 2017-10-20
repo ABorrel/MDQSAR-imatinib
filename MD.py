@@ -23,6 +23,8 @@ class MD:
         self.nbCPU = nbCPU
         self.stepFrame = stepFrame
 
+
+
     def initialisation(self, prLigand, pProt):
         """Prot need to be prep before MD !!!!"""
 
@@ -36,7 +38,6 @@ class MD:
         dinit = {}
         for lig in llig: # add change
             namecpd = lig.split(".")[0]
-            print namecpd, nameProt
             nameFolder = namecpd + "_" + nameProt
             pfolder = self.prDM + nameFolder + "/"
 
@@ -76,7 +77,6 @@ class MD:
             pcms = runExternalSoft.multisimSystemBuilder(jobname, self.lMD[jobname]["complexMAE"], WAIT=1)
             self.lMD[jobname]["pcms"] = pcms
             lMDfolder.append(path.dirname(pcms) + "/")
-            print len(lMDfolder)
             #GDESMOND
             if self.nbGPU != 0:
                 HOSTGPU = "gpu" + str(randint(1, self.nbGPU))
@@ -124,34 +124,31 @@ class MD:
     def centerFrame(self):
 
         lpcenter = []
-        i=0
         for jobname in self.lMD.keys():
             if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
                 if len(lpcenter) >= (self.nbCPU -2):
                     loutcenterMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], wait=1)
                 else:
                     loutcenterMD = runExternalSoft.centerMD(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], wait=0)
-                i += 1
                 self.lMD[jobname]["pcmsout"] = loutcenterMD[0]
                 self.lMD[jobname]["prtrj"] = loutcenterMD[1]
                 lpcenter.append(path.dirname(self.lMD[jobname]["pcmsout"]))
                 toolbox.parallelLaunch(lpcenter, self.nbCPU, "center")
-                print jobname, len(lpcenter), i
-            print self.lMD[jobname]
 
 
 
 
 
-    def extractLigBSbyFrame(self, BSCutoff, namelig):
+    def extractLigBSbyFrame(self, BSCutoff, namelig, clean=0):
 
-        for jobname in self.lMD.keys():
-            print self.lMD[jobname]
+        c = 800
+        for jobname in self.lMD.keys()[800:]:
+            print c, jobname
             if "prframe" in self.lMD[jobname].keys():
                 self.lMD[jobname]["prBSs"] = self.pranalysis + str(jobname) + "/BSs/"
-                pathFolder.createFolder(self.lMD[jobname]["prBSs"])
+                pathFolder.createFolder(self.lMD[jobname]["prBSs"], clean=clean)
                 self.lMD[jobname]["prLig"] = self.pranalysis + str(jobname) + "/lig/"
-                pathFolder.createFolder(self.lMD[jobname]["prLig"])
+                pathFolder.createFolder(self.lMD[jobname]["prLig"], clean=clean)
 
                 lpframe = [self.lMD[jobname]["prframe"] + i for i in listdir(self.lMD[jobname]["prframe"])]
                 nb_frame = len(listdir(self.lMD[jobname]["prframe"]))
@@ -161,7 +158,7 @@ class MD:
                 else:
 
                     for pframe in lpframe:
-                        cPDB = PDB.PDB(pframe)
+                        cPDB = PDB.PDB(pframe, hydrogen=1)
                         latomlig = cPDB.get_lig(namelig)
 
                         cPDB.get_BSfromlig(dpocket=BSCutoff)
@@ -171,6 +168,7 @@ class MD:
 
                         cPDB.writePDB(pLGD, latomlig, conect=1)
                         cPDB.writePDB(pBS, cPDB.pocketsRES["UNK_900_A"])# default in schrodinger
+            c += 1
 
 
 

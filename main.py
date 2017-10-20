@@ -8,6 +8,7 @@ import MD
 import FPI
 import PDB
 import cpdClustering
+import MDdescriptors
 
 from os import listdir, makedirs
 from re import search
@@ -360,25 +361,37 @@ nbCPU = 10
 stepFrame = 10# reduce the number of extracted frames
 
 # 1. Merge poses and proteins
-cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
-cMDs.initialisation(prDockingPoseSP, pprotein)
-cMDs.runMultipleMD()# run MD
+#cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
+#cMDs.initialisation(prDockingPoseSP, pprotein)
+#cMDs.runMultipleMD()# run MD
 
 # 2. Preparation MD
 # name ligand for the MD
-namelig = "UNK"# classic name given by glide
+#namelig = "UNK"# classic name given by glide
 
 # extract frame
-cMDs.centerFrame()
-cMDs.extractFrame()
+#cMDs.centerFrame()
+#cMDs.extractFrame()
 
 # extract BS and ligand
-cMDs.extractLigBSbyFrame(BSCutoff, namelig)
+#MDs.extractLigBSbyFrame(BSCutoff, namelig, clean=0)
 
 
 # 3. compute RMSD
-cMDs.analyseRMSD()
+#cMDs.analyseRMSD()
 
+
+
+# ligand descriptors #
+######################
+# short cut
+
+jobname = "CHEMBL3617738"
+prlig = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/lig/"
+prpockets = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/BSs/"
+prDesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
+cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prDesc)
+cMD.computeLigDesc()
 
 
 

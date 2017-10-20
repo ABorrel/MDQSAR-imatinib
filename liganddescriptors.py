@@ -11,6 +11,7 @@ from copy import deepcopy
 from os import path, getcwd, remove, system, listdir
 from shutil import copy
 from re import search
+from numpy import mean, std
 
 import toolbox
 import pathFolder
@@ -31,7 +32,7 @@ class Descriptors:
         # if SMILES, load using SMILES code
         if not kSMILES in dcompound.keys():
             try:
-                smile = toolbox.babelConvertSDFtoSMILE(dcompound["sdf"])
+                smile = runExternalSoft.babelConvertSDFtoSMILE(dcompound["sdf"])
                 self.compound[kSMILES] = smile
             except:
                 print "ERROR INPUT SDF - l33"
@@ -386,6 +387,11 @@ class Descriptors:
                         self.fil3D.write("\tNA")
                 self.fil3D.write("\n")
                 self.fil3D.close()
+
+
+
+
+
 
 
 

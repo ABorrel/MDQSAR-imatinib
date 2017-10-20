@@ -22,7 +22,6 @@ def jaccardIndex(lbit1, lbit2):
     return score
 
 
-
 def RMSDTwoList(l_atom1, l_atom2):
     nb_ca = 0.0
     d_max = {"value": 0.0}
@@ -41,7 +40,8 @@ def RMSDTwoList(l_atom1, l_atom2):
                 return []
             else:
 
-                dist_atoms = l_atom1[i].euclidiendist(l_atom2[i])
+                #dist_atoms = l_atom1[i].euclidiendist(l_atom2[i])
+                dist_atoms = DiffPosition(l_atom1[i], l_atom2[i])
                 diff_position_all = diff_position_all + dist_atoms
 
                 if l_atom1[i].name == "CA":
@@ -57,7 +57,7 @@ def RMSDTwoList(l_atom1, l_atom2):
             #     print d_max
 
     RMSDall = sqrt(diff_position_all / len(l_atom1))
-    if nb_ca >0:
+    if nb_ca > 0:
         RMSDCA = sqrt(diff_position_ca / nb_ca)
     else:
         RMSDCA = "NA"
@@ -66,6 +66,17 @@ def RMSDTwoList(l_atom1, l_atom2):
 
 #print jaccardIndex("001011101", "001001001")
 
+
+
+def DiffPosition(atom1, atom2):
+
+
+    Sx = (float(atom2.x) - float(atom1.x)) * (float(atom2.x)- float(atom1.x))
+    Sy = (float(atom2.y) - float(atom1.y)) * (float(atom2.y) - float(atom1.y))
+    Sz = (float(atom2.z) - float(atom1.z)) * (float(atom2.z) - float(atom1.z))
+
+    SS = Sx+ Sy + Sz
+    return SS
 
 
 def RMSFTwoAtom(atom1, atom2):

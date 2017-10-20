@@ -58,6 +58,27 @@ def runLigprep(psmilin, forcefield="OPLS3", stereoisoster=1):
     return psmilin[0:-4] + ".sdf"
 
 
+def runPadel(prin, pfilout, force=0):
+    """Input include a folder of sdf file"""
+    if force == 1:
+        try:
+            remove(pfilout)
+        except:pass
+
+    if path.exists(pfilout):
+        return pfilout
+
+    if not path.exists(prin):
+        return "ERROR - Padel Input"
+    else:
+        cmd = "java -jar " + PADEL + " -maxruntime 10000 -3d -dir " + str(prin) + " -file " + pfilout
+        print cmd
+        system(cmd)
+
+    return pfilout
+
+
+# too slow !!!
 def runKrakenX(prtemp, lcpd, pdesc):
 
     if path.exists(pdesc) and path.getsize(pdesc) > 100:
@@ -83,10 +104,26 @@ def runKrakenX(prtemp, lcpd, pdesc):
         chdir(prtemp)
         print "RUN ---- "
         print cmdKrakenX
-        #system("/home/aborrel/imitanib/results/analysis/desc/temp3D/test.sh")
+        system(cmdKrakenX)
         chdir(prsource)
 
     #return pdesc
+
+
+def babelConvertPDBtoSDF(ppdb, pfilout = ""):
+
+    if pfilout == "":
+        pfilout = ppdb[:-4] + ".sdf"
+
+    cmdconvert = "babel " + ppdb + " " +  pfilout + " 2>/dev/null"
+
+    if path.exists(pfilout) and path.getsize(pfilout) > 0:
+        return pfilout
+    else:
+        print cmdconvert
+        system(cmdconvert)
+    return pfilout
+
 
 
 def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
@@ -307,9 +344,9 @@ def extractFrame(ppcms, ptrj, prframes, step=10, MDtime=15000):
     #control numbr of frame extracted
     nbframeth = int(float(MDtime) / (step*10))
     nbframe = len(listdir(prframes))
-    print nbframeth, nbframe
+    #print nbframeth, nbframe
     if nbframe >= nbframeth:
-        print "l.302 - cut"
+        #print "l.302 - cut"
         return prframes
     else:
         cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(step) + "' -o pdb -b " + str(prframes) + "frame 2>/dev/null&"
