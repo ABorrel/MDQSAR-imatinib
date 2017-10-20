@@ -374,7 +374,7 @@ stepFrame = 10# reduce the number of extracted frames
 #cMDs.extractFrame()
 
 # extract BS and ligand
-#MDs.extractLigBSbyFrame(BSCutoff, namelig, clean=0)
+#cMDs.extractLigBSbyFrame(BSCutoff, namelig, clean=0)
 
 
 # 3. compute RMSD
@@ -391,7 +391,9 @@ prlig = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/lig/"
 prpockets = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/BSs/"
 prDesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
 cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prDesc)
-cMD.computeLigDesc()
+
+cMD.computeBSDesc()
+
 
 
 

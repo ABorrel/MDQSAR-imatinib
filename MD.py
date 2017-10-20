@@ -141,8 +141,8 @@ class MD:
 
     def extractLigBSbyFrame(self, BSCutoff, namelig, clean=0):
 
-        c = 800
-        for jobname in self.lMD.keys()[800:]:
+        c = 1
+        for jobname in self.lMD.keys():
             print c, jobname
             if "prframe" in self.lMD[jobname].keys():
                 self.lMD[jobname]["prBSs"] = self.pranalysis + str(jobname) + "/BSs/"
@@ -154,9 +154,9 @@ class MD:
                 nb_frame = len(listdir(self.lMD[jobname]["prframe"]))
 
                 if len(listdir(self.lMD[jobname]["prLig"])) >= nb_frame and len(listdir(self.lMD[jobname]["prBSs"])) >= nb_frame:
+                    c += 1
                     continue
                 else:
-
                     for pframe in lpframe:
                         cPDB = PDB.PDB(pframe, hydrogen=1)
                         latomlig = cPDB.get_lig(namelig)
