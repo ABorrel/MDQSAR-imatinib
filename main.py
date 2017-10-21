@@ -394,7 +394,7 @@ cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prDesc)
 
 cMD.computeBSDesc()
 
-
+# test for remote
 
 
 
