@@ -7,15 +7,16 @@ from os import path
 
 class pocket:
 
-    def __init__(self, latoms, lresatom, ppocket, ppocketres, pPDB):
-        self.pprotein = pPDB
-        self.latoms = latoms
-        self.lresatom = lresatom
-        self.ppocket = ppocket
-        self.ppocketres = ppocketres
+    def __init__(self, ppocket, pPDB):
 
-        pockres = PDB.PDB(ppocketres)
-        self.byresall = pockres.get_byres()
+        self.pprotein = pPDB
+        self.ppocket = ppocket
+
+        cPocket = PDB.PDB(ppocket)  # not included hydrogen
+        self.latoms = cPocket.get_lAtoms()
+        self.byresall = cPocket.get_byres()
+
+
 
     def get_alldescs(self):
         self.get_compo(1)

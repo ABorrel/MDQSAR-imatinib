@@ -391,10 +391,8 @@ prlig = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/lig/"
 prpockets = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/BSs/"
 prDesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
 cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prDesc)
-
+#cMD.computeLigDesc()
 cMD.computeBSDesc()
-
-# test for remote
 
 
 

@@ -4,17 +4,18 @@ from numpy import mean, std
 
 import pathFolder
 import runExternalSoft
-
+import pocketDescriptors
 
 
 class MDdescriptors:
 
-    def __init__(self, jobname, prlig, prBSs, prout):
+    def __init__(self, jobname, prlig, prBSs, prframe, prout):
 
         self.prout = pathFolder.createFolder(prout + jobname + "/")
         self.jobname = jobname
         self.prlig = prlig
         self.prBSs = prBSs
+        self.prframe = prframe
 
 
 
@@ -60,12 +61,18 @@ class MDdescriptors:
 
     def computeBSDesc(self):
 
+
+
         prtemp = pathFolder.createFolder(self.prout + "BsTemp/", clean=1)
 
         lBSs = listdir(self.prBSs)
 
         for BS in lBSs:
-            copyfile(self.prBSs + BS, prtemp + Bs)
+            pBS = self.prBSs + BS, prtemp + BS
+            pframe = self.prframe + .....
+            copyfile(pBS)
+            pocketDescriptors.pocket(ppocket, pPDB)
+
 
         for BS in lBSs:
 
