@@ -66,19 +66,23 @@ class MDdescriptors:
         prtemp = pathFolder.createFolder(self.prout + "BsTemp/", clean=1)
 
         lBSs = listdir(self.prBSs)
-
         for BS in lBSs:
-            pBS = self.prBSs + BS, prtemp + BS
-            pframe = self.prframe + .....
-            copyfile(pBS)
-            pocketDescriptors.pocket(ppocket, pPDB)
+            frameID = BS.split("_")[1].split(".")[0]
+
+            # copy in folder
+            pBS = prtemp + BS
+            pframe = prtemp + "frame_" + frameID + ".pdb"
+
+            copyfile(self.prBSs + BS, pBS)
+            copyfile(self.prframe + "frame_" + frameID + ".pdb", pframe)
 
 
-        for BS in lBSs:
+            cBS = pocketDescriptors.pocket(pBS, pframe)
+            cBS.get_alldescs()
+            cBS.ldescs
+            ddd
 
 
-
-            return
 
 
 

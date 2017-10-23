@@ -1,5 +1,5 @@
-import toolBox
-import runOtherProg
+import toolbox
+import runExternalSoft
 import parseNACCESS
 
 from os import path, system
@@ -22,7 +22,7 @@ def hydrophobicityKyte(dres, proportion=1):
     dout["kyteScore"] = 0
     for resname in dres.keys():
         res = resname.split("_")[0]
-        rescode = toolBox.transformAA(res)
+        rescode = toolbox.transformAA(res)
         dout["kyteScore"] += kyte_index[rescode]
 
     if proportion == 1:
@@ -38,7 +38,7 @@ def chargeRes(dres, proportion=1):
     dout["charges"] = 0
     for resname in dres.keys():
         res = resname.split("_")[0]
-        coderes = toolBox.transformAA(res)
+        coderes = toolbox.transformAA(res)
         if coderes in res_neg:
             dout["charges"] += -1
         if coderes in res_pos:
@@ -54,7 +54,7 @@ def ASADesc(dres, latoms, pprotein, ppocketatom, ppocketres):
 
     if not path.exists(pprotein.split(".")[0] + ".asa"):
         #compute NACCESS
-        lpSA = runOtherProg.runNACESS(pprotein)
+        lpSA = runExternalSoft.runNACESS(pprotein)
     else:
         lpSA = [pprotein.split(".")[0] + ".asa", pprotein.split(".")[0] + ".rsa"]
 

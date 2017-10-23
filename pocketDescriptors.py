@@ -14,7 +14,7 @@ class pocket:
 
         cPocket = PDB.PDB(ppocket)  # not included hydrogen
         self.latoms = cPocket.get_lAtoms()
-        self.byresall = cPocket.get_byres()
+        self.byresall = cPocket.get_byres(onlyres=1)
 
 
 
@@ -40,7 +40,7 @@ class pocket:
         denergy = {}
         denergy.update(energetic.hydrophobicityKyte(self.byresall, proportion))
         denergy.update(energetic.chargeRes(self.byresall, proportion))
-        denergy.update(energetic.ASADesc(self.byresall, self.latoms, self.pprotein, self.ppocket, self.ppocketres))
+        denergy.update(energetic.ASADesc(self.byresall, self.latoms, self.pprotein, self.ppocket, self.byresall))
         self.energy = denergy
         self.lenergy = denergy.keys()
 

@@ -13,7 +13,8 @@ LIGPREP = "/opt/schrodinger2017-1/ligprep"
 PADEL = "/home/aborrel/softwares/padel/PaDEL-Descriptor.jar"
 TMalign = "/home/aborrel/softwares/TMalign/TMalign"
 SHAEP = "/home/aborrel/softwares/shaep/shaep"
-
+PRNACCESS = "/home/aborrel/softwares/NACCESS/"
+PRADI = "/home/aborrel/softwares/RADI.4.0.1"
 
 # for home computer
 STRUCTCONVERT = "/opt/schrodinger2017-3/utilities/structconvert"
@@ -436,3 +437,101 @@ def RMSFLig(pfilin):
     cmd = "./plotRMSFlig.R " + pfilin
     print cmd
     system(cmd)
+
+
+
+def runRadi(ppocketatom, prout, debug=0):
+
+    pparam = writeParameterRadi(prout, ppocketatom)
+    pfilout = prout + "radi.out"
+
+    cmd_radi = PRADI + " < " + pparam + " > " + pfilout
+    if debug: print cmd_radi
+    system(cmd_radi)
+    system("rm " + pparam)
+    return pfilout
+
+
+
+def writeParameterRadi(prout, ppocketatom, extention="PDB"):
+    """
+    Write parameter file for radi
+    args: -> path directory descriptors
+          -> path pocket atom
+          -> type file extention
+    return: -> path file parameters
+    """
+
+    pfilout = prout + "parameter.radi"
+    filout = open(pfilout, "w")
+    filout.write(extention + "\n" + ppocketatom + "\nEPSTAB\n")
+    filout.close()
+    return pfilout
+
+
+
+def runNACESS(pPDBprot, probe="1.40", verbose=1):
+    """
+    Run NACCESS with file pdb
+    args: -> filin pdb
+    return: path files .asa and .rsa
+    """
+
+    # for multi run
+    if path.exists(pPDBprot[0:-4] + ".asa"):
+        return [pPDBprot[0:-4] + ".asa", pPDBprot[0:-4] + ".rsa"]
+
+    pr_desc = path.dirname(pPDBprot) + "/"
+    print pr_desc
+
+    # copy accall
+    cmd_copy = "copy " + PRNACCESS + "accall " + pr_desc
+    #os.system (cmd_copy)
+    copyfile(PRNACCESS + "accall", pr_desc + "accall")
+    copyfile(PRNACCESS + "vdw.radii", pr_desc + "vdw.radii")
+    cmd_chmod = "chmod 0777 " + pr_desc + "accall"
+    system(cmd_chmod)
+    # generate input file
+    finput = open(pr_desc + "accall.input", "w")
+    finput.write("PDBFILE " + str(pPDBprot) + "\nVDWFILE " + pr_desc + "vdw.radii\nSTDFILE standard.data\nPROBE " + str(probe) + "\nZSLICE 0.05\n")
+    finput.close()
+
+    # move result directory
+    exec_dir = getcwd()
+    chdir(pr_desc)
+
+    # run
+    cmd = pr_desc + "accall < " + pr_desc + "accall.input"
+    print cmd
+    system(cmd)
+    ddd
+    #except: return 'ERROR NACCESS'
+
+
+    # go back in script folder
+    chdir (exec_dir)
+
+    #===========================================================================
+    try:
+        system("rm -f " + pr_desc + pPDBprot.split("/")[-1][0:-4] + ".log")
+    except :
+        pass
+
+    try:
+        system("rm -f " + pr_desc + "accall")
+    except:
+        pass
+    try:
+        system("rm -f " + pr_desc + "accall.input")
+    except:
+        pass
+    try:
+        system("rm -f " + pr_desc + "vdw.radii")
+    except:
+        pass
+
+    # control errors
+    if path.getsize(pPDBprot[0:-4] + ".asa") == 0 :
+        return 'ERROR NACCESS'
+
+    return [pPDBprot[0:-4] + ".asa", pPDBprot[0:-4] + ".rsa"]

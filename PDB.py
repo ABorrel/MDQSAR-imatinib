@@ -295,7 +295,7 @@ class PDB:
 
 
 
-    def get_byres(self):
+    def get_byres(self, onlyres=0):
 
         try:
             return self.byres
@@ -309,6 +309,9 @@ class PDB:
 
         d_res = {}
         for atom in self.latom:
+            if onlyres == 1:
+                if not atom.resName in LRESSHORT:
+                    continue
             if atom.chainID == " ":
                 k_in = str(atom.resName) + "_" + str(atom.resSeq) + "_0"
             else:

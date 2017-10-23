@@ -389,8 +389,9 @@ stepFrame = 10# reduce the number of extracted frames
 jobname = "CHEMBL3617738"
 prlig = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/lig/"
 prpockets = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/BSs/"
+prframe = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/framesMD/"
 prDesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
-cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prDesc)
+cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prframe, prDesc)
 #cMD.computeLigDesc()
 cMD.computeBSDesc()
 

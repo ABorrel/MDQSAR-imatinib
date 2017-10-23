@@ -7,8 +7,8 @@ Created on 13 sept. 2013
 import re
 from json import tool
 
-import runOtherProg
-import toolBox
+import runExternalSoft
+import toolbox
 from os import path
 
 
@@ -24,10 +24,10 @@ def get_RADII(ppocketatom):
     print prout, "RADII run"
 
     # check integrity file for RADII software
-    toolBox.checkHEADERinitialLinePDBfile(ppocketatom)
-    toolBox.checkENDFinalLinePDBfile(ppocketatom)
+    toolbox.checkHEADERinitialLinePDBfile(ppocketatom)
+    toolbox.checkENDFinalLinePDBfile(ppocketatom)
 
-    pfileRADII = runOtherProg.runRadi(ppocketatom, prout)
+    pfileRADII = runExternalSoft.runRadi(ppocketatom, prout)
     filinRADII = open(pfileRADII, "r")
     element_read = filinRADII.read()
     filinRADII.close()

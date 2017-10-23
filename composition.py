@@ -1,7 +1,7 @@
 import string
 from numpy import mean
 
-import toolBox
+import toolbox
 
 # Residues -> VENN Faure 2008
 res_all = "ACDEFGHIKLMNPQRSTVWY"
@@ -75,7 +75,9 @@ def compoRes(drespocket, proportion=1):
     #count global
     for resPocket in drespocket.keys():
         nameres = resPocket.split("_")[0]
-        dout[toolBox.transformAA(nameres)] += 1
+        if nameres in res_all:
+            #print nameres
+            dout[toolbox.transformAA(nameres)] += 1
 
     #proportion
     if proportion == 1:
@@ -96,7 +98,7 @@ def compoResType(drespocket, proportion=1):
 
     for resPocket in drespocket.keys():
         nameres = resPocket.split("_")[0]
-        coderes = toolBox.transformAA(nameres)
+        coderes = toolbox.transformAA(nameres)
 
         if coderes in res_pos:
             dout["pos"] += 1
