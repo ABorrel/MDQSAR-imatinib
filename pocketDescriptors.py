@@ -40,8 +40,10 @@ class pocket:
         denergy = {}
         denergy.update(energetic.hydrophobicityKyte(self.byresall, proportion))
         denergy.update(energetic.chargeRes(self.byresall, proportion))
-        denergy.update(energetic.ASADesc(self.byresall, self.latoms, self.pprotein, self.ppocket, self.byresall))
+        denergy.update(energetic.ASADesc(self.pprotein, self.ppocket))
         self.energy = denergy
+        print denergy
+        ddd
         self.lenergy = denergy.keys()
 
 
