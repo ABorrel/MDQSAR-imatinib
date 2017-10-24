@@ -129,40 +129,40 @@ def FPIMatrix(sdocking, pprotein, prFPI):
             j = j + 1
         i = i + 1
 
-def computeFPIBSBased(cMDs, prout, nameLig):
+#def computeFPIBSBased(cMDs, prout, nameLig):
 
-    dout = {}
-    prtempFPI = pathFolder.createFolder(prout + "tempFPI/")
-    for nameMD in cMDs.lMD.keys():
-        prtempMDFPI = pathFolder.createFolder(prtempFPI + nameMD + "/")
+#    dout = {}
+#    prtempFPI = pathFolder.createFolder(prout + "tempFPI/")
+#    for nameMD in cMDs.lMD.keys():
+#        prtempMDFPI = pathFolder.createFolder(prtempFPI + nameMD + "/")
 
-        dout[nameMD] = {}
-        prframes = cMDs.lMD[nameMD]["prframe"]
+#        dout[nameMD] = {}
+#        prframes = cMDs.lMD[nameMD]["prframe"]
 
-        i = 0
-        imax = float(cMDs.MDtime)/float(cMDs.interval)
+#        i = 0
+#        imax = float(cMDs.MDtime)/float(cMDs.interval)
         #imax = 10 # !!!!!!!!!!!!!!!!!!!!!!!!
-        dcFpI = {}
-        while i <= imax:
-            frameName = "frame_" + str("%05d" % (i)) + ".pdb"
-            pframe = prframes + "/" + frameName
+#        dcFpI = {}
+#        while i <= imax:
+#            frameName = "frame_" + str("%05d" % (i)) + ".pdb"
+#            pframe = prframes + "/" + frameName
 
-            pFPItemp = pathFolder.createFolder(prtempMDFPI + frameName[0:-4] + "/")
-            dframe = PDB.PDB(pframe, hydrogen=1)
+#            pFPItemp = pathFolder.createFolder(prtempMDFPI + frameName[0:-4] + "/")
+#            dframe = PDB.PDB(pframe, hydrogen=1)
 
-            CFPI = FPI.ligFPI(dframe, pFPItemp, ligID=nameLig)
-            CFPI.computeFPI()
-            dcFpI[frameName] = CFPI
+#            CFPI = FPI.ligFPI(dframe, pFPItemp, ligID=nameLig)
+#            CFPI.computeFPI()
+#            dcFpI[frameName] = CFPI
 
-            i += 1
+#            i += 1
 
-        FPIMD = FPI.CompareFPIMD(dcFpI, prtempMDFPI)
-        FPIMD.MDprop()
-        FPIMD.pobaFPI()
-        #FPIMD.MDtanimoto() # useless if only ligand is considered
+#        FPIMD = FPI.CompareFPIMD(dcFpI, prtempMDFPI)
+ #       FPIMD.MDprop()
+ #       FPIMD.pobaFPI()
+ #       #FPIMD.MDtanimoto() # useless if only ligand is considered
 
 
-    return dout
+#    return dout
 
 
 
@@ -359,6 +359,7 @@ stepWait = 9
 nbGPU = 3#maybe integrate in initialization, code clearity
 nbCPU = 10
 stepFrame = 10# reduce the number of extracted frames
+nameLig = "UNK"
 
 # 1. Merge poses and proteins
 #cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
@@ -366,8 +367,6 @@ stepFrame = 10# reduce the number of extracted frames
 #cMDs.runMultipleMD()# run MD
 
 # 2. Preparation MD
-# name ligand for the MD
-#namelig = "UNK"# classic name given by glide
 
 # extract frame
 #cMDs.centerFrame()
@@ -382,8 +381,8 @@ stepFrame = 10# reduce the number of extracted frames
 
 
 
-# ligand descriptors #
-######################
+# MD descriptors   #
+####################
 # short cut
 
 jobname = "CHEMBL3617738"
@@ -391,9 +390,10 @@ prlig = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/lig/"
 prpockets = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/BSs/"
 prframe = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/framesMD/"
 prDesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
-cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prframe, prDesc)
+cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prframe, nameLig, prDesc)
 #cMD.computeLigDesc()
-cMD.computeBSDesc()
+#cMD.computeBSDesc()
+cMD.computeFPI()
 
 
 

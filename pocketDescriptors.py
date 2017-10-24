@@ -35,6 +35,8 @@ class pocket:
         self.compo = dcompo
         self.lcompo = dcompo.keys()
 
+        print self.compo
+
     def get_energetic(self, proportion=1):
 
         denergy = {}
@@ -42,8 +44,6 @@ class pocket:
         denergy.update(energetic.chargeRes(self.byresall, proportion))
         denergy.update(energetic.ASADesc(self.pprotein, self.ppocket))
         self.energy = denergy
-        print denergy
-        ddd
         self.lenergy = denergy.keys()
 
 
@@ -53,7 +53,6 @@ class pocket:
         dgeo.update(geometric.get_RADII(self.ppocket))
         self.geometry = dgeo
         self.lgeo = dgeo.keys()
-
 
 
     def writeDesc(self, pdesc, rowname):

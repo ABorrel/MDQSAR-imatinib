@@ -65,9 +65,10 @@ class proteinFPI:
 
 class ligFPI:
 
-    def __init__(self, cPDB, prFPI, ligID=""):
+    def __init__(self, pframe, prFPI, ligID=""):
 
-        self.CPDB = cPDB
+        self.pframe = pframe
+        self.CPDB = PDB.PDB(pframe)
         self.prFPI = prFPI
         self.lig = ligID
 

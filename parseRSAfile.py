@@ -38,5 +38,5 @@ class RESrsa:
             self.ABSpolar = lineRSA[68:74].replace(" ", "")
             self.RELpolar = lineRSA[75:80].replace(" ", "")
 
-        print self.recoder, self.resName, self.chainID, self.resSeq, self.ABSall, self.RELall, self.ABSside, self.ABSmain, self.RELmain
-        print self.ABSnonpolar, self.RELnonpolar, self.ABSpolar, self.RELpolar
+        #print self.recoder, self.resName, self.chainID, self.resSeq, self.ABSall, self.RELall, self.ABSside, self.ABSmain, self.RELmain
+        #print self.ABSnonpolar, self.RELnonpolar, self.ABSpolar, self.RELpolar

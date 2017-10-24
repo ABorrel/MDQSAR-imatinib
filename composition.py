@@ -75,9 +75,9 @@ def compoRes(drespocket, proportion=1):
     #count global
     for resPocket in drespocket.keys():
         nameres = resPocket.split("_")[0]
+        nameres = toolbox.transformAA(nameres)
         if nameres in res_all:
-            #print nameres
-            dout[toolbox.transformAA(nameres)] += 1
+            dout[nameres] += 1
 
     #proportion
     if proportion == 1:
@@ -139,7 +139,7 @@ def compoAtom(latomspocket, proportion=1):
     for typeatom in ltypeatom:
         dout[typeatom] = 0.0
     for elem in lelem:
-        dout[elem] = 0.0
+        dout[elem + "atom"] = 0.0
 
     for atompocket in latomspocket:
         if atompocket.name in Ctype:
@@ -176,20 +176,20 @@ def compoAtom(latomspocket, proportion=1):
             dout["Hyd"] = dout["Hyd"] + 1
 
         if atompocket.element == "C":
-            dout["C"] = dout["C"] + 1
+            dout["Catom"] += 1
         if atompocket.element == "O":
-            dout["O"] = dout["O"] + 1
+            dout["Oatom"] += 1
         if atompocket.element == "N":
-            dout["N"] = dout["N"] + 1
+            dout["Natom"] += 1
         if atompocket.element == "S":
-            dout["S"] = dout["S"] + 1
+            dout["Satom"] += 1
 
     if proportion == 1:
         for typeatom in ltypeatom:
             dout["p" + typeatom] = dout[typeatom] / catom
 
         for elem in lelem:
-            dout["p" + elem] = dout[elem] / catom
+            dout["p" + elem] = dout[elem + "atom"] / catom
 
     return dout
 
