@@ -142,33 +142,46 @@ class MDdescriptors:
 
     def computeFPI(self):
 
-        prtemp = pathFolder.createFolder(self.prout + "FPITemp/", clean=1)
+        prtemp = pathFolder.createFolder(self.prout + "FPITemp/", clean=0)
 
         llig = listdir(self.prlig)
         llig = sorted(llig)
 
+
+        lpFPI = []
+        # compute FPI for lig
         for lig in llig:
             frameID = lig.split("_")[1].split(".")[0]
 
             plig = prtemp + "LGD_" + frameID + ".pdb"
             pframe = prtemp + "frame_" + frameID + '.pdb'
+            pBS = prtemp + "BS_" + frameID + ".pdb"
 
             copyfile(self.prlig + lig, plig)
             copyfile(self.prframe + "frame_" + frameID + ".pdb", pframe)
+            copyfile(self.prBSs + "BS_" + frameID + ".pdb", pBS)
 
 
-            CFPI = FPI.ligFPI(pframe, prtemp, ligID=self.nameLig)
-            CFPI.computeFPI()
-            dddd
+            CFPI = FPI.ligFPI(pframe, plig, pBS, prtemp)
+            pFPI = CFPI.computeFPI()
+            lpFPI.append(pFPI)
 
-            dcFpI[frameName] = CFPI
+        # combine different FPI
 
-            FPIMD = FPI.CompareFPIMD(dcFpI, prtempMDFPI)
-            FPIMD.MDprop()
-            FPIMD.pobaFPI()
-            # FPIMD.MDtanimoto() # useless if only ligand is considered
+        #dcFpI[frameID] = CFPI
 
-            return dout
+        cMDPFI = FPI.FPIMD(lpFPI, self.prout)
+        cMDPFI.loadFPIs()
+
+        # matrix tanimoto
+        #cMDPFI.buildTanimotoMatrix()
+        cMDPFI.MDFPIbyRes()
+
+        #FPIMD = FPI.CompareFPIMD(dcFpI, prtemp)
+        #PIMD.MDprop()
+        #FPIMD.pobaFPI()
+        #FPIMD.MDtanimoto() # useless if only ligand is considered
+
 
         return
 

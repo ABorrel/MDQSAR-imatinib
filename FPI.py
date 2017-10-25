@@ -65,23 +65,24 @@ class proteinFPI:
 
 class ligFPI:
 
-    def __init__(self, pframe, prFPI, ligID=""):
+    def __init__(self, pframe, plig, pBS, prout):
 
         self.pframe = pframe
-        self.CPDB = PDB.PDB(pframe)
-        self.prFPI = prFPI
-        self.lig = ligID
+        self.plig = plig
+        self.pBS = pBS
+        self.prout = prout
+
 
     def computeFPI(self, clean=0):
 
-        pfileFPI = self.prFPI + "FPIlig.csv"
+
+        frameID = self.plig.split("/")[-1].split("_")[1].split(".")[0]
+
+        pfileFPI = self.prout + "FPI_" + frameID + ".csv"
 
         # if file exsit => load PFI
-        if path.exists(pfileFPI) and path.getsize(pfileFPI) > 50 and clean==0:
-            dout = toolbox.loadTableFPI(pfileFPI)
-            self.pfileFPI = pfileFPI
-            self.FPI = dout
-            return dout
+        if path.exists(pfileFPI) and clean==0:
+            return pfileFPI
 
 
         fileFPI = open(pfileFPI, "w")
@@ -89,57 +90,38 @@ class ligFPI:
         # header
         fileFPI.write("Ligand and pocket res\tList residues in pocket\tFPI\n")
 
-        # need to define one pocket by residues -> folder of pockets
-        prpocket = self.prFPI + "Pockets/"
-        lppocket = []
-        lplig = []
+        # define residue pocket
+        cPocket = PDB.PDB(self.pBS, hydrogen=1)
+        cPocket.get_byres(onlyres=1)
+        lres = cPocket.getListResForFPI()
 
-        try:
-            makedirs(prpocket)
-        except:
-            pass
+        pyplif.get_FPI(pligPDB=self.plig, ppocketPDB=self.pBS, lres=lres, filout=fileFPI)
 
-        dres = self.CPDB.get_byres()
-        lresconsidered = []
+        return pfileFPI
 
-        for resatoms in dres.keys():
-            resname = resatoms.split("_")[0]
-            if self.lig != [] and self.lig != resname:
-                continue
-            elif resname in PDB.LRES:
-                continue
-            else:
-                lresconsidered.append(resatoms)
-                #Pocket larged -> case where we would like to analyse FPI for every res included in the BS
-                #latompocketlarge = self.CPDB.get_BSfromLatom(latomin=dres[resatoms], dpocket=6, dmax=15)
-                #for atompocketlarge in latompocketlarge:
-                #    respocket = atompocketlarge.resName + "_" + atompocketlarge.resSeq + "_" + atompocketlarge.chainID
-                #    if not respocket in lresconsidered:
-                #        lresconsidered.append(respocket)
-
-        for resConsidered in lresconsidered:
-            # Res as a ligand
-            latomres = deepcopy(dres[resConsidered])
-            PDB.changeRecoder(latomres, "HETATM")
-            pligand = prpocket + resConsidered + ".pdb"
-            self.CPDB.writePDB(latoms=latomres, pfilout=pligand)
-            lplig.append(pligand)
+        #for resBS in cPocket.byres.keys():
+        #    # Res as a ligand
+        #    latomres = deepcopy(dres[resConsidered])
+        #    PDB.changeRecoder(latomres, "HETATM")
+        #    pligand = prpocket + resConsidered + ".pdb"
+        #    self.CPDB.writePDB(latoms=latomres, pfilout=pligand)
+        #    lplig.append(pligand)
 
             # Define pocket
-            latomspocket = self.CPDB.get_BSfromLatom(latomin=latomres)
-            ppocket = prpocket + "pocket_" + resConsidered + ".pdb"
-            self.CPDB.writePDB(latoms=latomspocket, pfilout=ppocket)
-            lppocket.append(ppocket)
+        #    latomspocket = self.CPDB.get_BSfromLatom(latomin=latomres)
+        #    ppocket = prpocket + "pocket_" + resConsidered + ".pdb"
+        #    self.CPDB.writePDB(latoms=latomspocket, pfilout=ppocket)
+        #    lppocket.append(ppocket)
 
             # format list of residues considered
-            lresformated = PDB.convert_ListAtomtoList(latomspocket)
+        #    lresformated = PDB.convert_ListAtomtoList(latomspocket)
 
             # run FPI
-            dout[resConsidered] = pyplif.get_FPI(pligPDB=pligand, ppocketPDB=ppocket, lres=lresformated, filout=fileFPI)
+        #    dout[resConsidered] = pyplif.get_FPI(pligPDB=pligand, ppocketPDB=ppocket, lres=lresformated, filout=fileFPI)
 
-        fileFPI.close()
-        self.pfileFPI = pfileFPI
-        self.FPI = dout
+        #fileFPI.close()
+        #self.pfileFPI = pfileFPI
+        #self.FPI = dout
 
 
 
@@ -149,75 +131,198 @@ class ligFPI:
 ########################
 
 
-class CompareFPIMD:
+class FPIMD:
 
-    def __init__(self, dFPI, pFPI):
-        self.dFPI = dFPI
-        self.pFPI = pFPI
+    def __init__(self, lpFPI, prout):
+        self.lpFPI = lpFPI
+        self.prout = prout
 
-    def MDtanimoto(self, mpeg=1): # need to change
+    def loadFPIs(self):
 
-        prout = self.pFPI + "FPItanimoto/"
-        if not path.exists(prout):
-            makedirs(prout)
+        dout = {}
+        lresBS = []
+        for pFPI in self.lpFPI:
+            filin = open(pFPI, "r")
+            llinesFPI = filin.readlines()
+            filin.close()
 
-        self.ptanimoto = prout + "FPIScore.csv"
-        pfliloutPDB = prout + "protBfact_state"
+            lres = llinesFPI[1].split("\t")[1].split("-")
+            lFPI = llinesFPI[1].strip().split("\t")[2].split("-")
+            frame = llinesFPI[1].split("\t")[0]
+            dout[frame] = {}
 
-        filout = open(self.ptanimoto, "w")
-        filout.write("resName\tMFPI\tSDFPI\n")
-        dcompare = {}
-        lfilePDB = []
+            i = 0
+            nbres = len(lFPI)
+            while i < nbres:
+                if lFPI[i] == "0000000":
+                    i += 1
+                    continue
+                else:
+                    if not lres[i] in lresBS:
+                        lresBS.append(lres[i])
+                    dout[frame][lres[i]] = lFPI[i]
+                i += 1
 
-        i = 0
-        imax = len(self.dFPI.keys())
-        print imax, "l43-analysis"
+        # write matrix FPI
+        pfilout = self.prout + "FPImatrix"
+        filout = open(pfilout, "w")
 
-        while i < (imax-1):
-            j = i + 1
+        filout.write("frame\t" + "\t".join(lresBS) + "\n")
 
-            print self.dFPI[self.dFPI.keys()[i]].FPI
+        lframes = sorted(dout.keys())
+        for frame in lframes:
+            filout.write(str(frame))
+            for resBS in lresBS:
+                if not resBS in dout[frame].keys():
+                    dout[frame][resBS] = "0000000"
+                filout.write("\t" + str(dout[frame][resBS]))
+            filout.write("\n")
+        self.MDFPI = dout
 
-            lresFrame = self.dFPI[self.dFPI.keys()[i]].FPI.keys()
-            dcomparetemp = {}
-            for resName in lresFrame:
-                lbit1res = ""
-                lbit2res = ""
-                if not resName in dcompare.keys():
-                    dcompare[resName] = []
+
+    def buildTanimotoMatrix(self, mpeg=1): # need to change
+
+        pTanimotoMatrix = self.prout + "FPITanimoto"
+        TanimotoMatrix = open(pTanimotoMatrix, "w")
+
+        lframes = sorted(self.MDFPI.keys())
+        TanimotoMatrix.write("\t".join(lframes) + "\n")
+
+        for frame in lframes:
+            TanimotoMatrix.write(frame)
+            for frame2 in lframes:
+                bitframe1 = ""
+                bitframe2 = ""
+                for res in self.MDFPI[frame].keys():
+                    bitframe1 = bitframe1 + self.MDFPI[frame][res]
+                    bitframe2 = bitframe2 + self.MDFPI[frame2][res]
+                scoreTanimoto = calculate.jaccardIndex(bitframe1, bitframe2)
+                TanimotoMatrix.write("\t" + str(scoreTanimoto))
+            TanimotoMatrix.write("\n")
+        TanimotoMatrix.close()
+        self.pTmatrix = pTanimotoMatrix
+
+
+
+    def MDFPIbyRes(self):
+
+        dbyres = {}
+        for frame in self.MDFPI.keys():
+            for res in self.MDFPI[frame].keys():
+                if not res in dbyres.keys():
+                    dbyres[res] = {}
+                    dbyres[res]["bits"] = []
+                dbyres[res]["bits"].append(self.MDFPI[frame][res])
+
+
+        for res in dbyres.keys():
+            dbyres[res]["TanimotoScore"] = []
+            dbyres[res]["FPIAv"] = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+
+            i = 0
+            nFPI = len(dbyres[res]["bits"])
+            while i < nFPI:
+                b = 0
+                while b < len(dbyres[res]["bits"][i]):
+                    dbyres[res]["FPIAv"][b] += int(dbyres[res]["bits"][i][b])
+                    b += 1
+
+                j = i + 1
+                while j < nFPI:
+                    Tanimotores = calculate.jaccardIndex(dbyres[res]["bits"][i], dbyres[res]["bits"][j])
+                    dbyres[res]["TanimotoScore"].append(Tanimotores)
+                    j += 1
+                i += 1
+
+        pfiloutTanimotoRes = self.prout + "FPIbyResTanimoto"
+        filouTanimotoRes = open(pfiloutTanimotoRes, "w")
+
+        pfiloutAVFPI = self.prout + "FPIbyResMean"
+        filoutAvFPI = open(pfiloutAVFPI, "w")
+
+
+        filouTanimotoRes.write("\t".join(dbyres.keys()) + "\nBS")
+        filoutAvFPI.write("\t".join(dbyres.keys()) + "\nBS")
+
+        for res in dbyres.keys():
+            filouTanimotoRes.write("\t" + str(mean(dbyres[res]["TanimotoScore"])))
+
+            lav = []
+            for bit in dbyres[res]["FPIAv"]:
+                lav.append(str(bit/len(self.MDFPI.keys())))
+            filoutAvFPI.write("\t" + " ".join(lav))
+
+        filoutAvFPI.write("\n")
+        filouTanimotoRes.write("\n")
+
+        filouTanimotoRes.close()
+        filoutAvFPI.close()
+        self.FPIbyres = dbyres
+
+
+
+
+        #prout = self.pFPI + "FPItanimoto/"
+        #if not path.exists(prout):
+        #    makedirs(prout)
+
+        #self.ptanimoto = prout + "FPIScore.csv"
+        #pfliloutPDB = prout + "protBfact_state"
+
+        #filout = open(self.ptanimoto, "w")
+        #filout.write("resName\tMFPI\tSDFPI\n")
+        #dcompare = {}
+        #lfilePDB = []
+
+#        i = 0
+ #       imax = len(self.dFPI.keys())
+  #      print imax, "l43-analysis"
+
+#        while i < (imax-1):
+#            j = i + 1
+
+#            print self.dFPI[self.dFPI.keys()[i]].FPI
+
+            #lresFrame = self.dFPI[self.dFPI.keys()[i]].FPI.keys()
+            #dcomparetemp = {}
+            #for resName in lresFrame:
+            ##    lbit1res = ""
+            #    lbit2res = ""
+            #    if not resName in dcompare.keys():
+            #        dcompare[resName] = []
 
                 #retrieve list residues pocket and remove mutual res
                 # case where it is not exactly the same residue
-                if not resName in self.dFPI[self.dFPI.keys()[i]].FPI.keys():
-                    lrespocket = self.dFPI[self.dFPI.keys()[j]].FPI[resName].keys()
-                elif not resName in self.dFPI[self.dFPI.keys()[j]].FPI.keys():
-                    lrespocket = self.dFPI[self.dFPI.keys()[i]].FPI[resName].keys()
-                else:
-                    lrespocket = self.dFPI[self.dFPI.keys()[i]].FPI[resName].keys() + self.dFPI[self.dFPI.keys()[j]].FPI[resName].keys()
-                    lrespocket = list(set(lrespocket))
+            #    if not resName in self.dFPI[self.dFPI.keys()[i]].FPI.keys():
+            #        lrespocket = self.dFPI[self.dFPI.keys()[j]].FPI[resName].keys()
+            #    elif not resName in self.dFPI[self.dFPI.keys()[j]].FPI.keys():
+            #        lrespocket = self.dFPI[self.dFPI.keys()[i]].FPI[resName].keys()
+            #    else:
+            #        lrespocket = self.dFPI[self.dFPI.keys()[i]].FPI[resName].keys() + self.dFPI[self.dFPI.keys()[j]].FPI[resName].keys()
+            #        lrespocket = list(set(lrespocket))
 
 
-                for respocket in lrespocket:
+            #    for respocket in lrespocket:
 
                     # case frame in i
-                    resbit1 = "0000000"
-                    resbit2 = "0000000"
+            #        resbit1 = "0000000"
+            #        resbit2 = "0000000"
 
-                    if resName in self.dFPI[self.dFPI.keys()[i]].FPI.keys():
-                        if respocket in self.dFPI[self.dFPI.keys()[i]].FPI[resName].keys():
-                            resbit1 = self.dFPI[self.dFPI.keys()[i]].FPI[resName][respocket]
+            #        if resName in self.dFPI[self.dFPI.keys()[i]].FPI.keys():
+            #            if respocket in self.dFPI[self.dFPI.keys()[i]].FPI[resName].keys():
+            #                resbit1 = self.dFPI[self.dFPI.keys()[i]].FPI[resName][respocket]
 
-                    if resName in self.dFPI[self.dFPI.keys()[j]].FPI.keys():
-                        if respocket in self.dFPI[self.dFPI.keys()[j]].FPI[resName].keys():
-                            resbit2 = self.dFPI[self.dFPI.keys()[j]].FPI[resName][respocket]
+            #        if resName in self.dFPI[self.dFPI.keys()[j]].FPI.keys():
+            #            if respocket in self.dFPI[self.dFPI.keys()[j]].FPI[resName].keys():
+            #                resbit2 = self.dFPI[self.dFPI.keys()[j]].FPI[resName][respocket]
 
-                    if resbit1 != "0000000" and resbit2 != "0000000":
-                        lbit1res = lbit1res + resbit1
-                        lbit2res = lbit2res + resbit2
+            #        if resbit1 != "0000000" and resbit2 != "0000000":
+            #            lbit1res = lbit1res + resbit1
+            #            lbit2res = lbit2res + resbit2
 
-                scoreJ = calculate.jaccardIndex(lbit1res, lbit2res)
-                dcompare[resName].append(scoreJ)
-                dcomparetemp[resName] = scoreJ
+            #    scoreJ = calculate.jaccardIndex(lbit1res, lbit2res)
+            #    dcompare[resName].append(scoreJ)
+            #    dcomparetemp[resName] = scoreJ
 
             # write PDB file
             #print self.dFPI.keys()[j]
@@ -225,27 +330,27 @@ class CompareFPIMD:
             #print dir(self.dFPI[self.dFPI.keys()[j]])
             #print dir(self.dFPI[self.dFPI.keys()[j]].CPDB)
 
-            self.dFPI[self.dFPI.keys()[j]].CPDB.change_bfactor(dcomparetemp)
-            self.dFPI[self.dFPI.keys()[j]].CPDB.writePDB(pfliloutPDB + str(i) + ".pdb", model=0)
-            lfilePDB.append(pfliloutPDB + str(i) + ".pdb")
-            i += 1
+            #self.dFPI[self.dFPI.keys()[j]].CPDB.change_bfactor(dcomparetemp)
+            #self.dFPI[self.dFPI.keys()[j]].CPDB.writePDB(pfliloutPDB + str(i) + ".pdb", model=0)
+            #lfilePDB.append(pfliloutPDB + str(i) + ".pdb")
+            #i += 1
 
 
-        for res in dcompare.keys():
-            #lscore = dcompare[res]
-            M = mean(dcompare[res])
-            SD = std(dcompare[res])
-            filout.write(str(res) + "\t" + str(M) + "\t" + str(SD) + "\n")
-            dcompare[res] = M
-        filout.close()
+        #for res in dcompare.keys():
+        #    #lscore = dcompare[res]
+        #    M = mean(dcompare[res])
+        #    SD = std(dcompare[res])
+        #    filout.write(str(res) + "\t" + str(M) + "\t" + str(SD) + "\n")
+        #    dcompare[res] = M
+        #filout.close()
 
-        if mpeg == 1:
-            movie.generateMovie(lfilePDB, prout + "FPI_evolution.mpeg")
+        #if mpeg == 1:
+        #    movie.generateMovie(lfilePDB, prout + "FPI_evolution.mpeg")
 
 
         #color by tanimoto
-        self.dFPI[self.dFPI.keys()[imax-1]].CPDB.change_bfactor(dcompare)
-        self.dFPI[self.dFPI.keys()[imax-1]].CPDB.writePDB(prout + "MprotBfact.pdb")
+        #self.dFPI[self.dFPI.keys()[imax-1]].CPDB.change_bfactor(dcompare)
+        #self.dFPI[self.dFPI.keys()[imax-1]].CPDB.writePDB(prout + "MprotBfact.pdb")
 
 
     def MDprop(self):

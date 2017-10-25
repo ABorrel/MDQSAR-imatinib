@@ -507,6 +507,22 @@ class PDB:
 
 
 
+    def getListResForFPI(self):
+
+        try:
+            lres = self.byres
+        except:
+            self.get_byres()
+
+        lout = []
+        for res in self.byres:
+            res = res.split("_")
+            lout.append(res[0] + str(res[1]))
+        return lout
+
+
+
+
 
 class Atom:
     def __init__(self, linePDB):
@@ -761,6 +777,7 @@ class Atom:
 
 
 
+
 class MD_PDB:
 
     def __init__(self, pPDB):
@@ -875,6 +892,7 @@ def convert_ListAtomtoList(latomin):
         if not nameatom in lout:
             lout.append(nameatom)
     return lout
+
 
 
 #dtest = PDB(PDB_input="/home/aborrel/MDPockets/dataWNK/pdb_WNK1_with_lig/WNK-out-MD/MODEL-1.pdb", hydrogen=1)
