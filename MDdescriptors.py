@@ -170,12 +170,15 @@ class MDdescriptors:
 
         #dcFpI[frameID] = CFPI
 
-        cMDPFI = FPI.FPIMD(lpFPI, self.prout)
+        cMDPFI = FPI.FPIMD(lpFPI, self.jobname, self.prout)
         cMDPFI.loadFPIs()
 
         # matrix tanimoto
         #cMDPFI.buildTanimotoMatrix()
-        cMDPFI.MDFPIbyRes()
+        #cMDPFI.MDFPIbyRes()
+
+        # desc
+        cMDPFI.DescFPI()
 
         #FPIMD = FPI.CompareFPIMD(dcFpI, prtemp)
         #PIMD.MDprop()
