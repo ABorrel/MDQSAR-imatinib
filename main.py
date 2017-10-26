@@ -351,27 +351,27 @@ stepFrame = 10# reduce the number of extracted frames
 nameLig = "UNK"
 
 # 1. Merge poses and proteins
-#cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
-#cMDs.initialisation(prDockingPoseSP, pprotein)
-#cMDs.runMultipleMD()# run MD
+cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
+cMDs.initialisation(prDockingPoseSP, pprotein)
+cMDs.runMultipleMD()# run MD
 
 # 2. Preparation MD
 
 # extract frame
-#cMDs.centerFrame()
-#cMDs.extractFrame()
+cMDs.centerFrame()
+cMDs.extractFrame()
 
 # extract BS and ligand
-#cMDs.extractLigBSbyFrame(BSCutoff, namelig, clean=0)
+cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
 
 
 # 3. compute RMSD
-#cMDs.analyseRMSD()
+cMDs.analyseRMSD()
 
 
-
-# MD descriptors   #
-####################
+###################
+# MD descriptors  #
+###################
 prMDdesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
 pathFolder.createFolder(prMDdesc)
 computeMDdesc(pranalysis, prMDdesc)

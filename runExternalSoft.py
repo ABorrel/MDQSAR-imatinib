@@ -340,7 +340,7 @@ def centerMD(ppcms, ptrj, wait = 0):
     return [poutcms, pouttrj]
 
 
-def extractFrame(ppcms, ptrj, prframes, step=10, MDtime=15000):
+def extractFrame(ppcms, ptrj, prframes, noHOH =1, step=10, MDtime=15000):
 
     #control numbr of frame extracted
     nbframeth = int(float(MDtime) / (step*10))
@@ -350,7 +350,11 @@ def extractFrame(ppcms, ptrj, prframes, step=10, MDtime=15000):
         #print "l.302 - cut"
         return prframes
     else:
-        cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(step) + "' -o pdb -b " + str(prframes) + "frame 2>/dev/null&"
+        if noHOH == 0:
+            cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(step) + "' -o pdb -b " + str(prframes) + "frame 2>/dev/null&"
+        else:
+            cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(
+                step) + "' -o pdb -a 'not water' -b " + str(prframes) + "frame 2>/dev/null&"
         print(cmd)
         system(cmd)
         return prframes

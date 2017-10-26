@@ -105,7 +105,7 @@ class MD:
         lprframe = []
         i = 1
         for jobname in self.lMD.keys():
-            print jobname, i
+            print "Extract - Frame =>", jobname, i
             if "pcmsout" in self.lMD[jobname].keys() and "prtrj" in self.lMD[jobname].keys():
                 prframes = self.pranalysis + str(jobname) + "/framesMD/"
                 lprframe.append(prframes)
