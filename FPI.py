@@ -243,7 +243,7 @@ class FPIMD:
 
 
         filouTanimotoRes.write("MDID\t" + "\t".join(dbyres.keys()) + "\n" + self.jobname)
-        filoutAvFPI.write("MDID\t" + "\t".join(dbyres.keys()) + "\n" + + self.jobname)
+        filoutAvFPI.write("MDID\t" + "\t".join(dbyres.keys()) + "\n" + self.jobname)
 
         for res in dbyres.keys():
             filouTanimotoRes.write("\t" + str(mean(dbyres[res]["TanimotoScore"])))

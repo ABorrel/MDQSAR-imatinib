@@ -129,42 +129,6 @@ def FPIMatrix(sdocking, pprotein, prFPI):
             j = j + 1
         i = i + 1
 
-#def computeFPIBSBased(cMDs, prout, nameLig):
-
-#    dout = {}
-#    prtempFPI = pathFolder.createFolder(prout + "tempFPI/")
-#    for nameMD in cMDs.lMD.keys():
-#        prtempMDFPI = pathFolder.createFolder(prtempFPI + nameMD + "/")
-
-#        dout[nameMD] = {}
-#        prframes = cMDs.lMD[nameMD]["prframe"]
-
-#        i = 0
-#        imax = float(cMDs.MDtime)/float(cMDs.interval)
-        #imax = 10 # !!!!!!!!!!!!!!!!!!!!!!!!
-#        dcFpI = {}
-#        while i <= imax:
-#            frameName = "frame_" + str("%05d" % (i)) + ".pdb"
-#            pframe = prframes + "/" + frameName
-
-#            pFPItemp = pathFolder.createFolder(prtempMDFPI + frameName[0:-4] + "/")
-#            dframe = PDB.PDB(pframe, hydrogen=1)
-
-#            CFPI = FPI.ligFPI(dframe, pFPItemp, ligID=nameLig)
-#            CFPI.computeFPI()
-#            dcFpI[frameName] = CFPI
-
-#            i += 1
-
-#        FPIMD = FPI.CompareFPIMD(dcFpI, prtempMDFPI)
- #       FPIMD.MDprop()
- #       FPIMD.pobaFPI()
- #       #FPIMD.MDtanimoto() # useless if only ligand is considered
-
-
-#    return dout
-
-
 
 def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
 
@@ -175,6 +139,31 @@ def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
     dscore = sdocking.get_dockingscore()
     dockingScoreAnalysis(dscore, ltableCpd, ptableCpd, pranalysis)
     return dscore
+
+
+
+def computeMDdesc(prMD, prout):
+
+    lpMDresult = listdir(prMD)
+
+    dcMDdesc = {}
+    for MDresult in lpMDresult:
+        jobname = MDresult.split("_")[0]
+        prlig = prMD + MDresult + "/lig/"
+        prBS = prMD + MDresult  + "/BSs/"
+        prframes = prMD + MDresult + "/framesMD/"
+        prMDdesc = prout
+
+        # compute different descriptors
+        cMD = MDdescriptors.MDdescriptors(jobname, prlig, prBS, prframes, prMDdesc)
+        cMD.computeLigDesc()
+        cMD.computeBSDesc()
+        cMD.computeFPI()
+
+        dcMDdesc[jobname] = cMD
+
+
+
 
 
 
@@ -383,24 +372,11 @@ nameLig = "UNK"
 
 # MD descriptors   #
 ####################
-# short cut
-
-jobname = "CHEMBL3617738"
-prlig = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/lig/"
-prpockets = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/BSs/"
-prframe = "/home/aborrel/imitanib/results/MDanalysis/CHEMBL3617738_2hyy_MD/framesMD/"
-prDesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
-cMD = MDdescriptors.MDdescriptors(jobname, prlig, prpockets, prframe, nameLig, prDesc)
-#cMD.computeLigDesc()
-#cMD.computeBSDesc()
-cMD.computeFPI()
+prMDdesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
+pathFolder.createFolder(prMDdesc)
+computeMDdesc(pranalysis, prMDdesc)
 
 
-
-# 3. FPI computation
-# ligand + BS based
-#prFPI = pathFolder.analyses("MD_FPI")
-#computeFPIBSBased(cMDs, prFPI, namelig)
 
 
 

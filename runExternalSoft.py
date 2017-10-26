@@ -72,7 +72,7 @@ def runPadel(prin, pfilout, force=0):
     if not path.exists(prin):
         return "ERROR - Padel Input"
     else:
-        cmd = "java -jar " + PADEL + " -maxruntime 10000 -3d -dir " + str(prin) + " -file " + pfilout
+        cmd = "java -jar " + PADEL + " -maxruntime 100000 -3d -dir " + str(prin) + " -file " + pfilout
         print cmd
         system(cmd)
 
@@ -486,71 +486,3 @@ def runFreeSASA(ppdbin, pfilout, rsa=0):
         return [pfilout, pfiloutrssa]
 
     return [pfilout]
-
-
-
-#def runNACESS(pPDBprot, probe="1.40", verbose=1):
-#    """
-#    Run NACCESS with file pdb
-#    args: -> filin pdb
-#    return: path files .asa and .rsa
-#    """
-
-    # for multi run
-#    if path.exists(pPDBprot[0:-4] + ".asa"):
-#        return [pPDBprot[0:-4] + ".asa", pPDBprot[0:-4] + ".rsa"]
-
-#    pr_desc = path.dirname(pPDBprot) + "/"
-#    print pr_desc
-
-    # copy accall
-#    cmd_copy = "copy " + PRNACCESS + "accall " + pr_desc
-    #os.system (cmd_copy)
-#    copyfile(PRNACCESS + "accall", pr_desc + "accall")
-#    copyfile(PRNACCESS + "vdw.radii", pr_desc + "vdw.radii")
-#    cmd_chmod = "chmod 0777 " + pr_desc + "accall"
-#    system(cmd_chmod)
-    # generate input file
-#    finput = open(pr_desc + "accall.input", "w")
-#    finput.write("PDBFILE " + str(pPDBprot) + "\nVDWFILE " + pr_desc + "vdw.radii\nSTDFILE standard.data\nPROBE " + str(probe) + "\nZSLICE 0.05\n")
-#    finput.close()
-
-    # move result directory
-#    exec_dir = getcwd()
-#    chdir(pr_desc)
-
-    # run
-#    cmd = pr_desc + "accall < " + pr_desc + "accall.input"
-#    print cmd
-#    system(cmd)
-#    ddd
-    #except: return 'ERROR NACCESS'
-
-
-    # go back in script folder
-#    chdir (exec_dir)
-
-    #===========================================================================
-#    try:
-#        system("rm -f " + pr_desc + pPDBprot.split("/")[-1][0:-4] + ".log")
-#    except :
-#        pass
-
-#    try:
-#        system("rm -f " + pr_desc + "accall")
-#    except:
-#        pass
-#    try:
-#        system("rm -f " + pr_desc + "accall.input")
-#    except:
-#        pass
-#    try:
-#        system("rm -f " + pr_desc + "vdw.radii")
-#    except:
-#        pass
-
-    # control errors
-#    if path.getsize(pPDBprot[0:-4] + ".asa") == 0 :
-#        return 'ERROR NACCESS'
-
-#    return [pPDBprot[0:-4] + ".asa", pPDBprot[0:-4] + ".rsa"]

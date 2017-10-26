@@ -10,14 +10,13 @@ import FPI
 
 class MDdescriptors:
 
-    def __init__(self, jobname, prlig, prBSs, prframe, nameLig, prout):
+    def __init__(self, jobname, prlig, prBSs, prframe, prout):
 
         self.prout = pathFolder.createFolder(prout + jobname + "/")
         self.jobname = jobname
         self.prlig = prlig
         self.prBSs = prBSs
         self.prframe = prframe
-        self.nameLig = nameLig
 
 
 
@@ -46,8 +45,9 @@ class MDdescriptors:
             while i < nbDesc:
                 if not ldesc[i] in dout.keys():
                     dout[ldesc[i]] = []
-                print (ldescframe[i])
-                dout[ldesc[i]].append(float(ldescframe[i]))
+                #print "////", (ldescframe[i])
+                try:dout[ldesc[i]].append(float(ldescframe[i])) # remove frame where desc is not computed
+                except:pass
                 i += 1
 
         # compute desc
@@ -161,32 +161,24 @@ class MDdescriptors:
             copyfile(self.prframe + "frame_" + frameID + ".pdb", pframe)
             copyfile(self.prBSs + "BS_" + frameID + ".pdb", pBS)
 
-
             CFPI = FPI.ligFPI(pframe, plig, pBS, prtemp)
             pFPI = CFPI.computeFPI()
             lpFPI.append(pFPI)
 
-        # combine different FPI
-
-        #dcFpI[frameID] = CFPI
 
         cMDPFI = FPI.FPIMD(lpFPI, self.jobname, self.prout)
         cMDPFI.loadFPIs()
 
         # matrix tanimoto
-        #cMDPFI.buildTanimotoMatrix()
-        #cMDPFI.MDFPIbyRes()
+        cMDPFI.buildTanimotoMatrix()
+        cMDPFI.MDFPIbyRes()
 
         # desc
         cMDPFI.DescFPI()
+        rmtree(prtemp)
 
-        #FPIMD = FPI.CompareFPIMD(dcFpI, prtemp)
-        #PIMD.MDprop()
-        #FPIMD.pobaFPI()
-        #FPIMD.MDtanimoto() # useless if only ligand is considered
+        self.DescFPI = cMDPFI
 
-
-        return
 
 
 
