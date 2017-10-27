@@ -1,11 +1,13 @@
 from pathFolder import listdir
 from shutil import rmtree, copyfile
 from numpy import mean, std
+from os import path
 
 import pathFolder
 import runExternalSoft
 import pocketDescriptors
 import FPI
+import toolbox
 
 
 class MDdescriptors:
@@ -21,6 +23,11 @@ class MDdescriptors:
 
 
     def computeLigDesc(self):
+
+        pfilout = self.prout + "descLig"
+        if path.exists(pfilout):
+            self.descLig = toolbox.loadMatrix(pfilout)
+            return
 
         prtemp = pathFolder.createFolder(self.prout + "ligtemp/", clean=1)
 
@@ -60,10 +67,16 @@ class MDdescriptors:
 
         rmtree(prtemp)
         self.descLig = dout
-        self.writeMDdesc(self.descLig, self.prout + "descLig", self.jobname)
+        self.writeMDdesc(self.descLig, pfilout, self.jobname)
 
 
     def computeBSDesc(self):
+
+
+        pfilout = self.prout + "descBS"
+        if path.exists(pfilout):
+            self.descBS = toolbox.loadTable(pfilout)[0]
+            return
 
         prtemp = pathFolder.createFolder(self.prout + "BsTemp/", clean=1)
         pfilebyframe = self.prout + "BSbyframe"
@@ -142,6 +155,12 @@ class MDdescriptors:
 
     def computeFPI(self):
 
+
+        pfilout = self.prout + "descFPI"
+        if path.exists(pfilout):
+            self.descFPI = toolbox.loadMatrix(pfilout)
+            return
+
         prtemp = pathFolder.createFolder(self.prout + "FPITemp/", clean=0)
 
         llig = listdir(self.prlig)
@@ -177,7 +196,7 @@ class MDdescriptors:
         cMDPFI.DescFPI()
         rmtree(prtemp)
 
-        self.DescFPI = cMDPFI
+        self.descFPI = cMDPFI
 
 
 

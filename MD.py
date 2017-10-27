@@ -13,7 +13,7 @@ import pathFolder
 
 
 class MD:
-    def __init__(self, prDM, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame):
+    def __init__(self, prDM, pranalysis, water, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame):
         self.prDM = prDM
         self.stepWait = stepWait
         self.MDtime = timeMD
@@ -22,6 +22,7 @@ class MD:
         self.nbGPU = nbGPU
         self.nbCPU = nbCPU
         self.stepFrame = stepFrame
+        self.water = water
 
 
 
@@ -112,7 +113,7 @@ class MD:
                 pathFolder.createFolder(prframes)
                 nbframeth = float(self.MDtime)/(int(self.stepFrame))/10 +1
                 if len(listdir(prframes)) <= int(nbframeth):# control if frame exist
-                    runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes, step=self.stepFrame, MDtime=self.MDtime)
+                    runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes, noHOH=self.water, step=self.stepFrame, MDtime=self.MDtime)
                     lprframe = toolbox.parallelLaunch(lprframe, self.nbCPU, str(int(float(self.MDtime) / 10)))
 
                 self.lMD[jobname]["prframe"] = prframes

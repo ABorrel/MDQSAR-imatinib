@@ -72,7 +72,7 @@ def runPadel(prin, pfilout, force=0):
     if not path.exists(prin):
         return "ERROR - Padel Input"
     else:
-        cmd = "java -jar " + PADEL + " -maxruntime 100000 -3d -dir " + str(prin) + " -file " + pfilout
+        cmd = "java -jar " + PADEL + " -maxruntime 1000000 -3d -dir " + str(prin) + " -file " + pfilout
         print cmd
         system(cmd)
 
@@ -355,7 +355,7 @@ def extractFrame(ppcms, ptrj, prframes, noHOH =1, step=10, MDtime=15000):
         else:
             cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(
                 step) + "' -o pdb -a 'not water' -b " + str(prframes) + "frame 2>/dev/null&"
-        print(cmd)
+        print "Extract Frames =>", cmd
         system(cmd)
         return prframes
 
@@ -490,3 +490,52 @@ def runFreeSASA(ppdbin, pfilout, rsa=0):
         return [pfilout, pfiloutrssa]
 
     return [pfilout]
+
+
+#### FOR QSAR ####
+##################
+
+
+def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, logaff=1):
+
+    # extract train and test file
+    dfile = {}
+    lfile = listdir(prout)
+    for filedir in lfile:
+        if search("^train_", filedir):
+            bacteria = filedir.split("_")[-1][0:-4]
+            if not bacteria in dfile.keys():
+                dfile[bacteria] = {}
+            dfile[bacteria]["train"] = prout + filedir
+
+        elif search("^test_", filedir):
+            bacteria = filedir.split("_")[-1][0:-4]
+            if not bacteria in dfile.keys():
+                dfile[bacteria] = {}
+            dfile[bacteria]["test"] = prout + filedir
+
+    if dfile == {}:
+        cmd = "/QSARsPrep.R " + str(pdesc) + " " + str(paff) + " " + prout + " " + str(corcoef) + " " + str(
+            maxQuantile) + " " + str(valSplit) + " " + str(logaff)
+        print cmd
+        system(cmd)
+        return prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit)
+    else:
+        return dfile
+
+
+
+
+def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
+
+    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " >" + prout + "perfRF.txt"
+    print cmd_QSAR
+    system(cmd_QSAR)
+
+    return prout + "perf.txt"
+
+
+
+
+
+

@@ -9,9 +9,16 @@ import FPI
 import PDB
 import cpdClustering
 import MDdescriptors
+import MDQSAR
 
 from os import listdir, makedirs
 from re import search
+
+
+#########################
+##   MAIN FUNCTIONS    ##
+#########################
+
 
 def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
 
@@ -142,6 +149,41 @@ def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
 
 
 
+def computeMD(prLigand, prMD, pprotein, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU):
+    """
+
+    :param prLigand: folder of ligands or poses
+    :param pprotein: protein in PDB already prepared using the maestro
+    :param timeMD: time MD in ps
+    :param timeframe: time between two frame
+    :param stepWait: time to wait for multiprocess
+    :param stepFrame: frame extraction
+    :param water: extract water molecules
+    :param nbCPU: CPU max in parrallel
+    :param nbGPU: GPU max in paralele, random selection
+    :return:
+    """
+    # 1. Merge poses and proteins
+    cMDs = MD.MD(prMD, pranalysis, water, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
+    cMDs.initialisation(prLigand, pprotein)
+    cMDs.runMultipleMD()# run MD
+
+    # 2. Extract frames
+    # extract frame
+    cMDs.centerFrame()
+    cMDs.extractFrame()
+
+    # extract BS and ligand
+    cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
+
+    # 3. compute RMSD
+    cMDs.analyseRMSD()
+
+
+
+
+
+
 def computeMDdesc(prMD, prout):
 
     lpMDresult = listdir(prMD)
@@ -165,6 +207,16 @@ def computeMDdesc(prMD, prout):
 
 
 
+def computeMDQSAR(prDesc, ltypedesc, prout):
+
+    cMDQSAR = MDQSAR.MDQSAR(prDesc, prout)
+    cMDQSAR.builtDataset()
+
+    cMDQSAR.runQSARModel(ltypedesc)
+
+    return
+
+
 
 
 ##########
@@ -181,7 +233,7 @@ def computeMDdesc(prMD, prout):
 lBAout = ["CHEMBL3705971"]
 lBAout = []
 
-CORCOEF = 0.7
+CORCOEF = 0.8
 # gleevec = CHEMBL941
 # outlier = CHEMBL2382016
 
@@ -333,15 +385,16 @@ lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prD
 # home
 prMD = "/home/aborrel/imitanib/results/MD-ABL/"
 pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
-pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
-BSCutoff = 6.0
+prLig = prDockingPoseSP
+
 
 # monster
 #prMD = "/data/aborrel/imatinib/results/MD-ABL/"
 #pprotein = "/data/aborrel/imatinib/2hyy_MD.pdb"
 
 
-# parameter MD
+# parameter MD #
+################
 timeMD = "15000.0"
 timeframe = "10.0"
 stepWait = 9
@@ -349,32 +402,35 @@ nbGPU = 3#maybe integrate in initialization, code clearity
 nbCPU = 10
 stepFrame = 10# reduce the number of extracted frames
 nameLig = "UNK"
+water = 0
+BSCutoff = 6.0
 
-# 1. Merge poses and proteins
-cMDs = MD.MD(prMD, pranalysis, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
-cMDs.initialisation(prDockingPoseSP, pprotein)
-cMDs.runMultipleMD()# run MD
-
-# 2. Preparation MD
-
-# extract frame
-cMDs.centerFrame()
-cMDs.extractFrame()
-
-# extract BS and ligand
-cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
+# Run MD #
+##########
+#computeMD(prLig, prMD, pprotein, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU)
 
 
-# 3. compute RMSD
-cMDs.analyseRMSD()
 
 
 ###################
 # MD descriptors  #
 ###################
 prMDdesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
+pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
 pathFolder.createFolder(prMDdesc)
-computeMDdesc(pranalysis, prMDdesc)
+#computeMDdesc(pranalysis, prMDdesc)
+
+
+
+
+
+######################
+# develop QSAR model #
+######################
+
+prQSAR = pathFolder.analyses("MDQSARs")
+computeMDQSAR(prMDdesc, ["Lig"], prQSAR)
+
 
 
 
