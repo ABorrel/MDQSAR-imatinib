@@ -198,6 +198,15 @@ def corPlot(pfilin, pchembl):
     system(cmdCor)
 
 
+def histAffinity(paff):
+
+    cmdHist = "./distributionAff.R " + str(paff)
+    print cmdHist
+    system(cmdHist)
+
+
+
+
 def babelConvertSDFtoPDB(psdf):
 
     cmdconvert = "babel " + psdf + " " + psdf[:-4] + ".pdb 2>/dev/null"
@@ -350,7 +359,7 @@ def extractFrame(ppcms, ptrj, prframes, noHOH =1, step=10, MDtime=15000):
         #print "l.302 - cut"
         return prframes
     else:
-        if noHOH == 0:
+        if noHOH == 1:
             cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(step) + "' -o pdb -b " + str(prframes) + "frame 2>/dev/null&"
         else:
             cmd = RUN + " -FROM desmond trajectory_extract_frame.py " + str(ppcms) + " " + str(ptrj) + " -f '::" + str(

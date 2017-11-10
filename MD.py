@@ -111,14 +111,16 @@ class MD:
                 prframes = self.pranalysis + str(jobname) + "/framesMD/"
                 lprframe.append(prframes)
                 pathFolder.createFolder(prframes)
-                nbframeth = float(self.MDtime)/(int(self.stepFrame))/10 +1
-                if len(listdir(prframes)) <= int(nbframeth):# control if frame exist
+                nbframeth = float(self.MDtime)/(int(self.stepFrame))/float(self.interval) +1
+                print nbframeth, len (listdir(prframes))
+                if len(listdir(prframes)) < int(nbframeth):# control if frame exist
+                    # clean folder
+                    pathFolder.cleanFolder(prframes)
                     runExternalSoft.extractFrame(self.lMD[jobname]["pcmsout"], self.lMD[jobname]["prtrj"], prframes, noHOH=self.water, step=self.stepFrame, MDtime=self.MDtime)
                     lprframe = toolbox.parallelLaunch(lprframe, self.nbCPU, str(int(float(self.MDtime) / 10)))
 
                 self.lMD[jobname]["prframe"] = prframes
             i += 1
-            #print self.lMD[jobname]
 
 
 
@@ -156,6 +158,7 @@ class MD:
 
                 if len(listdir(self.lMD[jobname]["prLig"])) >= nb_frame and len(listdir(self.lMD[jobname]["prBSs"])) >= nb_frame:
                     c += 1
+                    print "=> pass"
                     continue
                 else:
                     for pframe in lpframe:

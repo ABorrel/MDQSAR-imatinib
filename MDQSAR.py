@@ -10,9 +10,10 @@ import pathFolder
 
 class MDQSAR():
 
-    def __init__(self, prMDdescc, prout):
+    def __init__(self, prMDdescc, paffinity, prout):
         self.prDesc = prMDdescc
         self.prout = prout
+        self.paff = paffinity
 
 
     def builtDataset(self):

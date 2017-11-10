@@ -19,8 +19,8 @@ rownames(dRMSD) = dRMSD[,1]
 
 
 a = ggplot(dRMSD, aes(x = Time))+
-  geom_line(aes(y = RMSDall, color = "RMSD All atoms"), size = 1.5)+
-  geom_line(aes(y = RMSDC, color = "RMSD Calpha"), size = 1.5) +
+  geom_line(aes(y = RMSDall, color = "RMSD All atoms"), size = 1)+
+  geom_line(aes(y = RMSDC, color = "RMSD Calpha"), size = 1) +
   scale_fill_manual("Protein")+
   labs(y = "RMSD (Ang.)") +
   theme(axis.text.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.text.x = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.x =  element_text(size = 25, hjust = 0.5, vjust =0.1), 

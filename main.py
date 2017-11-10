@@ -13,6 +13,7 @@ import MDQSAR
 
 from os import listdir, makedirs
 from re import search
+from time import sleep
 
 
 #########################
@@ -50,7 +51,7 @@ def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
     table.writeTable(pfilout)
 
 
-    return table.table
+    return table
 
 
 
@@ -77,7 +78,7 @@ def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
     table.writeTable(pfilout)
 
 
-    return table.table
+    return table
 
 
 
@@ -113,7 +114,7 @@ def FPIMatrix(sdocking, pprotein, prFPI):
 
     i = 0
     imax = len(sdocking.lposefiles)
-    imax = 3
+    #imax = 3
     while i < imax:
         j = i + 1
         while j < imax:
@@ -149,7 +150,7 @@ def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
 
 
 
-def computeMD(prLigand, prMD, pprotein, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU):
+def computeMD(prLigand, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU):
     """
 
     :param prLigand: folder of ligands or poses
@@ -176,6 +177,8 @@ def computeMD(prLigand, prMD, pprotein, nameLig, BSCutoff, timeMD, timeframe, st
     # extract BS and ligand
     cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
 
+    # for complete run have to control all job done
+    #sleep(100)
     # 3. compute RMSD
     cMDs.analyseRMSD()
 
@@ -192,7 +195,7 @@ def computeMDdesc(prMD, prout):
     for MDresult in lpMDresult:
         jobname = MDresult.split("_")[0]
         prlig = prMD + MDresult + "/lig/"
-        prBS = prMD + MDresult  + "/BSs/"
+        prBS = prMD + MDresult + "/BSs/"
         prframes = prMD + MDresult + "/framesMD/"
         prMDdesc = prout
 
@@ -223,17 +226,6 @@ def computeMDQSAR(prDesc, ltypedesc, prout):
 #  MAIN  #
 ##########
 
-# case where we consider the binding affinity #
-###############################################
-
-###############
-#  CONSTANT   #
-###############
-
-lBAout = ["CHEMBL3705971"]
-lBAout = []
-
-CORCOEF = 0.8
 # gleevec = CHEMBL941
 # outlier = CHEMBL2382016
 
@@ -242,9 +234,18 @@ CORCOEF = 0.8
 # TABLE CHEMBL #
 ################
 
+prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
+
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
-pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
-#ltab = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Ki", "Kd"], lBAout)
+pCHEMBLout = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
+laffselected = ["IC50", "Ki", "Kd"]
+lBAout = ["CHEMBL3705971"]
+lBAout = []
+
+
+#ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
+#paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
+#ctabAll.analysisTable(prCHEMBL)
 
 
 
@@ -386,7 +387,7 @@ lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prD
 prMD = "/home/aborrel/imitanib/results/MD-ABL/"
 pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
 prLig = prDockingPoseSP
-
+pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
 
 # monster
 #prMD = "/data/aborrel/imatinib/results/MD-ABL/"
@@ -400,14 +401,15 @@ timeframe = "10.0"
 stepWait = 9
 nbGPU = 3#maybe integrate in initialization, code clearity
 nbCPU = 10
-stepFrame = 10# reduce the number of extracted frames
+stepFrame = 1# reduce the number of extracted frames
 nameLig = "UNK"
 water = 0
 BSCutoff = 6.0
 
 # Run MD #
 ##########
-#computeMD(prLig, prMD, pprotein, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU)
+pathFolder.createFolder(pranalysis)
+computeMD(prLig, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU)
 
 
 
@@ -428,8 +430,8 @@ pathFolder.createFolder(prMDdesc)
 # develop QSAR model #
 ######################
 
-prQSAR = pathFolder.analyses("MDQSARs")
-computeMDQSAR(prMDdesc, ["Lig"], prQSAR)
+#prQSAR = pathFolder.analyses("MDQSARs")
+#computeMDQSAR(prMDdesc, ["Lig"], prQSAR)
 
 
 

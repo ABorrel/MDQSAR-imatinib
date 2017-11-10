@@ -27,6 +27,17 @@ class trajectoryAnalysis:
         pathFolder.createFolder(prSuperimposed)
         self.prSuperMatrix = prSuperimposed
 
+        # control to superimposition file exist
+        nbmatrix = float(len(listdir(prSuperimposed)))
+
+        nbth = (float(self.MDtime)/float(self.timeframe))/float(self.stepFrame) -1
+        if nbmatrix == nbth:
+            print prSuperimposed
+            print "Full folder"
+            return
+
+
+
         prtemp = self.dMD["prRMSD"] + "temp/"
         pathFolder.createFolder(prtemp)
 
@@ -69,15 +80,21 @@ class trajectoryAnalysis:
         if not "prSuperMatrix" in dir(self):
             self.Superimpose(0)
 
+        # pfilout
+        pfilout = prRMSDprot + "protRMSD"
+        if path.exists(pfilout):
+            return
+        else:
+            filout = open(pfilout, "w")
+            filout.write("Time\tRMSDall\tRMSDC\tDmax\n0\t0\t0\t0\n")
+
         # open reference frame
         nframeref = str("%05d" % (0))
         pframeref = self.dMD["prframe"] + "frame_" + nframeref + ".pdb"
         cprotref = PDB.PDB(PDB_input=pframeref)
         cprotref.get_atomProt()
 
-        pfilout = prRMSDprot + "protRMSD"
-        filout = open(pfilout, "w")
-        filout.write("Time\tRMSDall\tRMSDC\tDmax\n0\t0\t0\t0\n")
+
 
 
         i = self.stepFrame
@@ -121,6 +138,13 @@ class trajectoryAnalysis:
         pframeref = self.dMD["prLig"] + "LGD_" + nframeref + ".pdb"
         cligref = PDB.PDB(PDB_input=pframeref)
         cligref.get_lAtoms()
+
+        if RMSF ==1 and ShaEPScore == 1:
+            pfiloutRMSF = prLig + "ligRMSF"
+            pfiloutShaEP = prLig + "ligShaEP"
+            if path.exists(pfiloutShaEP) and path.exists(pfiloutRMSF):
+                return
+
 
 
         if RMSF == 1:
@@ -204,15 +228,21 @@ class trajectoryAnalysis:
         except:
             print self.Superimpose(0)
 
+        pfilout = prResidues + "resRMSD"
+        if path.exists(pfilout):
+            return
+        else:
+            filout = open(pfilout, "w")
+            filout.write("NameRes\tall\tCa\tDmax\n")
+
+
         # open reference frame
         nframeref = str("%05d" % (0))
         pframeref = self.dMD["prframe"] + "frame_" + nframeref + ".pdb"
         cprotref = PDB.PDB(PDB_input=pframeref)
         cprotref.get_byres()
 
-        pfilout = prResidues + "resRMSD"
-        filout = open(pfilout, "w")
-        filout.write("NameRes\tall\tCa\tDmax\n")
+
 
 
 

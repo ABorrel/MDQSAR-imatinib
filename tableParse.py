@@ -1,6 +1,8 @@
 from copy import deepcopy
-from doctest import debug
 from numpy import mean, std
+
+import collections
+import runExternalSoft
 import toolbox
 
 class CHEMBL:
@@ -99,6 +101,7 @@ class CHEMBL:
         i = 0
         imax = len(d_CHEMBLID.keys())
         while i < imax:
+            print i, d_CHEMBLID.keys()[i]
             # case not problem
             #print d_CHEMBLID.keys()[i]
             if len(d_CHEMBLID[d_CHEMBLID.keys()[i]]) == 1:
@@ -108,10 +111,32 @@ class CHEMBL:
                 # Control the published value
                 l_PUBLISHED_VALUE = [float(d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["PUBLISHED_VALUE"]) for k in range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
                 l_PUBLISHED_UNITS = [d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["PUBLISHED_UNITS"] for k in range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
+                l_PUBLISHED_TYPE = [d_CHEMBLID[d_CHEMBLID.keys()[i]][k]["STANDARD_TYPE"] for k in range(0, len(d_CHEMBLID[d_CHEMBLID.keys()[i]]))]
+
 
                 if not l_PUBLISHED_UNITS.count(l_PUBLISHED_UNITS[0]) == len(l_PUBLISHED_UNITS):
                     l_PUBLISHED_VALUE = toolbox.convertUnit(l_PUBLISHED_VALUE, l_PUBLISHED_UNITS)
                     #print l_PUBLISHED_UNITS
+
+
+                # combine if same type of affinity
+                # extract only most present type
+                if len(list(set(l_PUBLISHED_TYPE))) != 1:
+                    typetoextract = collections.Counter(l_PUBLISHED_TYPE).most_common()[0][0]
+                    t = 0
+                    tmax = len(l_PUBLISHED_TYPE)
+                    while t < tmax:
+
+                        if not l_PUBLISHED_TYPE[t] == typetoextract:
+                            del l_PUBLISHED_TYPE[t]
+                            del l_PUBLISHED_VALUE[t]
+                            del l_PUBLISHED_UNITS[t]
+                            del d_CHEMBLID[d_CHEMBLID.keys()[i]][t]
+                            tmax = tmax-1
+                        else:
+                            t += 1
+
+
 
                 MPUBLISHED_VALUE = mean(l_PUBLISHED_VALUE)
                 SDPUBLISHED_VALUE = std(l_PUBLISHED_VALUE)
@@ -285,4 +310,24 @@ class CHEMBL:
         filout.close()
 
 
+    def writeTableAff(self, pfilout, kaff = "PCHEMBL_VALUE"):
 
+
+        filout = open(pfilout, "w")
+        filout.write("CHEMBLID\tAff\tType\n")
+        for row in self.table:
+            filout.write(str(row["CMPD_CHEMBLID"]) + "\t" + str(row[kaff]) + "\t" + str(row["STANDARD_TYPE"]) + "\n")
+        filout.close()
+
+        self.paff = pfilout
+
+
+
+
+    def analysisTable(self, pranalysis):
+
+        if not "paff" in dir(self):
+            self.writeTableAff(pranalysis + "affAnalysis")
+
+
+        runExternalSoft.histAffinity(self.paff)
