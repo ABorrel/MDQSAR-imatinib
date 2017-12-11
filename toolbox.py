@@ -113,8 +113,6 @@ def convertUnit(l_values, l_units):
     return lout
 
 
-
-
 def loadMatrix(pfilin):
     "Case of square matrix"
 

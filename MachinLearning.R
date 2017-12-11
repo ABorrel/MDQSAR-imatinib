@@ -9,6 +9,9 @@ library(rpart)
 library(rpart.plot)
 library(e1071)
 library(ggplot2)
+library(caret)
+library(neuralnet)
+
 
 ##################
 #    PCR MODELS  #
@@ -569,6 +572,401 @@ SVMRegTrainTest = function(dtrain, dtest, vgamma, vcost, dcluster, prout){
   
   }
   
+
+
+
+##################
+# NEURAL NETWORK #
+##################
+
+
+NNRegCV = function(lfolds, dcluster, prout){
+  
+  print(paste("==== NN in CV with ", length(lfolds), " Automatic optimization CV ====", sep = ""))
+  
+  
+  # data combination #
+  ####################
+  k = 1
+  kmax = length(lfolds)
+  y_predict = NULL
+  y_real = NULL
+  timportance = NULL
+  while(k <= kmax){
+    dtrain = NULL
+    dtest = NULL
+    for (m in seq(1:kmax)){
+      lcpd = rownames(lfolds[[m]])
+      if (m == k){
+        dtest = as.data.frame(lfolds[[m]])
+      }else{
+        dtrain = rbind(dtrain, lfolds[[m]])
+      }
+    }
+    
+    dtrain = as.data.frame(dtrain)
+    ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
+    dAff = dtrain[,c("Aff")]
+    
+    controlset = trainControl(method = "cv", number = 3)
+    grid = data.frame(layer1 = c(2,5,10,15,20), layer2=c(0, 2, 5, 10, 15) , layer3=c(0,2,5,10,15))
+    tuneNN = train(ddestrain, dAff, method = "neuralnet", trControl = controlset, tuneGrid = grid)
+    
+    vpred = predict (tuneNN, dtest)
+    names(vpred) = rownames(dtest)
+    
+    y_predict = append(y_predict, vpred)
+    y_real = append(y_real, dtest[,"Aff"])
+    k = k + 1
+  }
+  
+  # performances
+  valr2 = calR2(y_real, y_predict)
+  corval = cor(y_real, y_predict)
+  RMSEP = vrmsep(y_real, y_predict)
+  MAEval = MAE(y_real, y_predict)
+  R02val = R02(y_real, y_predict)
+  
+  print("Perfomances in CV")
+  print(paste("R2=", valr2, sep = ""))
+  print(paste("R02=", R02val, sep = ""))
+  print(paste("MAE=", MAEval, sep = ""))
+  print(paste("Cor=", corval, sep = ""))
+  print(paste("RMSEP=", RMSEP, sep = ""))
+  print("")
+  print("")
+  
+  
+  pdf(paste(prout, "PerfNNCV", length(lfolds), ".pdf", sep = ""), 20, 20)
+  plot(y_real, y_predict, pch = 20, main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
+  text(y_real, y_predict, labels = names(y_predict))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster
+  dcluster = dcluster[names(y_predict)]
+  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
+  text(y_real, y_predict, labels = dcluster, col = dcluster)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  dev.off()  
+  
+  tperf = cbind(y_predict, y_real)
+  write.table(tperf, paste(prout, "perfNNCV_", length(lfolds), ".txt", sep = ""), sep = "\t")
+}
+
+
+NNReg = function(dtrain, dtest, dcluster, prout){
+  
+  print(paste("==== Neural network in train-test --- Automatic optimization CV ====", sep = ""))
+  
+  
+  dtrain = as.data.frame(dtrain)
+  ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
+  dAff = dtrain[,c("Aff")]
+  
+  controlset = trainControl(method = "cv", number = 3)
+  grid = data.frame(layer1 = c(2,5,10,15,20), layer2=c(0, 2, 5, 10, 15) , layer3=c(0,2,5,10,15))
+  tuneNN = train(ddestrain, dAff, method = "neuralnet", trControl = controlset, tuneGrid = grid)
+  
+  dtest = as.data.frame(dtest)
+  vpred = predict (tuneNN, dtest)
+  names(vpred) = rownames(dtest)
+  
+  y_predict = append(y_predict, vpred)
+  y_real = append(y_real, dtest[,"Aff"])
+  
+  
+  predNNtest = predict(tuneNN, newdata = dtest)
+  predNNtrain = predict(tuneNN, newdata = dtrain)
+  
+  names(predNNtrain) = rownames(dtrain)
+  names(predNNtest) = rownames(dtest)
+  
+  r2train = calR2(dtrain[,"Aff"], predNNtrain)
+  r2test = calR2(dtest[,"Aff"], predNNtest)
+  
+  cortrain = cor(dtrain[,"Aff"], predNNtrain)
+  cortest = cor(dtest[,"Aff"], predNNtest)
+  
+  rmseptrain = vrmsep(dtrain[,"Aff"], predNNtrain)
+  rmseptest = vrmsep(dtest[,"Aff"], predNNtest)
+  
+  R02train = R02(dtrain[,"Aff"], predNNtrain)
+  R02test = R02(dtest[,"Aff"], predNNtest)
+  
+  MAEtrain = MAE(dtrain[,"Aff"], predNNtrain)
+  MAEtest = MAE(dtest[,"Aff"], predNNtest)
+  
+  print("===== NN model train-Test =====")
+  #print(modelpls$coefficients)
+  print(paste("Perf training (dim= ", dim(dtrain)[1], "*", dim(dtrain)[2], "):", sep = ""))
+  print(paste("R2 train=", r2train))
+  print(paste("R02 train=", R02train))
+  print(paste("MAE train=", MAEtrain))
+  print(paste("Corval train=", cortrain))
+  print(paste("RMSEP=", rmseptrain))
+  print("")
+  print("")
+  
+  
+  print(paste("Perf test (dim=", dim(dtest)[1], "*", dim(dtest)[2], "):", sep = ""))
+  print(paste("R2 test=", r2test))
+  print(paste("R02 test=", R02test))
+  print(paste("MAE test=", MAEtest))
+  print(paste("Corval test=", cortest, sep = ""))
+  print(paste("RMSEP test=", rmseptest, sep = ""))
+  print("")
+  print("")
+  
+  
+  # train
+  pdf(paste(prout ,"PerfNNreg_TrainTest.pdf", sep = ""), width = 20, height = 20)
+  plot(dtrain[,"Aff"], predNNtrain, pch = 20, main = paste("Correlation = ", round(cor(dtrain[,"Aff"], predNNtrain), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(dtrain[,"Aff"], predNNtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], predNNtrain), digits = 3)))
+  text(dtrain[,"Aff"], predNNtrain, labels = names(predNNtrain))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster - train
+  dclusterTrain = dcluster[names(predNNtrain)]
+  plot(dtrain[,"Aff"], predNNtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], predNNtrain), digits = 3)))
+  text(dtrain[,"Aff"], predNNtrain, labels = dclusterTrain, col = dclusterTrain)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # test
+  plot(dtest[,"Aff"], predNNtest, pch = 20, main = paste("Correlation = ", round(cor(dtest[,"Aff"], predNNtest), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(dtest[,"Aff"], predNNtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], predNNtest), digits = 3)))
+  text(dtest[,"Aff"], predNNtest, labels = names(predNNtest))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster - test
+  dclusterTest = dcluster[names(predNNtest)]
+  plot(dtest[,"Aff"], predNNtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], predNNtest), digits = 3)))
+  text(dtest[,"Aff"], predNNtest, labels = dclusterTest, col = dclusterTest)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  dev.off()
+  
+}
+
+
+
+#################
+# DEEP LEARNING #
+#################
+
+DLRegCV = function(lfolds, dcluster, prout){
+  
+  # set seed and load library only if function is activated
+  library(mxnet)
+  require(mxnet)
+  
+  mx.set.seed(1)
+  
+  print(paste("==== DL in CV with ", length(lfolds), " Automatic optimization CV ====", sep = ""))
+  
+  
+  # data combination #
+  ####################
+  k = 1
+  kmax = length(lfolds)
+  y_predict = NULL
+  y_real = NULL
+  timportance = NULL
+  while(k <= kmax){
+    dtrain = NULL
+    dtest = NULL
+    for (m in seq(1:kmax)){
+      lcpd = rownames(lfolds[[m]])
+      if (m == k){
+        dtest = as.data.frame(lfolds[[m]])
+      }else{
+        dtrain = rbind(dtrain, lfolds[[m]])
+      }
+    }
+    
+    ddesctrest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+    dtestAff = dtest[,c("Aff")]
+    
+    dtrain = as.data.frame(dtrain)
+    ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
+    dAff = dtrain[,c("Aff")]
+    print (dAff)
+    
+    
+    # number of hidden node
+    data = mx.symbol.Variable("data")
+    fc1 = mx.symbol.FullyConnected(data, num_hidden=)
+    
+    # Linear regression for output layer
+    lro = mx.symbol.LinearRegressionOutput(fc1)
+    
+    mlpmodel <- mx.model.FeedForward.create(lro, X = ddestrain
+                       ,Y = dAff[,1]
+                       ,ctx=mx.gpu()
+                       ,num.round=50
+                       ,array.batch.size=20
+                       ,learning.rate = 2e-6 #same as step size
+                       ,eval.metric= mx.metric.mae)
+    
+    vpred = predict (dlmodel, dtest)
+    print(vpred)
+    names(vpred) = rownames(dtest)
+    
+    y_predict = append(y_predict, vpred)
+    y_real = append(y_real, dtest[,"Aff"])
+    k = k + 1
+  }
+  
+  # performances
+  valr2 = calR2(y_real, y_predict)
+  corval = cor(y_real, y_predict)
+  RMSEP = vrmsep(y_real, y_predict)
+  MAEval = MAE(y_real, y_predict)
+  R02val = R02(y_real, y_predict)
+  
+  print("Perfomances in CV")
+  print(paste("R2=", valr2, sep = ""))
+  print(paste("R02=", R02val, sep = ""))
+  print(paste("MAE=", MAEval, sep = ""))
+  print(paste("Cor=", corval, sep = ""))
+  print(paste("RMSEP=", RMSEP, sep = ""))
+  print("")
+  print("")
+  
+  
+  pdf(paste(prout, "PerfNNCV", length(lfolds), ".pdf", sep = ""), 20, 20)
+  plot(y_real, y_predict, pch = 20, main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
+  text(y_real, y_predict, labels = names(y_predict))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster
+  dcluster = dcluster[names(y_predict)]
+  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
+  text(y_real, y_predict, labels = dcluster, col = dcluster)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  dev.off()  
+  
+  tperf = cbind(y_predict, y_real)
+  write.table(tperf, paste(prout, "perfNNCV_", length(lfolds), ".txt", sep = ""), sep = "\t")
+}
+
+
+
+
+
+
+
+DLReg = function(dtrain, dtest, dcluster, prout){
+  
+  print(paste("==== Deep Learning in train-test --- Automatic optimization CV ====", sep = ""))
+  
+  
+  dtrain = as.matrix(dtrain)
+  ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
+  dtrainAff = dtrain[,c("Aff")]
+  
+  dtest = as.matrix(dtest)
+  ddestest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+  dtestAff = dtest[,c("Aff")]
+  
+  
+  data = mx.symbol.Variable("data")
+  label <- mx.symbol.Variable("label")
+  
+  fc1 <- mx.symbol.FullyConnected(data, num_hidden=10, name="fc1")
+  tanh1 <- mx.symbol.Activation(fc1, act_type="tanh", name="tanh1")
+  fc2 <- mx.symbol.FullyConnected(tanh1, num_hidden=1, name="fc2")
+  lro2 <- mx.symbol.LinearRegressionOutput(data=fc2, label=label, name="lro2")
+  
+  mx.set.seed(0)
+  
+  tuneNN <- mx.model.FeedForward.create(lro2, X=ddestrain, y=dtrainAff,
+                                        ctx=mx.cpu(), num.round=3921, array.batch.size=20,
+                                       learning.rate=2e-6, momentum=0.9, eval.metric=mx.metric.rmse)
+  
+    
+  predNNtest = predict(tuneNN, ddestest)[1,]
+  predNNtrain = predict(tuneNN, ddestrain)[1,]
+  
+  
+  names(predNNtrain) = rownames(ddestrain)
+  names(predNNtest) = rownames(ddestest)
+  
+  r2train = calR2(dtrain[,"Aff"], predNNtrain)
+  r2test = calR2(dtest[,"Aff"], predNNtest)
+  
+  cortrain = cor(dtrain[,"Aff"], predNNtrain)
+  cortest = cor(dtest[,"Aff"], predNNtest)
+  
+  rmseptrain = vrmsep(dtrain[,"Aff"], predNNtrain)
+  rmseptest = vrmsep(dtest[,"Aff"], predNNtest)
+  
+  R02train = R02(dtrain[,"Aff"], predNNtrain)
+  R02test = R02(dtest[,"Aff"], predNNtest)
+  
+  MAEtrain = MAE(dtrain[,"Aff"], predNNtrain)
+  MAEtest = MAE(dtest[,"Aff"], predNNtest)
+  
+  print("===== DL model train-Test =====")
+  #print(modelpls$coefficients)
+  print(paste("Perf training (dim= ", dim(dtrain)[1], "*", dim(dtrain)[2], "):", sep = ""))
+  print(paste("R2 train=", r2train))
+  print(paste("R02 train=", R02train))
+  print(paste("MAE train=", MAEtrain))
+  print(paste("Corval train=", cortrain))
+  print(paste("RMSEP=", rmseptrain))
+  print("")
+  print("")
+  
+  
+  print(paste("Perf test (dim=", dim(dtest)[1], "*", dim(dtest)[2], "):", sep = ""))
+  print(paste("R2 test=", r2test))
+  print(paste("R02 test=", R02test))
+  print(paste("MAE test=", MAEtest))
+  print(paste("Corval test=", cortest, sep = ""))
+  print(paste("RMSEP test=", rmseptest, sep = ""))
+  print("")
+  print("")
+  
+  
+  # train
+  pdf(paste(prout ,"PerfDLreg_TrainTest.pdf", sep = ""), width = 20, height = 20)
+  plot(dtrain[,"Aff"], predNNtrain, pch = 20, main = paste("Correlation = ", round(cor(dtrain[,"Aff"], predNNtrain), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(dtrain[,"Aff"], predNNtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], predNNtrain), digits = 3)))
+  text(dtrain[,"Aff"], predNNtrain, labels = names(predNNtrain))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster - train
+  dclusterTrain = dcluster[names(predNNtrain)]
+  plot(dtrain[,"Aff"], predNNtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], predNNtrain), digits = 3)))
+  text(dtrain[,"Aff"], predNNtrain, labels = dclusterTrain, col = dclusterTrain)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # test
+  plot(dtest[,"Aff"], predNNtest, pch = 20, main = paste("Correlation = ", round(cor(dtest[,"Aff"], predNNtest), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(dtest[,"Aff"], predNNtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], predNNtest), digits = 3)))
+  text(dtest[,"Aff"], predNNtest, labels = names(predNNtest))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster - test
+  dclusterTest = dcluster[names(predNNtest)]
+  plot(dtest[,"Aff"], predNNtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], predNNtest), digits = 3)))
+  text(dtest[,"Aff"], predNNtest, labels = dclusterTest, col = dclusterTest)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  dev.off()
+  
+}
+
+
+
+
+
 
 #####################
 #  classification   #

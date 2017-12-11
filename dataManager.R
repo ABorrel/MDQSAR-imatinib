@@ -78,8 +78,6 @@ sampligDataFractionCluster = function(t_din, fract, pcluster){
     dtrain = rbind(dtrain, descclust[v_sample[(i_limitc + 1):(length (v_sample))],])
     dtest = rbind(dtest, descclust[v_sample[1:i_limitc],])
   }
-  print (dtrain)
-  print (dtest)
   # sample data
   return (list(dtrain, dtest))
   
@@ -163,9 +161,8 @@ controlDatasets = function(ldataset, prin){
       geom_histogram(aes(y=..density..),     # Histogram with density instead of count on y-axis
                      binwidth=.5,
                      colour="black", fill="white") +
-      labs(x = "-log10(MIC)", y = "Frequencies") + 
+      labs(x = "pAff", y = "Frequencies") + 
       ggtitle(paste("Fold ", i, "-Dim=", dim(d)[1], sep = ""))+
-      xlim (c(-2.5, 2.5))+
       geom_density(alpha=.2, fill="#FAFFA5")
     print(h)
     
@@ -179,9 +176,8 @@ controlDatasets = function(ldataset, prin){
     geom_histogram(aes(y=..density..),     # Histogram with density instead of count on y-axis
                    binwidth=.5,
                    colour="black", fill="white") +
-    labs(x = "-log10(MIC)", y = "Frequencies") + 
+    labs(x = "pAff", y = "Frequencies") + 
     ggtitle(paste("Fold ", i, "-Dim=", dim(dglobal)[1], sep = "")) +
-  xlim (c(-2.5, 2.5))+
     geom_density(alpha=.2, fill="#FAFFA5")
   print (h)
   

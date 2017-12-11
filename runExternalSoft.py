@@ -67,12 +67,16 @@ def runPadel(prin, pfilout, force=0):
         except:pass
 
     if path.exists(pfilout):
-        return pfilout
+        filout = open(pfilout, "r")
+        llines = filout.readlines()
+        filout.close()
+        if len(listdir(prin)) <= len(llines):
+            return pfilout
 
     if not path.exists(prin):
         return "ERROR - Padel Input"
     else:
-        cmd = "java -jar " + PADEL + " -maxruntime 1000000 -3d -dir " + str(prin) + " -file " + pfilout
+        cmd = "java -jar " + PADEL + " -maxruntime 5000 -3d -dir " + str(prin) + " -file " + pfilout
         print cmd
         system(cmd)
 
@@ -116,12 +120,12 @@ def babelConvertPDBtoSDF(ppdb, pfilout = ""):
     if pfilout == "":
         pfilout = ppdb[:-4] + ".sdf"
 
-    cmdconvert = "babel " + ppdb + " " +  pfilout + " 2>/dev/null"
+    cmdconvert = "/usr/bin/babel " + ppdb + " " +  pfilout + " 2>/dev/null"
 
     if path.exists(pfilout) and path.getsize(pfilout) > 0:
         return pfilout
     else:
-        print cmdconvert
+        #print cmdconvert
         system(cmdconvert)
     return pfilout
 
@@ -219,12 +223,25 @@ def babelConvertSDFtoPDB(psdf):
     return psdf[:-4] + ".pdb"
 
 
-def babelPDBtoMOL2(ppdbin):
+def babelPDBtoMOL2(ppdbin, debug = 0):
     pfilout = ppdbin[0:-4] + ".mol2"
-    cmd_convert = "babel  " + ppdbin + " " + pfilout
-    #print cmd_convert
-    system(cmd_convert + " 2> /dev/null")
-    return pfilout
+    if path.exists(pfilout):
+        return pfilout
+    else:
+        cmd_convert = "babel  " + ppdbin + " " + pfilout
+        #print cmd_convert
+        if debug == 1:
+            system(cmd_convert)
+        else:
+            system(cmd_convert + " 2> /dev/null")
+
+    if not path.exists(pfilout):
+        sleep(3)
+        print cmd_convert
+        print "SLEEP babel error"
+        return babelPDBtoMOL2(ppdbin)
+    else:
+        return pfilout
 
 
 
@@ -505,26 +522,20 @@ def runFreeSASA(ppdbin, pfilout, rsa=0):
 ##################
 
 
-def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, logaff=1):
+def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, logaff=0):
 
     # extract train and test file
     dfile = {}
     lfile = listdir(prout)
     for filedir in lfile:
-        if search("^train_", filedir):
-            bacteria = filedir.split("_")[-1][0:-4]
-            if not bacteria in dfile.keys():
-                dfile[bacteria] = {}
-            dfile[bacteria]["train"] = prout + filedir
+        if search("^train", filedir):
+            dfile["train"] = prout + filedir
 
-        elif search("^test_", filedir):
-            bacteria = filedir.split("_")[-1][0:-4]
-            if not bacteria in dfile.keys():
-                dfile[bacteria] = {}
-            dfile[bacteria]["test"] = prout + filedir
+        elif search("^test", filedir):
+            dfile["test"] = prout + filedir
 
     if dfile == {}:
-        cmd = "/QSARsPrep.R " + str(pdesc) + " " + str(paff) + " " + prout + " " + str(corcoef) + " " + str(
+        cmd = "./QSARsPrep.R " + str(pdesc) + " " + str(paff) + " " + prout + " " + str(corcoef) + " " + str(
             maxQuantile) + " " + str(valSplit) + " " + str(logaff)
         print cmd
         system(cmd)
@@ -537,7 +548,7 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, logaff=1)
 
 def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
 
-    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " >" + prout + "perfRF.txt"
+    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " >" + prout + "perf.txt"
     print cmd_QSAR
     system(cmd_QSAR)
 

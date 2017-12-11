@@ -363,33 +363,41 @@ separeData = function (data, descriptor_class){
 }
 
 
-openData = function (pfilin, valcor, prout, vexclude){
-	desc = read.csv (pfilin, header = TRUE, sep = "\t")
-	rownames(desc) = desc[,1]
-	vexclude = which(colnames(desc)==vexclude)	
-	cexclude = desc[,vexclude]
-	desc = desc[,-vexclude]
+openData = function (pfilin, valcor, prout, cexclude){
+	desc = read.csv (pfilin, header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+	desc = desc[,-cexclude]
 	#print("ddddd")
 	#print (desc)
 	#print(dim(desc))
 	#print (rownames(desc))
-	#rownames(desc) = desc[,1]
-	#desc = desc[,-1]
+	rownames(desc) = desc[,1]
+	
+	desc = desc[,-1]
 	#print (desc)
 
-	# deleted line with NA
-	#rownames (desc) = seq (1, dim(desc)[1])
-	desc = na.omit(desc)
-  #print (dim(desc))
-
-  
+	# deleted col with NA
+	lcoldel = NULL
+	print (dim(desc))
+	for (icol in seq(1, dim(desc)[2])){
+	  #print (desc[,icol])
+	  if (sum(is.na(as.vector(desc[,icol]))) > 10){
+	    lcoldel = append(lcoldel, icol)
+	  }
+	}
+	
+	if(is.null(lcoldel)){
+	  desc = na.omit(desc)
+	}else{
+	  desc = desc[,-lcoldel]	  
+	  desc = na.omit(desc)  
+	}
+	
 	# dell when sd = 0
-	sd_desc =apply (desc[,1:(dim(desc)[2])], 2, sd)
+	sd_desc = apply (desc[,1:(dim(desc)[2])], 2, sd)
 
 	#print (sd_desc)
 	#print ("--------")
-	sd_0 = which (sd_desc == 0)
-	#print (sd_0)
+	sd_0 = which (sd_desc == 0.0)
 
 	#print ("------------")
 	#print (mode(sd_0))
@@ -399,10 +407,9 @@ openData = function (pfilin, valcor, prout, vexclude){
 		#print (as.factor (sd_0))
 		#desc = desc[,-sd_0]
 		desc=subset(desc,select=-sd_0)
-		#print(dim(desc_new))
 	}
 	if (valcor != 0){
-		out_elimcor = elimcor_sansY (desc, valcor)
+	  out_elimcor = elimcor_sansY (desc, valcor)
 		descriptor = out_elimcor$possetap
 
 		MDSElimcor (desc, out_elimcor, paste (prout, "MDSDesc_", valcor, sep = ""), "corr")

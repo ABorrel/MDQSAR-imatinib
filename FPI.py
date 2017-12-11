@@ -86,7 +86,6 @@ class ligFPI:
 
 
         fileFPI = open(pfileFPI, "w")
-        dout = {}
         # header
         fileFPI.write("Ligand and pocket res\tList residues in pocket\tFPI\n")
 
@@ -97,31 +96,8 @@ class ligFPI:
 
         pyplif.get_FPI(pligPDB=self.plig, ppocketPDB=self.pBS, lres=lres, filout=fileFPI)
 
+        fileFPI.close()
         return pfileFPI
-
-        #for resBS in cPocket.byres.keys():
-        #    # Res as a ligand
-        #    latomres = deepcopy(dres[resConsidered])
-        #    PDB.changeRecoder(latomres, "HETATM")
-        #    pligand = prpocket + resConsidered + ".pdb"
-        #    self.CPDB.writePDB(latoms=latomres, pfilout=pligand)
-        #    lplig.append(pligand)
-
-            # Define pocket
-        #    latomspocket = self.CPDB.get_BSfromLatom(latomin=latomres)
-        #    ppocket = prpocket + "pocket_" + resConsidered + ".pdb"
-        #    self.CPDB.writePDB(latoms=latomspocket, pfilout=ppocket)
-        #    lppocket.append(ppocket)
-
-            # format list of residues considered
-        #    lresformated = PDB.convert_ListAtomtoList(latomspocket)
-
-            # run FPI
-        #    dout[resConsidered] = pyplif.get_FPI(pligPDB=pligand, ppocketPDB=ppocket, lres=lresformated, filout=fileFPI)
-
-        #fileFPI.close()
-        #self.pfileFPI = pfileFPI
-        #self.FPI = dout
 
 
 
@@ -178,6 +154,7 @@ class FPIMD:
                     dout[frame][resBS] = "0000000"
                 filout.write("\t" + str(dout[frame][resBS]))
             filout.write("\n")
+        filout.close()
         self.MDFPI = dout
 
 
@@ -292,8 +269,6 @@ class FPIMD:
 
             for interactiontype in dbyprofile.keys():
                 dinteract[interactiontype].append(dbyprofile[interactiontype])
-
-        print dinteract
 
         pfilout = self.prout + "descFPI"
         filout = open(pfilout, "w")

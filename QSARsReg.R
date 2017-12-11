@@ -10,8 +10,6 @@ library (rpart)
 #     MAIN     #
 ################
 
-#./QSARs.R /home/aborrel/fluoroquinolones/results/QSARS/train_Escherichia.coli.csv /home/aborrel/fluoroquinolones/results/QSARS/test_Escherichia.coli.csv /home/aborrel/fluoroquinolones/results/desc_analysis/0.8/Table_hclust_ward.D2_gap_stat.csv /home/aborrel/fluoroquinolones/results/QSARS//Escherichia.coli/ 1 0 >/home/aborrel/fluoroquinolones/results/QSARS//Escherichia.coli/perf.txt
-
 
 args <- commandArgs(TRUE)
 ptrain = args[1]
@@ -20,14 +18,16 @@ pcluster = args[3]
 prout = args[4]
 nbCV = as.integer(args[5])
 
+
+
 # to test
-#ptrain = "/home/aborrel/fluoroquinolones/results/QSARS/train_Pseudomonas.aeruginosa.csv"
-#ptest = "/home/aborrel/fluoroquinolones/results/QSARS/test_Pseudomonas.aeruginosa.csv"
-#pcluster = "/home/aborrel/fluoroquinolones/results/desc_analysis/0.8/Table_hclust_ward.D2_gap_stat.csv"
-#prout = "/home/aborrel/fluoroquinolones/results/QSARS/Pseudomonas.aeruginosa/"
+ptrain = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/trainSet.csv"
+ptest = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/testSet.csv"
+pcluster = "0"
+prout = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/"
 
 # cross validation 10
-#nbCV = 10
+nbCV = 10
 
 
 # model regression #
@@ -37,7 +37,10 @@ modelPLSreg = 0
 modelSVMreg = 0
 modelRFreg = 1
 modelCartreg = 0
+modelNNreg = 1
+modelDLreg = 1
 chemmodlabreg = 0
+
 
 
 #########################
@@ -58,6 +61,8 @@ print(paste("PLS: ", modelPLSreg, sep = ""))
 print(paste("SVM: ", modelSVMreg, sep = ""))
 print(paste("CART: ", modelCartreg, sep = ""))
 print(paste("RF: ", modelRFreg, sep = ""))
+print(paste("NN: ", modelNNreg, sep = ""))
+print(paste("DP: ", modelDLreg, sep = ""))
 print(paste("Chemmodlab: ", chemmodlabreg, sep = ""))
 print("")
 
@@ -78,10 +83,17 @@ rownames(dtest) = dtest[,1]
 dtest = dtest[,-1]
 
 # cluster
-dcluster = read.csv(pcluster, header = TRUE)
-namescpd = dcluster[,1]
-dcluster = dcluster[,-1]
-names(dcluster) = namescpd
+if (pcluster != "0"){
+  dcluster = read.csv(pcluster, header = TRUE)
+  namescpd = dcluster[,1]
+  dcluster = dcluster[,-1]
+  names(dcluster) = namescpd
+}else{
+  namescpd = cbind(rownames(dtrain), rownames(dtest))
+  dcluster = rep(1, length(namescpd))
+  names(dcluster) = namescpd
+}
+
 
 print("==== Dataset ====")
 print(paste("Data train: dim = ", dim(dtrain)[1], dim(dtrain)[2], sep = " "))
@@ -137,7 +149,7 @@ if (modelRFreg == 1){
   
   #RFregCV(lgroupCV, 50, 5, dcluster, prout)# for test
   parameters = RFGridRegCV(vntree, vmtry, lgroupCV,  prout)
-  RFregCV(lgroupCV, parameters[[1]], parameters[[2]], dcluster, prout)
+  #RFregCV(lgroupCV, parameters[[1]], parameters[[2]], dcluster, prout)
   RFreg(dtrain, dtest, parameters[[1]], parameters[[2]], dcluster, prout)
 }
 
@@ -167,6 +179,36 @@ if(chemmodlabreg == 1){
   CombineSplits(fit, metric = "rho")
   dev.off()
 }
+
+
+
+####################
+#  NEURAL NETWORK  #
+####################
+
+
+if(modelNNreg ==1){
+  #NNRegCV(lgroupCV, dcluster, prout)
+  NNReg(dtrain, dtest, dcluster, prout)
+}
+
+
+
+
+####################
+#  DEEP LEARNING   #
+####################
+
+
+if(modelDLreg ==1){
+  #DLRegCV(lgroupCV, dcluster, prout)
+  DLReg(dtrain, dtest, dcluster, prout)
+}
+
+
+
+
+
 
 
 

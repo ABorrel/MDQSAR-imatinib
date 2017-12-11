@@ -298,7 +298,7 @@ R02 = function(dreal, dpredict){
   Mreal = mean(dperf[,1])
   Mpredict = mean(dperf[,2])
   
-  print(paste("Mpred - ",Mpredict))
+  #print(paste("Mpred - ",Mpredict))
   
   A = 0
   B = 0

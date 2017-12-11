@@ -9,7 +9,7 @@ import FPI
 import PDB
 import cpdClustering
 import MDdescriptors
-import MDQSAR
+import QSARModeling
 
 from os import listdir, makedirs
 from re import search
@@ -19,6 +19,7 @@ from time import sleep
 #########################
 ##   MAIN FUNCTIONS    ##
 #########################
+from QSARModeling import QSARModeling
 
 
 def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
@@ -187,37 +188,46 @@ def computeMD(prLigand, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, t
 
 
 
-def computeMDdesc(prMD, prout):
+def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 ):
 
     lpMDresult = listdir(prMD)
+    if iend == 0:
+        iend = len(lpMDresult)
 
-    dcMDdesc = {}
-    for MDresult in lpMDresult:
+
+    i = istart
+    for MDresult in lpMDresult[istart:iend]:
         jobname = MDresult.split("_")[0]
         prlig = prMD + MDresult + "/lig/"
         prBS = prMD + MDresult + "/BSs/"
         prframes = prMD + MDresult + "/framesMD/"
-        prMDdesc = prout
+        prMDdesc = pathFolder.createFolder(prout + jobname + "/")
+
+
+        # control run
+        print jobname, i
+        i +=1
 
         # compute different descriptors
-        cMD = MDdescriptors.MDdescriptors(jobname, prlig, prBS, prframes, prMDdesc)
-        cMD.computeLigDesc()
-        cMD.computeBSDesc()
-        cMD.computeFPI()
+        if not "cMD" in locals().keys():
+            cMD = MDdescriptors.MDdescriptors(jobname, prlig, prBS, prframes, prMDdesc)
+        else:
+            cMD.jobname = jobname
+            cMD.prlig = prlig
+            cMD.prBSs = prBS
+            cMD.prframe = prframes
+            cMD.prout = prMDdesc
 
-        dcMDdesc[jobname] = cMD
+        if descLig == 1:
+            cMD.computeLigDesc()
+        if descBS == 1:
+            cMD.computeBSDesc()
+        if descFPI == 1:
+            cMD.computeFPI()
 
 
 
-
-def computeMDQSAR(prDesc, ltypedesc, prout):
-
-    cMDQSAR = MDQSAR.MDQSAR(prDesc, prout)
-    cMDQSAR.builtDataset()
-
-    cMDQSAR.runQSARModel(ltypedesc)
-
-    return
+    # have to load only result
 
 
 
@@ -393,7 +403,7 @@ pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
 #prMD = "/data/aborrel/imatinib/results/MD-ABL/"
 #pprotein = "/data/aborrel/imatinib/2hyy_MD.pdb"
 
-
+################
 # parameter MD #
 ################
 timeMD = "15000.0"
@@ -406,10 +416,11 @@ nameLig = "UNK"
 water = 0
 BSCutoff = 6.0
 
+##########
 # Run MD #
 ##########
 pathFolder.createFolder(pranalysis)
-computeMD(prLig, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU)
+#computeMD(prLig, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU)
 
 
 
@@ -417,22 +428,55 @@ computeMD(prLig, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timefram
 ###################
 # MD descriptors  #
 ###################
-prMDdesc = "/home/aborrel/imitanib/results/analysis/MD_descriptor/"
+prMDdesc = "/home/aborrel/imitanib/results/analysis/MDdescriptor/"
 pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
 pathFolder.createFolder(prMDdesc)
-#computeMDdesc(pranalysis, prMDdesc)
 
-
+# for bash
+import sys
+istart = sys.argv[1]
+if istart[-1] == "&":
+    istart = istart[:-1]
+istart = int(istart)
+computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=0, descFPI=0)
 
 
 
 ######################
 # develop QSAR model #
 ######################
+prMDdesc = "/home/aborrel/imitanib/results/analysis/MDdescriptor/"
+paff ="/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
+pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDescall.desc"
+prQSAR = pathFolder.analyses("QSARs")
 
-#prQSAR = pathFolder.analyses("MDQSARs")
-#computeMDQSAR(prMDdesc, ["Lig"], prQSAR)
+# settings
+varsplit = 0.15
+corcoef = 0.75
+maxQuantile = 80
 
+
+# QSAR with lig descriptors #
+#############################
+#QSARLig = QSARModeling(prMDdesc, pdesc, paff, ["Lig"], prQSAR)
+#QSARLig.builtDataset()
+#QSARLig.writeDataset()
+#QSARLig.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
+
+
+
+# QSAR with BS descriptors #
+############################
+# settings
+varsplit = 0.15
+corcoef = 0.80
+maxQuantile = 85
+
+
+#QSARBS = QSARModeling(prMDdesc, pdesc, paff, ["BS"], prQSAR)
+#QSARBS.builtDataset()
+#QSARBS.writeDataset()
+#QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
 
 
 
@@ -547,5 +591,4 @@ pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
         #ccluster.summarize()
         #ccluster.superimposedPoseCluster()
         #ccluster.ShaepMatrix()
-        #ccluster.FPIbycluster(pprot=pprotein)
-
+        #ccluster.FPIbycluster(pprot=pprotei

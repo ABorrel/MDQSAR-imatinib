@@ -5,7 +5,7 @@ from numpy import cross
 def getringdict(protein):
 	
 	rings = protein.GetSSSR()
-	print "RINGS", rings
+	#print "RINGS", rings
 	ringdict = {}
 	ringnum  = 0
 	for ring in rings:
