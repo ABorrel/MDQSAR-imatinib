@@ -2,16 +2,19 @@
 
 source("performance.R")
 library("pls")
-
+source("tool.R")
+source("dataManager.R")
 library (randomForest)
 library (MASS)
 library(rpart)
 library(rpart.plot)
 library(e1071)
 library(ggplot2)
-library(caret)
-library(neuralnet)
-
+#library(neuralnet)
+library(nnet)
+library(clusterGeneration)
+library(stringr)
+library(reshape2)
 
 ##################
 #    PCR MODELS  #
@@ -25,7 +28,7 @@ PCRgridCV = function(lfolds, prout){
   print(paste("== PCR in CV with ", length(lfolds), " Automatic optimization by folds ===", sep = ""))
 
   
-  maxCp = dim(lfolds[[1]])[1] -1
+  maxCp = dim(lfolds[[1]])[2] - 1
   
   vcpRMSEP = NULL
   vcpR2 = NULL
@@ -90,7 +93,7 @@ PCRgridCV = function(lfolds, prout){
   print(paste("RMSEP=", vcpRMSEP[nbCPoptimun], sep = ""))
   print("")
   print("")
-  return (nbCPoptimun)
+  return(nbCPoptimun)
 }
 
 # PCR - CV
@@ -251,7 +254,7 @@ PLSCV = function(lfolds, dcluster, prout){
   # performance in CV and number of cmp
   # return best number of cmp
   
-  maxCp = dim(lfolds[[1]])[1]
+  maxCp = dim(lfolds[[1]])[2]-1
   
   vcpRMSEP = NULL
   vcpR2 = NULL
@@ -444,9 +447,9 @@ SVMRegCV = function(lfolds, vgamma, vcost, dcluster, prout){
       }
     }
     
-    modtune = tune(svm, Aff~., data = dtrain, ranges = list(gamma = vgamma, cost = vcost), tunecontrol = tune.control(sampling = "cross"), kernel = "polynomial")
+    modtune = SVMTune(dtrain, vgamma, vcost, 10)
     
-    vpred = predict (modtune$best.model, dtest, type = "response")
+    vpred = predict (modtune, dtest, type = "response")
     names(vpred) = rownames(dtest)
     
     y_predict = append(y_predict, vpred)
@@ -494,13 +497,13 @@ SVMRegCV = function(lfolds, vgamma, vcost, dcluster, prout){
 
 SVMRegTrainTest = function(dtrain, dtest, vgamma, vcost, dcluster, prout){
   
-  print(paste("==== SVM in train-test --- Automatic optimization CV ====", sep = ""))
+  print(paste("==== SVM in train-test --- Automatic optimization CV-10====", sep = ""))
   
-  modelsvm = tune(svm, Aff~., data = dtrain, ranges = list(gamma = vgamma, cost = vcost), tunecontrol = tune.control(sampling = "cross"), kernel = "polynomial")
-  modelsvm = modelsvm$best.model
+  # optimisation on CV-10
+  modelsvm = SVMTune(dtrain, vgamma, vcost, 10)
   
-  predsvmtest = predict(modelsvm, newdata = dtest)
-  predsvmtrain = predict(modelsvm, newdata = dtrain)
+  predsvmtest = predict(modelsvm, dtest[,-c(which(colnames(dtest) == "Aff"))])
+  predsvmtrain = predict(modelsvm, dtrain[,-c(which(colnames(dtrain) == "Aff"))])
   
   names(predsvmtrain) = rownames(dtrain)
   names(predsvmtest) = rownames(dtest)
@@ -570,28 +573,19 @@ SVMRegTrainTest = function(dtrain, dtest, vgamma, vcost, dcluster, prout){
   abline(a = 0, b = 1, col = "red", cex = 3)
   dev.off()
   
-  }
-  
+}
 
 
 
-##################
-# NEURAL NETWORK #
-##################
-
-
-NNRegCV = function(lfolds, dcluster, prout){
-  
-  print(paste("==== NN in CV with ", length(lfolds), " Automatic optimization CV ====", sep = ""))
+SVMTune = function(dtrain, vgamma, vcost, nbCV){
   
   
-  # data combination #
-  ####################
+  lfolds = samplingDataNgroup(dtrain, nbCV)
+  lmodel = list()
+  lR2best = NULL
+  
   k = 1
   kmax = length(lfolds)
-  y_predict = NULL
-  y_real = NULL
-  timportance = NULL
   while(k <= kmax){
     dtrain = NULL
     dtest = NULL
@@ -604,20 +598,82 @@ NNRegCV = function(lfolds, dcluster, prout){
       }
     }
     
-    dtrain = as.data.frame(dtrain)
+    #dtrain = as.data.frame(scale(dtrain))
     ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
-    dAff = dtrain[,c("Aff")]
+    ddestrain = scale(ddestrain)
+    Aff = dtrain[,c("Aff")]
     
-    controlset = trainControl(method = "cv", number = 3)
-    grid = data.frame(layer1 = c(2,5,10,15,20), layer2=c(0, 2, 5, 10, 15) , layer3=c(0,2,5,10,15))
-    tuneNN = train(ddestrain, dAff, method = "neuralnet", trControl = controlset, tuneGrid = grid)
     
-    vpred = predict (tuneNN, dtest)
+    #dtest = as.data.frame(scale(dtest))
+    dtestAff = dtest[,"Aff"]
+    ddesctest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+    ddesctest = scale(ddesctest, center = attr(ddestrain, 'scaled:center'), scale = attr(ddestrain, 'scaled:scale'))
+    
+    modelsvm = tune(svm, train.x = ddestrain, train.y = Aff, ranges = list(gamma = vgamma, cost = vcost), tunecontrol = tune.control(sampling = "cross"), kernel = "polynomial")
+    modelsvm = modelsvm$best.model
+    
+    vpred = predict(modelsvm, ddesctest)
+    
+    R2 = calR2(dtestAff, vpred)
+    print(R2)
+    lR2best = append(lR2best, R2)
+    lmodel[[k]] =  modelsvm
+    k = k + 1 
+    
+  }
+  
+  
+  return(lmodel[[which(lR2best == max(lR2best))]])
+  
+}  
+
+
+
+##################
+# NEURAL NETWORK #
+##################
+
+
+NNRegCV = function(lfolds, dcluster, vdecay, vsize, prout){
+  
+  print(paste("==== NN in CV with ", length(lfolds), " Automatic optimization CV10 decay and size ====", sep = ""))
+  
+  k = 1
+  kmax = length(lfolds)
+  y_predict = NULL
+  y_real = NULL
+  while(k <= kmax){
+    dtrain = NULL
+    dtest = NULL
+    for (m in seq(1:kmax)){
+      lcpd = rownames(lfolds[[m]])
+      if (m == k){
+        dtest = as.data.frame(lfolds[[m]])
+      }else{
+        dtrain = rbind(dtrain, lfolds[[m]])
+      }
+    }
+    
+    # grid optimisation 
+    modelNN = NNRegOptimizeGrid(dtrain, "0", vdecay, vsize, 10)
+    
+    #dtrain = as.data.frame(scale(dtrain))
+    ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
+    Aff = dtrain[,c("Aff")]
+    
+    #print (as.vector(Aff))
+    ddestrain = scale(ddestrain)
+
+    #dtest = as.data.frame(scale(dtest))
+    dtestAff = dtest[,"Aff"]
+    ddesctest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+    ddesctest = scale(ddesctest, center = attr(ddestrain, 'scaled:center'), scale = attr(ddestrain, 'scaled:scale'))
+    
+    vpred = predict(modelNN, ddesctest)
     names(vpred) = rownames(dtest)
-    
     y_predict = append(y_predict, vpred)
-    y_real = append(y_real, dtest[,"Aff"])
-    k = k + 1
+    y_real = append(y_real, dtestAff)
+    k = k + 1 
   }
   
   # performances
@@ -656,29 +712,30 @@ NNRegCV = function(lfolds, dcluster, prout){
 }
 
 
-NNReg = function(dtrain, dtest, dcluster, prout){
+
+
+NNReg = function(dtrain, dtest, dcluster,  vdecay, vsize, prout){
   
-  print(paste("==== Neural network in train-test --- Automatic optimization CV ====", sep = ""))
+  print(paste("==== Neural network in train-test ===", sep = ""))
   
+  # find best model
+  modelNN = NNRegOptimizeGrid(dtrain, "0", vdecay, vsize, 10)
   
+  # scale data
   dtrain = as.data.frame(dtrain)
   ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
-  dAff = dtrain[,c("Aff")]
-  
-  controlset = trainControl(method = "cv", number = 3)
-  grid = data.frame(layer1 = c(2,5,10,15,20), layer2=c(0, 2, 5, 10, 15) , layer3=c(0,2,5,10,15))
-  tuneNN = train(ddestrain, dAff, method = "neuralnet", trControl = controlset, tuneGrid = grid)
+  dAfftrain = dtrain[,c("Aff")]
+  ddestrain = scale(ddestrain)
   
   dtest = as.data.frame(dtest)
-  vpred = predict (tuneNN, dtest)
-  names(vpred) = rownames(dtest)
+  ddestest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+  dAfftest = dtest[,c("Aff")]
+  ddestest = scale(ddestest, attr(ddestrain, 'scaled:center'), scale = attr(ddestrain, 'scaled:scale'))
   
-  y_predict = append(y_predict, vpred)
-  y_real = append(y_real, dtest[,"Aff"])
-  
-  
-  predNNtest = predict(tuneNN, newdata = dtest)
-  predNNtrain = predict(tuneNN, newdata = dtrain)
+  # predict  #
+  ############
+  predNNtest = predict(modelNN, ddestest)
+  predNNtrain = predict(modelNN, ddestrain)
   
   names(predNNtrain) = rownames(dtrain)
   names(predNNtest) = rownames(dtest)
@@ -750,6 +807,94 @@ NNReg = function(dtrain, dtest, dcluster, prout){
   
 }
 
+
+
+
+
+NNRegOptimizeGrid = function(dtrain, pfig, vdecay, vsize, nbCV){
+  
+  
+  lfolds = samplingDataNgroup(dtrain, nbCV)
+  lmodel = list()
+  lR2best = NULL
+  
+  if(pfig != "0"){
+    pdf(paste(pfig, "_", length(lfolds), ".pdf", sep = ""), 20, 20)
+  }
+    
+  k = 1
+  kmax = length(lfolds)
+  while(k <= kmax){
+    dtrain = NULL
+    dtest = NULL
+    for (m in seq(1:kmax)){
+      lcpd = rownames(lfolds[[m]])
+      if (m == k){
+        dtest = as.data.frame(lfolds[[m]])
+      }else{
+        dtrain = rbind(dtrain, lfolds[[m]])
+      }
+    }
+    
+    #dtrain = as.data.frame(scale(dtrain))
+    ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
+    Aff = dtrain[,c("Aff")]
+    
+    #print (as.vector(Aff))
+    ddestrain = scale(ddestrain)
+    
+    #dtest = as.data.frame(scale(dtest))
+    dtestAff = dtest[,"Aff"]
+    ddesctest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+    ddesctest = scale(ddesctest, center = attr(ddestrain, 'scaled:center'), scale = attr(ddestrain, 'scaled:scale'))
+    
+    gridOptimize = NULL
+    for (d in vdecay){
+      optsize = NULL
+      for(i in vsize){
+        modelNN = nnet(ddestrain, Aff, size = i, linout = T, maxit = 2000, MaxNWts = i*(dim(ddestrain)[2]+1)+i+1, decay = d)
+        vpred = predict (modelNN, ddesctest)
+        valr2 = calR2(dtestAff, vpred)
+        if (valr2 < 0){
+          valr2 = 0
+        }
+        optsize = append(optsize, valr2)
+      }
+      gridOptimize = cbind(gridOptimize, optsize)
+    }
+    colnames(gridOptimize) = vdecay
+    rownames(gridOptimize) = vsize
+    
+    if(pfig != "0"){
+      plot(rownames(gridOptimize), gridOptimize[,1] , type = "l", col = "red", lwd = 3, ylim = c(min(gridOptimize),max(gridOptimize)), xlab = "Size", ylab = "R2 in CV 10", main = paste("fold: ", k, sep = ""))
+      lines(rownames(gridOptimize), gridOptimize[,2], lwd = 3, col = "green")
+      lines(rownames(gridOptimize), gridOptimize[,3], lwd = 3, col = "blue")
+      lines(rownames(gridOptimize), gridOptimize[,4], lwd = 3, col = "pink")
+      lines(rownames(gridOptimize), gridOptimize[,5], lwd = 3, col = "yellow")
+      lines(rownames(gridOptimize), gridOptimize[,6], lwd = 3, col = "black")
+      legend("right" ,col = c("red", "green", "blue", "pink", "yellow", "black"), legend = c("0.001", "0.01", "0.1", "1", "10", "100"), pch = 19)
+    }
+    
+    idecaybest = ceiling(which(gridOptimize == max(gridOptimize))/ dim(gridOptimize)[1])
+    isizebest = which(gridOptimize[,idecaybest] == max(gridOptimize))
+    
+    bestsize = as.double(rownames(gridOptimize)[isizebest])
+    bestdecay = as.double(colnames(gridOptimize)[idecaybest])
+    
+    # best model
+    modelNN = nnet(ddestrain, Aff, size = bestsize, linout = T,  maxit = 2000, MaxNWts = bestsize*(dim(ddestrain)[2]+1)+bestsize+1, decay = bestdecay)
+    vpred = predict(modelNN, ddesctest)
+    R2 = calR2(dtestAff, vpred)
+    lR2best = append(lR2best, R2)
+    lmodel[[k]] =  modelNN
+    k = k + 1 
+  }
+  
+  if (pfig != "0"){
+    dev.off() 
+  }
+  return(lmodel[[which(lR2best == max(lR2best))]])
+}
 
 
 #################
@@ -862,8 +1007,13 @@ DLRegCV = function(lfolds, dcluster, prout){
 
 DLReg = function(dtrain, dtest, dcluster, prout){
   
-  print(paste("==== Deep Learning in train-test --- Automatic optimization CV ====", sep = ""))
+  print(paste("==== Deep Learning in train-test ====", sep = ""))
   
+  # set seed and load library only if function is activated
+  library(mxnet)
+  require(mxnet)
+  
+  mx.set.seed(1)
   
   dtrain = as.matrix(dtrain)
   ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
@@ -877,16 +1027,18 @@ DLReg = function(dtrain, dtest, dcluster, prout){
   data = mx.symbol.Variable("data")
   label <- mx.symbol.Variable("label")
   
-  fc1 <- mx.symbol.FullyConnected(data, num_hidden=10, name="fc1")
+  fc1 <- mx.symbol.FullyConnected(data, num_hidden=5, name="fc1")
   tanh1 <- mx.symbol.Activation(fc1, act_type="tanh", name="tanh1")
-  fc2 <- mx.symbol.FullyConnected(tanh1, num_hidden=1, name="fc2")
-  lro2 <- mx.symbol.LinearRegressionOutput(data=fc2, label=label, name="lro2")
+  fc2 <- mx.symbol.FullyConnected(tanh1, num_hidden=5, name="fc2")
+  tanh2 = mx.symbol.Activation(fc2, act_type="tanh", name="tanh1")
+  fc3 <- mx.symbol.FullyConnected(tanh1, num_hidden=1, name="fc3")
+  lro2 <- mx.symbol.LinearRegressionOutput(data=fc3, label=label, name="lro2")
   
   mx.set.seed(0)
   
   tuneNN <- mx.model.FeedForward.create(lro2, X=ddestrain, y=dtrainAff,
-                                        ctx=mx.cpu(), num.round=3921, array.batch.size=20,
-                                       learning.rate=2e-6, momentum=0.9, eval.metric=mx.metric.rmse)
+                                        ctx=mx.cpu(), num.round=4000, array.batch.size=20,
+                                       learning.rate=2e-6, momentum=0.9, eval.metric=mx.metric.rmse, verbose = FALSE)
   
     
   predNNtest = predict(tuneNN, ddestest)[1,]
@@ -964,83 +1116,9 @@ DLReg = function(dtrain, dtest, dcluster, prout){
 }
 
 
-
-
-
-
-#####################
-#  classification   #
-#####################
-
-SVMClassCV = function(lfolds, vgamma, vcost, prout){
-  
-  print(paste("== SVM in CV with ", length(lfolds), " Automatic optimization by folds", sep = ""))
-  
-  # data combination
-  k = 1
-  kmax = length(lfolds)
-  y_predict = NULL
-  y_real = NULL
-  y_proba = NULL
-  while(k <= kmax){
-    dtrain = NULL
-    dtest = NULL
-    for (m in seq(1:kmax)){
-      if (m == k){
-        dtest = lfolds[[m]]
-      }else{
-        dtrain = rbind(dtrain, lfolds[[m]])
-      }
-    }
-    
-    modtune = tune(svm, Aff~., data = dtrain, ranges = list(gamma = vgamma, cost = vcost), tunecontrol = tune.control(sampling = "fix"))
-    
-    vpred = predict (modtune$best.model, dtest, type = "class")
-    y_proba = append(y_proba, vpred)
-    
-    vpred[which(vpred < 0.5)] = 0
-    vpred[which(vpred >= 0.5)] = 1
-    
-    y_predict = append(y_predict, vpred)
-    y_real = append(y_real, dtest[,"Aff"])
-    k = k + 1
-  }
-  
-  # performances
-  lpref = classPerf(y_real, y_predict)
-  acc = lpref[[1]]
-  se = lpref[[2]]
-  sp = lpref[[3]]
-  mcc = lpref[[4]]
-  
-  png(paste(prout, "PerfSVMClassCV", length(lfolds), ".png", sep = ""), 800, 800)
-  plot(y_real, y_proba, type = "n")
-  text(y_real, y_proba, labels = names(y_predict), cex = 0.8)
-  abline(a = 0.5, b = 0, col = "red", cex = 3)
-  dev.off()
-  
-  dpred = cbind(y_proba, y_real)
-  colnames(dpred) = c("Predict", "Real")
-  write.table(dpred, file = paste(prout, "PerfRFClassCV", length(lfolds), ".txt", sep = ""), sep = "\t")
-  
-  print("Perfomances in CV")
-  print(paste("acc=", acc, sep = ""))
-  print(paste("se=", se, sep = ""))
-  print(paste("sp=", sp, sep = ""))
-  print(paste("mcc=", mcc, sep = "")) 
-  
-  tperf = cbind(y_predict, y_real)
-  write.table(tperf, paste(prout, "perfSVMRegCV_", length(lfolds), ".txt", sep = ""), sep = "\t")
-}
-
-
 #################
 # Random forest #
 #################
-
-######################
-# case of regression #
-######################
 
 RFGridRegCV = function(lntree, lmtry, lfolds, prout){
   
@@ -1364,8 +1442,253 @@ RFreg = function (dtrain, dtest, ntree, mtry, dcluster, prout){
 }
 
 
+#############
+#   CART    #
+#############
+
+
+CARTRegCV = function(lfolds, dcluster, prout){
+  
+  print(paste("== CART in CV with ", length(lfolds), "==", sep = ""))
+  
+  # data combination
+  k = 1
+  kmax = length(lfolds)
+  y_predict = NULL
+  y_real = NULL
+  y_proba = NULL
+  #print (paste(prout, "TreeCARTReg-CV", length(lfolds), ".pdf",sep = ""))
+  pdf(paste(prout, "TreeCARTReg-CV", length(lfolds), ".pdf",sep = ""))
+  while(k <= kmax){
+    dtrain = NULL
+    dtest = NULL
+    for (m in seq(1:kmax)){
+      if (m == k){
+        dtest = lfolds[[m]]
+      }else{
+        dtrain = rbind(dtrain, lfolds[[m]])
+      }
+    }
+    
+    modelCART = rpart( Aff~., data = dtrain, method = "anova")#, control = rpart.control(cp = 0.05))
+    vpred = predict(modelCART, dtest[,-dim(dtest)[2]], type = "vector")
+    names(vpred) = rownames(dtest)
+    
+    #print(vpred)
+    # plot tree in pdf
+    plotcp(modelCART)
+    rpart.plot( modelCART , # middle graph
+                box.palette="GnBu",
+                branch.lty=3, shadow.col="gray", nn=TRUE)
+    
+    y_predict = append(y_predict, vpred)
+    y_real = append(y_real, dtest[,"Aff"])
+    
+    k = k + 1
+  }
+  dev.off()
+  
+  # performances
+  valr2 = calR2(y_real, y_predict)
+  corval = cor(y_real, y_predict)
+  RMSEP = vrmsep(y_real, y_predict)
+  R02val = R02(y_real, y_predict)
+  MAEval = MAE(y_real, y_predict)
+  
+  print("=== Perfomances in CV ===")
+  print(paste("R2=", valr2, sep = ""))
+  print(paste("R02=", R02val, sep = ""))
+  print(paste("MAE=", MAEval, sep = ""))
+  print(paste("Cor=", corval, sep = ""))
+  print(paste("RMSEP=", RMSEP, sep = ""))
+  
+  
+  pdf(paste(prout, "PerfCARTReg_CV", length(lfolds), ".pdf", sep = ""), 20, 20)
+  plot(y_real, y_predict, pch = 20, main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
+  text(y_real, y_predict, labels = names(y_predict))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster
+  dcluster = dcluster[names(y_predict)]
+  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
+  text(y_real, y_predict, labels = names(y_predict))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  dev.off()  
+  
+  dpred = cbind(y_predict, y_real)
+  colnames(dpred) = c("Predict", "Real")
+  write.table(dpred, file = paste(prout, "PerfCARTRegCV", length(lfolds), ".txt", sep = ""), sep = "\t")
+  
+}
+
+
+CARTreg = function (dtrain, dtest, dcluster, prout){
+  
+  modelCART = rpart( Aff~., data = dtrain, method = "anova")#, control = rpart.control(cp = 0.05))
+  
+  pdf(paste(prout, "TreeCARTReg-Train.pdf",sep = ""))
+  plotcp(modelCART)
+  rpart.plot( modelCART , # middle graph
+              box.palette="GnBu",
+              branch.lty=3, shadow.col="gray", nn=TRUE)
+  dev.off()
+  
+  vpredtest = predict(modelCART, dtest[,-dim(dtest)[2]], type = "vector") # remove affinity
+  vpredtrain = predict(modelCART, dtrain[,-dim(dtrain)[2]], type = "vector") # remove affinity
+  
+  names(vpredtest) = rownames(dtest)
+  names(vpredtrain) = rownames(dtrain)
+  
+  write.csv(vpredtest, paste(prout, "perfCARTPred.csv"))
+  
+  r2train = calR2(dtrain[,"Aff"], vpredtrain)
+  cortrain = cor(dtrain[,"Aff"], vpredtrain)
+  RMSEPtrain = vrmsep(dtrain[,"Aff"], vpredtrain)
+  R02train = R02(dtrain[,"Aff"], vpredtrain)
+  MAEtrain = MAE(dtrain[,"Aff"], vpredtrain)
+  
+  r2test = calR2(dtest[,"Aff"], vpredtest)
+  cortest = cor(dtest[,"Aff"], vpredtest)
+  RMSEPtest = vrmsep(dtest[,"Aff"], vpredtest)
+  R02test = R02(dtest[,"Aff"], vpredtest)
+  MAEtest = MAE(dtest[,"Aff"], vpredtest)
+  
+  print("===Perf CART===")
+  print(paste("Dim train: ", dim(dtrain)[1]," ", dim(dtrain)[2], sep = ""))
+  print(paste("Dim test: ", dim(dtest)[1]," ", dim(dtest)[2], sep = ""))
+  
+  print("==Train==")
+  print(paste("R2 train=", r2train, sep = ""))
+  print(paste("R02 train=", R02train, sep = ""))
+  print(paste("MAE train=", MAEtrain, sep = ""))
+  print(paste("cor train=", cortrain, sep = ""))
+  print(paste("RMSEP train=", RMSEPtrain, sep = ""))
+  
+  
+  print("==Test==")
+  print(paste("R2 test=", r2test, sep = ""))
+  print(paste("R02 test=", R02test, sep = ""))  
+  print(paste("MAE test=", MAEtest, sep = ""))
+  print(paste("cor test=", cortest, sep = ""))
+  print(paste("RMSEP test=", RMSEPtest, sep = ""))
+  
+  pdf(paste(prout, "PerfCARTreg_TrainTest.pdf", sep = ""), 20, 20)
+  
+  # train
+  plot(dtrain[,"Aff"], vpredtrain, pch = 20, main = paste("Correlation = ", round(cor(dtrain[,"Aff"], vpredtrain), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(dtrain[,"Aff"], vpredtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], vpredtrain), digits = 3)))
+  text(dtrain[,"Aff"], vpredtrain, labels = names(vpredtrain))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster - train
+  dclustertrain = dcluster[names(vpredtrain)]
+  plot(dtrain[,"Aff"], vpredtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], vpredtrain), digits = 3)))
+  text(dtrain[,"Aff"], vpredtrain, labels = dclustertrain, col = dclustertrain)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  
+  # test
+  plot(dtest[,"Aff"], vpredtest, pch = 20, main = paste("Correlation = ", round(cor(dtest[,"Aff"], vpredtest), digits = 3)), cex = 2)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  plot(dtest[,"Aff"], vpredtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], vpredtest), digits = 3)))
+  text(dtest[,"Aff"], vpredtest, labels = names(vpredtest))
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  # cluster - test
+  dclustertest = dcluster[names(vpredtest)]
+  plot(dtest[,"Aff"], vpredtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], vpredtest), digits = 3)))
+  text(dtest[,"Aff"], vpredtest, labels = dclustertest, col = dclustertest)
+  abline(a = 0, b = 1, col = "red", cex = 3)
+  
+  dev.off() 
+  
+}
+
+
+
+
+######################################################################################################################################
+######################################################################################################################################
+
+
 #####################
 #  classification   #
+#####################
+
+##########
+#  SVM   #
+##########
+
+SVMClassCV = function(lfolds, vgamma, vcost, prout){
+  
+  print(paste("== SVM in CV with ", length(lfolds), " Automatic optimization by folds", sep = ""))
+  
+  # data combination
+  k = 1
+  kmax = length(lfolds)
+  y_predict = NULL
+  y_real = NULL
+  y_proba = NULL
+  while(k <= kmax){
+    dtrain = NULL
+    dtest = NULL
+    for (m in seq(1:kmax)){
+      if (m == k){
+        dtest = lfolds[[m]]
+      }else{
+        dtrain = rbind(dtrain, lfolds[[m]])
+      }
+    }
+    
+    modtune = tune(svm, Aff~., data = dtrain, ranges = list(gamma = vgamma, cost = vcost), tunecontrol = tune.control(sampling = "fix"))
+    
+    vpred = predict (modtune$best.model, dtest, type = "class")
+    y_proba = append(y_proba, vpred)
+    
+    vpred[which(vpred < 0.5)] = 0
+    vpred[which(vpred >= 0.5)] = 1
+    
+    y_predict = append(y_predict, vpred)
+    y_real = append(y_real, dtest[,"Aff"])
+    k = k + 1
+  }
+  
+  # performances
+  lpref = classPerf(y_real, y_predict)
+  acc = lpref[[1]]
+  se = lpref[[2]]
+  sp = lpref[[3]]
+  mcc = lpref[[4]]
+  
+  png(paste(prout, "PerfSVMClassCV", length(lfolds), ".png", sep = ""), 800, 800)
+  plot(y_real, y_proba, type = "n")
+  text(y_real, y_proba, labels = names(y_predict), cex = 0.8)
+  abline(a = 0.5, b = 0, col = "red", cex = 3)
+  dev.off()
+  
+  dpred = cbind(y_proba, y_real)
+  colnames(dpred) = c("Predict", "Real")
+  write.table(dpred, file = paste(prout, "PerfRFClassCV", length(lfolds), ".txt", sep = ""), sep = "\t")
+  
+  print("Perfomances in CV")
+  print(paste("acc=", acc, sep = ""))
+  print(paste("se=", se, sep = ""))
+  print(paste("sp=", sp, sep = ""))
+  print(paste("mcc=", mcc, sep = "")) 
+  
+  tperf = cbind(y_predict, y_real)
+  write.table(tperf, paste(prout, "perfSVMRegCV_", length(lfolds), ".txt", sep = ""), sep = "\t")
+}
+
+
+
+
+#####################
+#  Random forest    #
 #####################
 
 RFGridClassCV = function(lntree, lmtry, lfolds, prout){
@@ -1502,8 +1825,8 @@ RFClassCV = function(lfolds, ntree, mtry, prout){
   return(y_predict)
 }
 
+
 RFClass = function (dtrain, dtest, ntree, mtry, prout){
-  
   
   modelRF = randomForest( Aff~., data = dtrain, mtry=as.integer(mtry), ntree=as.integer(ntree), type = "class",  importance=TRUE)
   vpredtrain = predict (modelRF, dtrain, type = "class")
@@ -1555,180 +1878,9 @@ RFClass = function (dtrain, dtest, ntree, mtry, prout){
 
 
 
-#############
-#   CART    #
-#############
-
-######################
-# case of regression #
-######################
-
-CARTRegCV = function(lfolds, dcluster, prout){
-  
-  print(paste("== CART in CV with ", length(lfolds), "==", sep = ""))
-  
-  # data combination
-  k = 1
-  kmax = length(lfolds)
-  y_predict = NULL
-  y_real = NULL
-  y_proba = NULL
-  #print (paste(prout, "TreeCARTReg-CV", length(lfolds), ".pdf",sep = ""))
-  pdf(paste(prout, "TreeCARTReg-CV", length(lfolds), ".pdf",sep = ""))
-  while(k <= kmax){
-    dtrain = NULL
-    dtest = NULL
-    for (m in seq(1:kmax)){
-      if (m == k){
-        dtest = lfolds[[m]]
-      }else{
-        dtrain = rbind(dtrain, lfolds[[m]])
-      }
-    }
-    
-    modelCART = rpart( Aff~., data = dtrain, method = "anova")#, control = rpart.control(cp = 0.05))
-    vpred = predict(modelCART, dtest[,-dim(dtest)[2]], type = "vector")
-    names(vpred) = rownames(dtest)
-    
-    #print(vpred)
-    # plot tree in pdf
-    plotcp(modelCART)
-    rpart.plot( modelCART , # middle graph
-                box.palette="GnBu",
-                branch.lty=3, shadow.col="gray", nn=TRUE)
-    
-    y_predict = append(y_predict, vpred)
-    y_real = append(y_real, dtest[,"Aff"])
-    
-    k = k + 1
-  }
-  dev.off()
-  
-  # performances
-  valr2 = calR2(y_real, y_predict)
-  corval = cor(y_real, y_predict)
-  RMSEP = vrmsep(y_real, y_predict)
-  R02val = R02(y_real, y_predict)
-  MAEval = MAE(y_real, y_predict)
-  
-  print("=== Perfomances in CV ===")
-  print(paste("R2=", valr2, sep = ""))
-  print(paste("R02=", R02val, sep = ""))
-  print(paste("MAE=", MAEval, sep = ""))
-  print(paste("Cor=", corval, sep = ""))
-  print(paste("RMSEP=", RMSEP, sep = ""))
-  
-  
-  pdf(paste(prout, "PerfCARTReg_CV", length(lfolds), ".pdf", sep = ""), 20, 20)
-  plot(y_real, y_predict, pch = 20, main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)), cex = 2)
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
-  text(y_real, y_predict, labels = names(y_predict))
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  
-  # cluster
-  dcluster = dcluster[names(y_predict)]
-  plot(y_real, y_predict, type = "n", main = paste("Correlation = ", round(cor(y_real, y_predict), digits = 3)))
-  text(y_real, y_predict, labels = names(y_predict))
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  
-  dev.off()  
-  
-  dpred = cbind(y_predict, y_real)
-  colnames(dpred) = c("Predict", "Real")
-  write.table(dpred, file = paste(prout, "PerfCARTRegCV", length(lfolds), ".txt", sep = ""), sep = "\t")
-  
-}
-
-
-CARTreg = function (dtrain, dtest, dcluster, prout){
-  
-  modelCART = rpart( Aff~., data = dtrain, method = "anova")#, control = rpart.control(cp = 0.05))
-    
-  pdf(paste(prout, "TreeCARTReg-Train.pdf",sep = ""))
-  plotcp(modelCART)
-  rpart.plot( modelCART , # middle graph
-              box.palette="GnBu",
-              branch.lty=3, shadow.col="gray", nn=TRUE)
-  dev.off()
-
-  vpredtest = predict(modelCART, dtest[,-dim(dtest)[2]], type = "vector") # remove affinity
-  vpredtrain = predict(modelCART, dtrain[,-dim(dtrain)[2]], type = "vector") # remove affinity
-  
-  names(vpredtest) = rownames(dtest)
-  names(vpredtrain) = rownames(dtrain)
-  
-  write.csv(vpredtest, paste(prout, "perfCARTPred.csv"))
-  
-  r2train = calR2(dtrain[,"Aff"], vpredtrain)
-  cortrain = cor(dtrain[,"Aff"], vpredtrain)
-  RMSEPtrain = vrmsep(dtrain[,"Aff"], vpredtrain)
-  R02train = R02(dtrain[,"Aff"], vpredtrain)
-  MAEtrain = MAE(dtrain[,"Aff"], vpredtrain)
-  
-  r2test = calR2(dtest[,"Aff"], vpredtest)
-  cortest = cor(dtest[,"Aff"], vpredtest)
-  RMSEPtest = vrmsep(dtest[,"Aff"], vpredtest)
-  R02test = R02(dtest[,"Aff"], vpredtest)
-  MAEtest = MAE(dtest[,"Aff"], vpredtest)
-  
-  print("===Perf CART===")
-  print(paste("Dim train: ", dim(dtrain)[1]," ", dim(dtrain)[2], sep = ""))
-  print(paste("Dim test: ", dim(dtest)[1]," ", dim(dtest)[2], sep = ""))
-  
-  print("==Train==")
-  print(paste("R2 train=", r2train, sep = ""))
-  print(paste("R02 train=", R02train, sep = ""))
-  print(paste("MAE train=", MAEtrain, sep = ""))
-  print(paste("cor train=", cortrain, sep = ""))
-  print(paste("RMSEP train=", RMSEPtrain, sep = ""))
-  
-  
-  print("==Test==")
-  print(paste("R2 test=", r2test, sep = ""))
-  print(paste("R02 test=", R02test, sep = ""))  
-  print(paste("MAE test=", MAEtest, sep = ""))
-  print(paste("cor test=", cortest, sep = ""))
-  print(paste("RMSEP test=", RMSEPtest, sep = ""))
-  
-  pdf(paste(prout, "PerfCARTreg_TrainTest.pdf", sep = ""), 20, 20)
-  
-  # train
-  plot(dtrain[,"Aff"], vpredtrain, pch = 20, main = paste("Correlation = ", round(cor(dtrain[,"Aff"], vpredtrain), digits = 3)), cex = 2)
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  plot(dtrain[,"Aff"], vpredtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], vpredtrain), digits = 3)))
-  text(dtrain[,"Aff"], vpredtrain, labels = names(vpredtrain))
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  
-  # cluster - train
-  dclustertrain = dcluster[names(vpredtrain)]
-  plot(dtrain[,"Aff"], vpredtrain, type = "n", main = paste("Correlation = ", round(cor(dtrain[,"Aff"], vpredtrain), digits = 3)))
-  text(dtrain[,"Aff"], vpredtrain, labels = dclustertrain, col = dclustertrain)
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  
-  
-  # test
-  plot(dtest[,"Aff"], vpredtest, pch = 20, main = paste("Correlation = ", round(cor(dtest[,"Aff"], vpredtest), digits = 3)), cex = 2)
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  plot(dtest[,"Aff"], vpredtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], vpredtest), digits = 3)))
-  text(dtest[,"Aff"], vpredtest, labels = names(vpredtest))
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  
-  # cluster - test
-  dclustertest = dcluster[names(vpredtest)]
-  plot(dtest[,"Aff"], vpredtest, type = "n", main = paste("Correlation = ", round(cor(dtest[,"Aff"], vpredtest), digits = 3)))
-  text(dtest[,"Aff"], vpredtest, labels = dclustertest, col = dclustertest)
-  abline(a = 0, b = 1, col = "red", cex = 3)
-  
-  dev.off() 
-  
-}
-
-
-
-#####################
-#  classification   #
-#####################
+##########
+#  CART  #
+##########
 
 CARTClassCV = function(lfolds, prout){
   

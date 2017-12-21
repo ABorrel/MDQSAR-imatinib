@@ -253,7 +253,7 @@ lBAout = ["CHEMBL3705971"]
 lBAout = []
 
 
-#ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
+ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
 #paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 #ctabAll.analysisTable(prCHEMBL)
 
@@ -267,10 +267,10 @@ pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
 
 # SP-2HYY #
 ###########
-psdfDokingSP = "/home/aborrel/imitanib/docking/dockingSP_2hyy/dockingpose.sdf"
+#psdfDokingSP = "/home/aborrel/imitanib/docking/dockingSP_2hyy/dockingpose.sdf"
 prDockingPoseSP = "/home/aborrel/imitanib/results/dockingposeSP_2HYY/"
-pprotein_2HYY = "/home/aborrel/imitanib/protein/2HYY_dock.pdb"
-pranalysis_SP_2HYY = pathFolder.analyses("2HYY_SPdock")
+#pprotein_2HYY = "/home/aborrel/imitanib/protein/2HYY_dock.pdb"
+#pranalysis_SP_2HYY = pathFolder.analyses("2HYY_SPdock")
 
 # analysis
 #dockingAnalysis(psdfDokingSP, ltab, pCHEMBLClean, prDockingPoseSP, pranalysis_SP_2HYY)
@@ -289,39 +289,39 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
 
 # mutated 3QRJ
-psdfDokingXP_3QRJ = "/home/aborrel/imitanib/docking/dockingXP_3QRJ/3QRJ_XP_pose.sdf"
-prDockingPoseXP_3QRJ = "/home/aborrel/imitanib/results/dockingposeXP_3QRJ/"
-pprotein_3QRJ = "/home/aborrel/imitanib/protein/3QRJ_dock.pdb"
-pranalysis_XP_3QRJ = pathFolder.analyses("3QRJ_XPdock")
+#psdfDokingXP_3QRJ = "/home/aborrel/imitanib/docking/dockingXP_3QRJ/3QRJ_XP_pose.sdf"
+#prDockingPoseXP_3QRJ = "/home/aborrel/imitanib/results/dockingposeXP_3QRJ/"
+#pprotein_3QRJ = "/home/aborrel/imitanib/protein/3QRJ_dock.pdb"
+#pranalysis_XP_3QRJ = pathFolder.analyses("3QRJ_XPdock")
 
 # analysis
 #dockingAnalysis(psdfDokingXP_3QRJ, ltab, pCHEMBLClean, prDockingPoseXP_3QRJ, pranalysis_XP_3QRJ)
 
 
 # mutated 2F4J
-psdfDokingXP_2F4J = "/home/aborrel/imitanib/docking/dockingXP_2F4J/2F4J_XP_pose.sdf"
-prDockingPoseXP_2F4J = "/home/aborrel/imitanib/results/dockingposeXP_2F4J/"
-pprotein_2F4J = "/home/aborrel/imitanib/protein/2F4J_dock.pdb"
-pranalysis_XP_2F4J = pathFolder.analyses("2F4J_XPdock")
+#psdfDokingXP_2F4J = "/home/aborrel/imitanib/docking/dockingXP_2F4J/2F4J_XP_pose.sdf"
+#prDockingPoseXP_2F4J = "/home/aborrel/imitanib/results/dockingposeXP_2F4J/"
+#pprotein_2F4J = "/home/aborrel/imitanib/protein/2F4J_dock.pdb"
+#pranalysis_XP_2F4J = pathFolder.analyses("2F4J_XPdock")
 
 # analysis
 #dockingAnalysis(psdfDokingXP_2F4J, ltab, pCHEMBLClean, prDockingPoseXP_2F4J, pranalysis_XP_2F4J)
 
 
 # mutated 2FO0
-psdfDokingXP_2FO0 = "/home/aborrel/imitanib/docking/dockingXP_2FO0/2FO0_XP_pose.sdf"
-prDockingPoseXP_2FO0 = "/home/aborrel/imitanib/results/dockingposeXP_2FO0/"
-pprotein_2FO0 = "/home/aborrel/imitanib/protein/2FO0_dock.pdb"
-pranalysis_XP_2FO0 = pathFolder.analyses("2FO0_XPdock")
+#psdfDokingXP_2FO0 = "/home/aborrel/imitanib/docking/dockingXP_2FO0/2FO0_XP_pose.sdf"
+#prDockingPoseXP_2FO0 = "/home/aborrel/imitanib/results/dockingposeXP_2FO0/"
+#pprotein_2FO0 = "/home/aborrel/imitanib/protein/2FO0_dock.pdb"
+#pranalysis_XP_2FO0 = pathFolder.analyses("2FO0_XPdock")
 
 # analysis
 #dockingAnalysis(psdfDokingXP_2FO0, ltab, pCHEMBLClean, prDockingPoseXP_2FO0, pranalysis_XP_2FO0)
 
 # mutated 2G2H
-psdfDokingXP_2G2H = "/home/aborrel/imitanib/docking/dockingXP_2G2H/2G2H_XP_pose.sdf"
-prDockingPoseXP_2G2H = "/home/aborrel/imitanib/results/dockingposeXP_2G2H/"
-pprotein_2G2H = "/home/aborrel/imitanib/protein/2G2H_dock.pdb"
-pranalysis_XP_2G2H = pathFolder.analyses("2G2H_XPdock")
+#psdfDokingXP_2G2H = "/home/aborrel/imitanib/docking/dockingXP_2G2H/2G2H_XP_pose.sdf"
+#prDockingPoseXP_2G2H = "/home/aborrel/imitanib/results/dockingposeXP_2G2H/"
+#pprotein_2G2H = "/home/aborrel/imitanib/protein/2G2H_dock.pdb"
+#pranalysis_XP_2G2H = pathFolder.analyses("2G2H_XPdock")
 
 # analysis
 #dockingAnalysis(psdfDokingXP_2G2H, ltab, pCHEMBLClean, prDockingPoseXP_2G2H, pranalysis_XP_2G2H)
@@ -336,7 +336,7 @@ pranalysis_XP_2G2H = pathFolder.analyses("2G2H_XPdock")
 # analysis
 #dockingAnalysis(psdfDokingXP_2GQG, ltab, pCHEMBLClean, prDockingPoseXP_2HYY, pranalysis_XP_2GQG)
 
-lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prDockingPoseXP_2FO0, prDockingPoseXP_2G2H]
+#lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prDockingPoseXP_2FO0, prDockingPoseXP_2G2H]
 
 
 #################
@@ -432,13 +432,17 @@ prMDdesc = "/home/aborrel/imitanib/results/analysis/MDdescriptor/"
 pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
 pathFolder.createFolder(prMDdesc)
 
-# for bash
-import sys
-istart = sys.argv[1]
-if istart[-1] == "&":
-    istart = istart[:-1]
-istart = int(istart)
-computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=0, descFPI=0)
+################################
+##         for bash           ##
+# uncomment for descriptor run #
+################################
+
+#import sys
+#istart = sys.argv[1]
+#if istart[-1] == "&":
+#    istart = istart[:-1]
+#istart = int(istart)
+#computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=1, descFPI=1)
 
 
 
@@ -447,40 +451,39 @@ computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, de
 ######################
 prMDdesc = "/home/aborrel/imitanib/results/analysis/MDdescriptor/"
 paff ="/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
-pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDescall.desc"
+pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDesc2D.csv"
 prQSAR = pathFolder.analyses("QSARs")
 
-# settings
-varsplit = 0.15
-corcoef = 0.75
-maxQuantile = 80
-
-
-# QSAR with lig descriptors #
-#############################
-#QSARLig = QSARModeling(prMDdesc, pdesc, paff, ["Lig"], prQSAR)
-#QSARLig.builtDataset()
-#QSARLig.writeDataset()
-#QSARLig.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
-
-
-
-# QSAR with BS descriptors #
-############################
 # settings
 varsplit = 0.15
 corcoef = 0.80
 maxQuantile = 85
 
 
-#QSARBS = QSARModeling(prMDdesc, pdesc, paff, ["BS"], prQSAR)
-#QSARBS.builtDataset()
-#QSARBS.writeDataset()
-#QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
+QSARLig2D = QSARModeling(prMDdesc, pdesc, paff, ["Lig2D"], prQSAR)
+QSARLig2D.builtDataset()
+QSARLig2D.writeDataset()
+QSARLig2D.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
 
 
 
+QSARLig = QSARModeling(prMDdesc, pdesc, paff, ["Lig"], prQSAR)
+QSARLig.builtDataset()
+QSARLig.writeDataset()
+QSARLig.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
 
+
+
+QSARBS = QSARModeling(prMDdesc, pdesc, paff, ["BS"], prQSAR)
+QSARBS.builtDataset()
+QSARBS.writeDataset()
+QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
+
+
+QSARBS = QSARModeling(prMDdesc, pdesc, paff, ["FPI"], prQSAR)
+QSARBS.builtDataset()
+QSARBS.writeDataset()
+QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
 
 
 ##########################################
@@ -538,10 +541,10 @@ pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
 # docking parsing #
 ###################
 
-#sdocking = parseSDF.sdf(psdfDoking)
-#sdocking.parseSDF()
-#sdocking.splitPoses(prDockingPoseXP)
-#dscore = sdocking.get_dockingscore()
+sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
+sdocking.parseSDF()
+sdocking.splitPoses(prDockingPoseXP_2HYY)
+dscore = sdocking.get_dockingscore()
 
 # select affinity from CHEMBL
 
@@ -550,7 +553,7 @@ pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
 #pCHEMBLClean = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_allAff.txt"
 #ltableCpdAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLClean, ["IC50", "Kd", "Ki"], lBAout)
 #pdockingXPAnalysis = pathFolder.analyses("dockingXPAll")
-#dockingScoreAnalysis(dscore, ltableCpdAll, pCHEMBLClean, pdockingXPAnalysis)
+#dockingScoreAnalysis(dscore, ltableCpdAll.table, pCHEMBLClean, pdockingXPAnalysis)
 
 # IC50 #
 ########

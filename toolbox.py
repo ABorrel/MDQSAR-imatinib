@@ -328,7 +328,10 @@ def loadTable(pfilin, din={}):
 
         j = 0
         while j < len(ldesc):
-            din[nameCpd][ldesc[j]] = lval[j+1]
+            val = lval[j+1]
+            if val == "nan" or val == "inf":
+                val = "NA"
+            din[nameCpd][ldesc[j]] = val
             j +=1
 
         i+=1

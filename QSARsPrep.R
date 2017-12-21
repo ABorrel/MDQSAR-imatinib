@@ -12,18 +12,17 @@ pdesc = args[1]
 pdata = args[2] #to take affinity or class
 prout = args[3]
 valcor = args[4]
-maxquantile = args[5]
+maxquantile = as.double(args[5])
 proptraintest = args[6]
 logaff = args[7]
 
-pdesc = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/descGlobal"
-pdata = "/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
-prout = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/"
-
-valcor = 0.70
-logaff = 0
-maxquantile = 80
-proptraintest = 0.15
+#pdesc = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/descGlobal"
+#pdata = "/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
+#prout = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/"
+#valcor = 0.80
+#logaff = 0
+#maxquantile = 80
+#proptraintest = 0.15
 
 
 
@@ -31,7 +30,7 @@ proptraintest = 0.15
 # Process descriptors matrix #
 ##############################
 
-dglobal = openData(pdesc, valcor, prout, c(2))
+dglobal = openData(pdesc, valcor, prout)
 dglobal = dglobal[[1]]
 
 print("==== Preprocessing ====")

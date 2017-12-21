@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
-source ("tool.R")
+source("tool.R")
 source("MachinLearning.R")
 source("performance.R")
 source("dataManager.R")
 
 library(chemmodlab)
-library (rpart)
+library(rpart)
 ################
 #     MAIN     #
 ################
@@ -21,25 +21,25 @@ nbCV = as.integer(args[5])
 
 
 # to test
-#ptrain = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/trainSet.csv"
-#ptest = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/testSet.csv"
-#pcluster = "0"
-#prout = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/"
+ptrain = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/trainSet.csv"
+ptest = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/testSet.csv"
+pcluster = "0"
+prout = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/"
 
 # cross validation 10
-#nbCV = 10
+nbCV = 10
 
 
 # model regression #
 ####################
-modelPCRreg = 1 
-modelPLSreg = 1
+modelPCRreg = 0 
+modelPLSreg = 0
 modelSVMreg = 1
-modelRFreg = 1
-modelCartreg = 1
-modelNNreg = 1
-modelDLreg = 1
-chemmodlabreg = 1
+modelRFreg = 0
+modelCartreg = 0
+modelNNreg = 0
+modelDLreg = 0
+chemmodlabreg = 0
 
 
 
@@ -135,7 +135,7 @@ if (modelPLSreg == 1){
 if(modelSVMreg == 1){
   vgamma = 2^(-1:1)
   vcost = 2^(2:8)
-  modelSVM = SVMRegCV(lgroupCV, vgamma, vcost, dcluster, prout)
+  #SVMRegCV(lgroupCV, vgamma, vcost, dcluster, prout)
   SVMRegTrainTest(dtrain, dtest, vgamma, vcost, dcluster, prout)
 }
 
@@ -188,8 +188,10 @@ if(chemmodlabreg == 1){
 
 
 if(modelNNreg ==1){
+  vdeacay = c(0.001, 0.01, 0.1, 1, 10, 100)
+  vsize = seq(1,15)
   NNRegCV(lgroupCV, dcluster, prout)
-  #NNReg(dtrain, dtest, dcluster, prout)
+  NNReg(dtrain, dtest, dcluster, vdeacay, vsize, prout)
 }
 
 

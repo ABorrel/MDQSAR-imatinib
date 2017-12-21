@@ -1,4 +1,3 @@
-from email.utils import collapse_rfc2231_value
 from os import path, listdir
 from re import search
 
@@ -28,11 +27,11 @@ class QSARModeling:
 
         ddesc = {}
         for typeDesc in self.ltypedesc:
-            if typeDesc == "Lig":
+            if typeDesc == "Lig2D":
                 ddesLig = toolbox.loadTable(self.pdesc)
                 ddesc.update(ddesLig)
-                print ddesc.keys()[0]
-                print ddesc[ddesc.keys()[0]].keys()[1:10]
+                #print ddesc.keys()[0]
+                #print ddesc[ddesc.keys()[0]].keys()[1:10]
             else:
                 lprDMCompound = listdir(self.prMDDesc)
                 for prDMCompound in lprDMCompound:
@@ -57,9 +56,10 @@ class QSARModeling:
             self.builtDataset()
 
         pfilout = self.prout + "descGlobal"
-        if path.exists(pfilout) and path.getsize(pfilout) > 50:
-            self.pdescglobal = pfilout
-            return self.pdescglobal
+        # shortcut regeneration data
+        #if path.exists(pfilout) and path.getsize(pfilout) > 50:
+        #    self.pdescglobal = pfilout
+        #    return self.pdescglobal
 
         filout = open(pfilout, "w")
 
@@ -69,10 +69,10 @@ class QSARModeling:
             if len(self.dataset[ID].keys()) > len(ldesc):
                 ldesc = self.dataset[ID].keys()
 
-        # move SMILES in first column
+        # remove SMILES column
         if "SMILES" in ldesc:
             del ldesc[ldesc.index("SMILES")]
-            ldesc = ["SMILES"] + ldesc
+            #ldesc = ["SMILES"] + ldesc
 
         # header
         filout.write("ID\t" + "\t".join(ldesc) + "\n")
