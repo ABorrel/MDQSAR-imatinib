@@ -193,7 +193,7 @@ def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 
     lpMDresult = listdir(prMD)
     if iend == 0:
         iend = len(lpMDresult)
-
+    print prMD
 
     i = istart
     for MDresult in lpMDresult[istart:iend]:
@@ -428,17 +428,18 @@ pathFolder.createFolder(pranalysis)
 ###################
 # MD descriptors  #
 ###################
-prMDdesc = "/home/borrela2/imitanib/results/analysis/MDdescriptor/"
-pranalysis = "/home/borrel2/imitanib/results/MDanalysis/"
+prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
+pranalysis = "/home/borrela2/imatinib/results/MDanalysis/"
 pathFolder.createFolder(prMDdesc)
 
 ################################
 #   for not bash  to be clean  #
 ################################
 istart = 0
-iend = 925
-computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=1, descFPI=1)
+computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+10, descLig=1, descBS=0, descFPI=0)
 
+
+jjj
 ################################
 ##         for bash           ##
 # uncomment for descriptor run #
