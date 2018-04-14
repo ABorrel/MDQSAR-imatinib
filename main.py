@@ -433,6 +433,13 @@ pranalysis = "/home/borrel2/imitanib/results/MDanalysis/"
 pathFolder.createFolder(prMDdesc)
 
 ################################
+#   for not bash  to be clean  #
+################################
+istart = 0
+iend = 925
+computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=1, descFPI=1)
+
+################################
 ##         for bash           ##
 # uncomment for descriptor run #
 ################################

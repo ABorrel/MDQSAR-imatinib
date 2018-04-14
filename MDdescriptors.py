@@ -8,6 +8,7 @@ import runExternalSoft
 import pocketDescriptors
 import FPI
 import toolbox
+import descriptors3D
 
 
 class MDdescriptors:
@@ -25,29 +26,43 @@ class MDdescriptors:
     def computeLigDesc(self):
 
         pfilout = self.prout + "descLig"
-        if path.exists(pfilout) and path.getsize(pfilout)>200:
-            return
+        #uncomment for run
+        #if path.exists(pfilout) and path.getsize(pfilout)>200:
+        #    return
 
+        # folder temp to include sdf
         prtemp = pathFolder.createFolder(self.prout + "ligtemp/", clean=1)
 
+        #run new script for 3D descriptors
         llig = listdir(self.prlig)
-        llig = sorted(llig)
+        llig = sorted(llig)# order lig
+
+        pdescByFrames = self.prout + "Ligbyframe"
+        fdescByFrames = open(pdescByFrames, "w")
+
+        ldesc3D = descriptors3D.l3D
+        fdescByFrames.write("Frame" + "\t" + "\t".join(ldesc3D) + "\n")
+
         for lig in llig:
-            # convert sdf
             pligsdf = runExternalSoft.babelConvertPDBtoSDF(self.prlig + lig, prtemp + lig[0:-4] + ".sdf")
-        pdescframe = runExternalSoft.runPadel(prtemp, self.prout + "Ligbyframe", force=1)
+            ddesc = descriptors3D.get3Ddesc(pligsdf)
+            fdescByFrames.write(lig[0:-4])
+            for desc3D in ldesc3D:
+                fdescByFrames.write("\t" + str(ddesc[desc3D]))
+            fdescByFrames.write("\n")
+        fdescByFrames.close()
 
         dout = {}
-        filin = open(pdescframe, "r")
+        filin = open(pdescByFrames, "r")
         llframeDes = filin.readlines()
         filin.close()
 
-        ldesc = llframeDes[0].strip().split(",")
+        ldesc = llframeDes[0].strip().split("\t")
 
         for frameDes in llframeDes[1:]:
             i = 1  # remove name frame
             nbDesc = len(ldesc)
-            ldescframe = frameDes.strip().split(",")
+            ldescframe = frameDes.strip().split("\t")
             while i < nbDesc:
                 if not ldesc[i] in dout.keys():
                     dout[ldesc[i]] = []
