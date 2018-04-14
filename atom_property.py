@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from openbabel import OBResidueAtomIter
+#from openbabel import OBResidueAtomIter
 
 
 def setformalcharge(atom, l_serial_backbone_test):

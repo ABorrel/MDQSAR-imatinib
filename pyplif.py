@@ -2,9 +2,9 @@
 # -*- coding:utf-8 -*-
 from time import time, sleep
 import getopt, sys, os, copy, glob, re
-from openbabel import OBMol, OBConversion
+#from openbabel import OBMol, OBConversion
 from optparse import OptionParser
-from bitarray import bitarray
+#from bitarray import bitarray
 from os import path
 
 from ring import *

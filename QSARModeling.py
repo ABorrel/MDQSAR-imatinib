@@ -10,14 +10,21 @@ import pathFolder
 
 
 class QSARModeling:
-    def __init__(self, prMDdescc, pdesc, paffinity, ltypeDesc, prout):
+    def __init__(self, prMDdescc, pdesc2D, pdesc3D, paffinity, ltypeDesc, corcoef, maxquantile, valsplit, typeAff, prout):
         self.prMDDesc = prMDdescc
         self.ltypedesc = ltypeDesc
         self.paff = paffinity
-        self.pdesc = pdesc
+        self.pdesc2D = pdesc2D
+        self.pdesc3D = pdesc3D
+        self.typeAff = typeAff
+
+        # parameters
+        self.corcoef = corcoef
+        self.maxQuantile = maxquantile
+        self.valsplit = valsplit
 
         # define folder with QSAR
-        prout = prout + "-".join(self.ltypedesc) + "/"
+        prout = prout + "-".join(self.ltypedesc) + "_" + str(self.typeAff) + "/"
         pathFolder.createFolder(prout)
         self.prout = prout
 
@@ -28,10 +35,13 @@ class QSARModeling:
         ddesc = {}
         for typeDesc in self.ltypedesc:
             if typeDesc == "Lig2D":
-                ddesLig = toolbox.loadTable(self.pdesc)
+                ddesLig = toolbox.loadTable(self.pdesc2D)
                 ddesc.update(ddesLig)
                 #print ddesc.keys()[0]
                 #print ddesc[ddesc.keys()[0]].keys()[1:10]
+            elif typeDesc == "Lig3D":
+                ddesLig = toolbox.loadTable(self.pdesc3D)
+                ddesc.update(ddesLig)
             else:
                 lprDMCompound = listdir(self.prMDDesc)
                 for prDMCompound in lprDMCompound:
@@ -57,9 +67,9 @@ class QSARModeling:
 
         pfilout = self.prout + "descGlobal"
         # shortcut regeneration data
-        #if path.exists(pfilout) and path.getsize(pfilout) > 50:
-        #    self.pdescglobal = pfilout
-        #    return self.pdescglobal
+        if path.exists(pfilout) and path.getsize(pfilout) > 50:
+            self.pdescglobal = pfilout
+            return self.pdescglobal
 
         filout = open(pfilout, "w")
 
@@ -90,21 +100,25 @@ class QSARModeling:
 
 
     def datasetAnalysis(self):
+        """visualisation"""
 
-        "visualisation"
+        # create folder for visu
+        prout = pathFolder.createFolder(self.prout + "VisuData/")
+
+        runExternalSoft.QSARsVisuData(self.pdescglobal, self.paff, prout, self.corcoef, self.maxQuantile, "0")
 
         return
 
 
 
-    def runQSARModel(self, corcoef, maxquantile, valsplit):
+    def runQSARModel(self):
 
-        self.corcoef = corcoef
-        self.maxQuantile = maxquantile
-        self.valsplit = valsplit
+        #self.corcoef = corcoef
+        #self.maxQuantile = maxquantile
+        #self.valsplit = valsplit
 
         dfileTrainTest = runExternalSoft.prepareDataset(self.pdescglobal, self.paff, self.prout, corcoef=self.corcoef,
-                                                        maxQuantile=self.maxQuantile, valSplit=self.valsplit)
+                                                        maxQuantile=self.maxQuantile, valSplit=self.valsplit, typeAff=self.typeAff)
 
         print dfileTrainTest
         runExternalSoft.QSARsReg(dfileTrainTest["train"], dfileTrainTest["test"], "0", self.prout)

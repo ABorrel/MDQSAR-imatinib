@@ -1,5 +1,5 @@
 from os import path, listdir, makedirs
-from pymol.preset import default_polar_contacts
+#from pymol.preset import default_polar_contacts
 from random import randint
 from  multiprocessing import Process, Lock, Manager
 import pprint

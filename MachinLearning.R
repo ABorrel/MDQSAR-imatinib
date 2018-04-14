@@ -449,11 +449,14 @@ SVMRegCV = function(lfolds, vgamma, vcost, dcluster, prout){
     
     modtune = SVMTune(dtrain, vgamma, vcost, 10)
     
-    vpred = predict (modtune, dtest, type = "response")
-    names(vpred) = rownames(dtest)
-    
-    y_predict = append(y_predict, vpred)
+    #print(dtest)
     y_real = append(y_real, dtest[,"Aff"])
+    dtest = dtest[,-c(which(colnames(dtest) == "Aff"))]
+    
+    vpred = predict (modtune, dtest)
+    names(vpred) = rownames(dtest)
+    y_predict = append(y_predict, vpred)
+    
     k = k + 1
   }
   
@@ -600,14 +603,14 @@ SVMTune = function(dtrain, vgamma, vcost, nbCV){
     
     #dtrain = as.data.frame(scale(dtrain))
     ddestrain = dtrain[,-c(which(colnames(dtrain) == "Aff"))]
-    ddestrain = scale(ddestrain)
+    #ddestrain = scale(ddestrain)
     Aff = dtrain[,c("Aff")]
     
     
     #dtest = as.data.frame(scale(dtest))
     dtestAff = dtest[,"Aff"]
     ddesctest = dtest[,-c(which(colnames(dtest) == "Aff"))]
-    ddesctest = scale(ddesctest, center = attr(ddestrain, 'scaled:center'), scale = attr(ddestrain, 'scaled:scale'))
+    #ddesctest = scale(ddesctest, center = attr(ddestrain, 'scaled:center'), scale = attr(ddestrain, 'scaled:scale'))
     
     modelsvm = tune(svm, train.x = ddestrain, train.y = Aff, ranges = list(gamma = vgamma, cost = vcost), tunecontrol = tune.control(sampling = "cross"), kernel = "polynomial")
     modelsvm = modelsvm$best.model
@@ -615,16 +618,13 @@ SVMTune = function(dtrain, vgamma, vcost, nbCV){
     vpred = predict(modelsvm, ddesctest)
     
     R2 = calR2(dtestAff, vpred)
-    print(R2)
+    #print(R2)
     lR2best = append(lR2best, R2)
     lmodel[[k]] =  modelsvm
     k = k + 1 
     
   }
-  
-  
   return(lmodel[[which(lR2best == max(lR2best))]])
-  
 }  
 
 
@@ -852,6 +852,7 @@ NNRegOptimizeGrid = function(dtrain, pfig, vdecay, vsize, nbCV){
     for (d in vdecay){
       optsize = NULL
       for(i in vsize){
+        #2000
         modelNN = nnet(ddestrain, Aff, size = i, linout = T, maxit = 2000, MaxNWts = i*(dim(ddestrain)[2]+1)+i+1, decay = d)
         vpred = predict (modelNN, ddesctest)
         valr2 = calR2(dtestAff, vpred)
@@ -1294,11 +1295,11 @@ RFregCV = function(lfolds, ntree, mtry, dcluster, prout){
   p = ggplot(dpred, aes(Yreal, Ypredict))+
     geom_point(size=1.5, colour="black", shape=21) + 
     geom_text(x=-2.1, y=2.2, label = paste("R2=",round(valr2,2), sep = ""), size = 8)+
-    labs(x = "pMIC", y = "Predicted pMIC") +
+    labs(x = "pAff", y = "Predicted pAff") +
     theme(axis.text.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.text.x = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.x =  element_text(size = 25, hjust = 0.5, vjust =0.1))+
-    xlim (c(-2.5, 2.5)) +
-    geom_segment(aes(x = -2.5, y = -2.5, xend = 2.5, yend = 2.5), linetype=2, size = 0.1) + 
-    ylim (c(-2.5, 2.5)) 
+    xlim (c(4, 12)) +
+    geom_segment(aes(x = 4, y = 4, xend = 12, yend = 12), linetype=2, size = 0.1) + 
+    ylim (c(4, 12)) 
   ggsave(paste(prout, "PerfRFregpoint_CV10.png", sep = ""), width = 6,height = 6, dpi = 300)
   
   
@@ -1312,13 +1313,13 @@ RFregCV = function(lfolds, ntree, mtry, dcluster, prout){
   p = ggplot(dpred, aes(Yreal, Ypredict, label=rownames(dpred)))+
     geom_point(size=1.5, colour="black", shape=21) + 
     geom_text(x=-2.1, y=2.2, label = paste("R2=",round(valr2,2), sep = ""), size = 8)+
-    labs(x = "pMIC", y = "Predicted pMIC") +
+    labs(x = "pAff", y = "Predicted pAff") +
     geom_text(size = 2.6, aes(label= paste(rownames(dpred), "^(", Vcluster, ")", sep = "")), parse = TRUE, color="black", nudge_y = 0.06) + 
-    labs(x = "Real pMIC", y = "Predict pMIC") + 
+    labs(x = "pAff", y = "Predict pAff") + 
     theme(axis.text.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.text.x = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.x =  element_text(size = 25, hjust = 0.5, vjust =0.1))+
-    xlim (c(-2.5, 2.5)) +
-    geom_segment(aes(x = -2.5, y = -2.5, xend = 2.5, yend = 2.5), linetype=2, size = 0.1) + 
-    ylim (c(-2.5, 2.5)) 
+    xlim (c(4, 12)) +
+    geom_segment(aes(x = 4, y = 4, xend = 12, yend = 12), linetype=2, size = 0.1) + 
+    ylim (c(4, 12)) 
   print(p)
   ggsave(paste(prout, "PerfRFregname_CV10.png", sep = ""), width = 8,height = 8, dpi = 300)
 }
@@ -1333,8 +1334,14 @@ RFreg = function (dtrain, dtest, ntree, mtry, dcluster, prout){
   names(vpredtrain) = rownames(dtrain)
   names(vpredtest) = rownames(dtest)
   
-  write.csv(vpredtest, paste(prout, "perfRegPred.csv"))
-  
+  testw = cbind(dtest[,"Aff"], vpredtest)
+  colnames(testw) = c("Yreal", "Ypredict")
+  write.csv(testw, paste(prout, "perfTestRFRegPred.csv"))
+
+  trainw = cbind(dtrain[,"Aff"], vpredtrain)
+  colnames(trainw) = c("Yreal", "Ypredict")
+  write.csv(trainw, paste(prout, "perfTrainRFRegPred.csv"))  
+    
   r2train = calR2(dtrain[,"Aff"], vpredtrain)
   cortrain = cor(dtrain[,"Aff"], vpredtrain)
   RMSEPtrain = vrmsep(dtrain[,"Aff"], vpredtrain)
@@ -1408,12 +1415,12 @@ RFreg = function (dtrain, dtest, ntree, mtry, dcluster, prout){
   
   p = ggplot(dpred, aes(Yreal, Ypredict))+
     geom_point(size=1.5, colour="black", shape=21) + 
-    geom_text(x=-2.1, y=2.2, label = paste("R2=",round(r2test,2), sep = ""), size = 8)+
-    labs(x = "pMIC", y = "Predicted pMIC") +
-    xlim (c(-2.5, 2.5)) +
+    geom_text(x=5, y=11.5, label = paste("R2=",round(r2test,2), sep = ""), size = 8)+
+    labs(x = "pAff", y = "Predicted pAff") +
+    xlim (c(4, 12)) +
     theme(axis.text.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.text.x = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.x =  element_text(size = 25, hjust = 0.5, vjust =0.1))+
-    geom_segment(aes(x = -2.5, y = -2.5, xend = 2.5, yend = 2.5), linetype=2, size = 0.1) + 
-    ylim (c(-2.5, 2.5)) 
+    geom_segment(aes(x = 4, y = 4, xend = 12, yend = 12), linetype=2, size = 0.1) + 
+    ylim (c(4, 12)) 
   #print(p)
   ggsave(paste(prout, "PerfRFregpoint_Test.png", sep = ""), width = 6,height = 6, dpi = 300)
   
@@ -1428,14 +1435,14 @@ RFreg = function (dtrain, dtest, ntree, mtry, dcluster, prout){
   
   p = ggplot(dpred, aes(Yreal, Ypredict, label=rownames(dpred)))+
     geom_point(size=1.5, colour="black", shape=21) + 
-    geom_text(x=-2.1, y=2.2, label = paste("R2=",round(r2test,2), sep = ""), size = 8)+
-    labs(x = "pMIC", y = "Predicted pMIC") +
+    geom_text(x=5, y=11.5, label = paste("R2=",round(r2test,2), sep = ""), size = 8)+
+    labs(x = "pAff", y = "Predicted pAff") +
     geom_text(size = 2.6, aes(label= paste(rownames(dpred), "^(", Vcluster, ")", sep = "")), parse = TRUE, color="black", nudge_y = 0.06) + 
-    labs(x = "Real pMIC", y = "Predict pMIC") + 
+    labs(x = "Real pAff", y = "Predict pAff") + 
     theme(axis.text.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.text.x = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.y = element_text(size = 25, hjust = 0.5, vjust =0.1), axis.title.x =  element_text(size = 25, hjust = 0.5, vjust =0.1))+
-    xlim (c(-2.5, 2.5)) +
-    geom_segment(aes(x = -2.5, y = -2.5, xend = 2.5, yend = 2.5), linetype=2, size = 0.1) + 
-    ylim (c(-2.5, 2.5)) 
+    xlim (c(4, 12)) +
+    geom_segment(aes(x = 4, y = 4, xend = 12, yend = 12), linetype=2, size = 0.1) + 
+    ylim (c(4, 12)) 
   #print(p)
   ggsave(paste(prout, "PerfRFregname_Test.png", sep = ""), width = 8,height = 8, dpi = 300)
   

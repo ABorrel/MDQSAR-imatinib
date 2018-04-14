@@ -244,7 +244,7 @@ def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 
 # TABLE CHEMBL #
 ################
 
-prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
+#prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
 
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
 pCHEMBLout = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
@@ -253,7 +253,7 @@ lBAout = ["CHEMBL3705971"]
 lBAout = []
 
 
-ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
+#ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
 #paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 #ctabAll.analysisTable(prCHEMBL)
 
@@ -394,10 +394,10 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 ###############################
 
 # home
-prMD = "/home/aborrel/imitanib/results/MD-ABL/"
-pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
-prLig = prDockingPoseSP
-pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
+#prMD = "/home/aborrel/imitanib/results/MD-ABL/"
+#pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
+#prLig = prDockingPoseSP
+pranalysis = "/home/borrela2/imatinib/results/MDanalysis/"
 
 # monster
 #prMD = "/data/aborrel/imatinib/results/MD-ABL/"
@@ -428,8 +428,8 @@ pathFolder.createFolder(pranalysis)
 ###################
 # MD descriptors  #
 ###################
-prMDdesc = "/home/aborrel/imitanib/results/analysis/MDdescriptor/"
-pranalysis = "/home/aborrel/imitanib/results/MDanalysis/"
+prMDdesc = "/home/borrela2/imitanib/results/analysis/MDdescriptor/"
+pranalysis = "/home/borrel2/imitanib/results/MDanalysis/"
 pathFolder.createFolder(prMDdesc)
 
 ################################
@@ -449,41 +449,98 @@ pathFolder.createFolder(prMDdesc)
 ######################
 # develop QSAR model #
 ######################
-prMDdesc = "/home/aborrel/imitanib/results/analysis/MDdescriptor/"
-paff ="/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
-pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDesc2D.csv"
+prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
+paff ="/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
+pdesc2D = "/home/borrela2/imatinib/results/analysis/desc/tableDesc2D.csv"
+pdesc3D = "/home/borrela2/imatinib/results/analysis/desc/table3D.csv"
 prQSAR = pathFolder.analyses("QSARs")
 
 # settings
 varsplit = 0.15
-corcoef = 0.80
-maxQuantile = 85
+corcoef = 0.90
+maxQuantile = 95
+typeAff = "Ki"
 
-
-QSARLig2D = QSARModeling(prMDdesc, pdesc, paff, ["Lig2D"], prQSAR)
+QSARLig2D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
 QSARLig2D.builtDataset()
 QSARLig2D.writeDataset()
-QSARLig2D.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
+QSARLig2D.runQSARModel()
+QSARLig2D.datasetAnalysis()
 
 
-
-QSARLig = QSARModeling(prMDdesc, pdesc, paff, ["Lig"], prQSAR)
-QSARLig.builtDataset()
-QSARLig.writeDataset()
-QSARLig.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
-
-
-
-QSARBS = QSARModeling(prMDdesc, pdesc, paff, ["BS"], prQSAR)
-QSARBS.builtDataset()
-QSARBS.writeDataset()
-QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
+#QSARLig3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D"],corcoef, maxQuantile, varsplit,typeAff, prQSAR)
+#QSARLig3D.builtDataset()
+#QSARLig3D.writeDataset()
+#QSARLig3D.runQSARModel()
+#QSARLig3D.datasetAnalysis()
 
 
-QSARBS = QSARModeling(prMDdesc, pdesc, paff, ["FPI"], prQSAR)
-QSARBS.builtDataset()
-QSARBS.writeDataset()
-QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
+#QSARLig2D3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D", "Lig2D"],corcoef, maxQuantile, varsplit,typeAff, prQSAR)
+#QSARLig2D3D.builtDataset()
+#QSARLig2D3D.writeDataset()
+#QSARLig2D3D.runQSARModel()
+#QSARLig2D3D.datasetAnalysis()
+
+#QSARLig = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
+#QSARLig.builtDataset()
+#QSARLig.writeDataset()
+#QSARLig.runQSARModel()
+#QSARLig.datasetAnalysis()
+
+
+#QSARBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS"],corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARBS.builtDataset()
+#QSARBS.writeDataset()
+#QSARBS.runQSARModel()
+#QSARBS.datasetAnalysis()
+
+
+#QSARFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARFPI.builtDataset()
+#QSARFPI.writeDataset()
+#QSARFPI.runQSARModel()
+#QSARFPI.datasetAnalysis()
+
+
+#QSARFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARFPIBS.builtDataset()
+#QSARFPIBS.writeDataset()
+#QSARFPIBS.runQSARModel()
+#QSARFPIBS.datasetAnalysis()
+
+
+#QSARLig2DMD = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "Lig2D"], corcoef, maxQuantile, varsplit,typeAff,  prQSAR)
+#QSARLig2DMD.builtDataset()
+#QSARLig2DMD.writeDataset()
+#QSARLig2DMD.runQSARModel()
+#QSARLig2DMD.datasetAnalysis()
+
+#QSARLig2DMDBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLig2DMDBS.builtDataset()
+#QSARLig2DMDBS.writeDataset()
+#QSARLig2DMDBS.runQSARModel()
+#QSARLig2DMDBS.datasetAnalysis()
+
+
+#QSARLig2DMDFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLig2DMDFPI.builtDataset()
+#QSARLig2DMDFPI.writeDataset()
+#QSARLig2DMDFPI.runQSARModel()
+#QSARLig2DMDFPI.datasetAnalysis()
+
+
+#QSARLigFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLigFPIBS.builtDataset()
+#QSARLigFPIBS.writeDataset()
+#QSARLigFPIBS.runQSARModel()
+#QSARLigFPIBS.datasetAnalysis()
+
+
+#QSARAll = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D", "Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARAll.builtDataset()
+#QSARAll.writeDataset()
+#QSARAll.runQSARModel()
+#QSARAll.datasetAnalysis()
 
 
 ##########################################
@@ -534,17 +591,17 @@ QSARBS.runQSARModel(corcoef=corcoef, maxquantile=maxQuantile, valsplit=varsplit)
 ####################
 
 
-pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
-pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+#pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
+#pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
 
 
 # docking parsing #
 ###################
 
-sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
-sdocking.parseSDF()
-sdocking.splitPoses(prDockingPoseXP_2HYY)
-dscore = sdocking.get_dockingscore()
+#sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
+#sdocking.parseSDF()
+#sdocking.splitPoses(prDockingPoseXP_2HYY)
+#dscore = sdocking.get_dockingscore()
 
 # select affinity from CHEMBL
 

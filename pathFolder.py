@@ -3,11 +3,18 @@ from shutil import rmtree
 
 
 # for personal computer
-PR_REF = "/home/aborrel/imitanib/"
-PR_RESULT = "/home/aborrel/imitanib/results/"
-PR_TEMP3D = "/home/aborrel/imitanib/results/temp3D/"
-PR_COMPOUNDS = "/home/aborrel/imitanib/results/compounds/"
-PR_ANALYSIS = "/home/aborrel/imitanib/results/analysis/"
+#PR_REF = "/home/aborrel/imitanib/"
+#PR_RESULT = "/home/aborrel/imitanib/results/"
+#PR_TEMP3D = "/home/aborrel/imitanib/results/temp3D/"
+#PR_COMPOUNDS = "/home/aborrel/imitanib/results/compounds/"
+#PR_ANALYSIS = "/home/aborrel/imitanib/results/analysis/"
+
+# persomal NIH
+PR_REF = "/home/borrela2/imatinib/"
+PR_RESULT = "/home/borrela2/imatinib/results/"
+PR_TEMP3D = "/home/borrela2/imatinib/results/temp3D/"
+PR_COMPOUNDS = "/home/borrela2/imatinib/results/compounds/"
+PR_ANALYSIS = "/home/borrela2/imatinib/results/analysis/"
 
 # for monster
 #PR_REF = "/data/aborrel/imatinib/"

@@ -323,6 +323,7 @@ def loadTable(pfilin, din={}):
     while i < nbcpd:
         lval = linesDesc[i].strip().split("\t")
         nameCpd = lval[0]
+        nameCpd = nameCpd.split(".")[0]
         if not nameCpd in din:
             din[nameCpd] = {}
 

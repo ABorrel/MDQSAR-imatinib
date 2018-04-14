@@ -21,13 +21,13 @@ nbCV = as.integer(args[5])
 
 
 # to test
-#ptrain = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/trainSet.csv"
-#ptest = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/testSet.csv"
+#ptrain = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D/trainSet.csv"
+#ptest = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D/testSet.csv"
 #pcluster = "0"
-#prout = "/home/aborrel/imitanib/results/analysis/QSARs/Lig/"
+#prout = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D/"
 
 # cross validation 10
-#nbCV = 10
+nbCV = 10
 
 
 # model regression #
@@ -38,7 +38,7 @@ modelSVMreg = 1
 modelRFreg = 1
 modelCartreg = 1
 modelNNreg = 1
-modelDLreg = 1
+modelDLreg = 0
 chemmodlabreg = 1
 
 
@@ -149,7 +149,7 @@ if (modelRFreg == 1){
   
   #RFregCV(lgroupCV, 50, 5, dcluster, prout)# for test
   parameters = RFGridRegCV(vntree, vmtry, lgroupCV,  prout)
-  #RFregCV(lgroupCV, parameters[[1]], parameters[[2]], dcluster, prout)
+  RFregCV(lgroupCV, parameters[[1]], parameters[[2]], dcluster, prout)
   RFreg(dtrain, dtest, parameters[[1]], parameters[[2]], dcluster, prout)
 }
 
@@ -188,8 +188,12 @@ if(chemmodlabreg == 1){
 
 
 if(modelNNreg ==1){
-  NNRegCV(lgroupCV, dcluster, prout)
-  #NNReg(dtrain, dtest, dcluster, prout)
+  vsize = c(1,2,5,10)
+  vdecay = c(1e-6, 1e-4, 1e-2, 1e-1, 1)
+  #vsize = c(1,2)
+  #vdecay = c(1e-6, 1e-4)
+  NNRegCV(lgroupCV, dcluster, vdecay, vsize, prout)
+  NNReg(dtrain, dtest, dcluster,vdecay, vsize, prout)
 }
 
 

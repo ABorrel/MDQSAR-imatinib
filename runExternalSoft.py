@@ -522,7 +522,7 @@ def runFreeSASA(ppdbin, pfilout, rsa=0):
 ##################
 
 
-def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, logaff=0):
+def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="All", logaff=0):
 
     # extract train and test file
     dfile = {}
@@ -536,10 +536,10 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, logaff=0)
 
     if dfile == {}:
         cmd = "./QSARsPrep.R " + str(pdesc) + " " + str(paff) + " " + prout + " " + str(corcoef) + " " + str(
-            maxQuantile) + " " + str(valSplit) + " " + str(logaff)
+            maxQuantile) + " " + str(valSplit) + " " + str(logaff) + " " + str(typeAff)
         print cmd
         system(cmd)
-        return prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit)
+        return prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff, logaff)
     else:
         return dfile
 
@@ -555,7 +555,10 @@ def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
     return prout + "perf.txt"
 
 
+def QSARsVisuData(pdescglobal, paff, prout, corcoef, maxQuantile, logAff):
 
+    cmdVisu = "./QSARsVisuData.R " + str(pdescglobal) + " " + str(paff) + " " + str(prout) + " " + str(corcoef) + " " +\
+              str(maxQuantile) + " " + str(logAff)
 
-
-
+    print cmdVisu
+    system(cmdVisu)

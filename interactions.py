@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import numpy as np
-from openbabel import OBMolAtomIter, OBResidueIter, OBResidueAtomIter, OBAtomAtomIter
+#from openbabel import OBMolAtomIter, OBResidueIter, OBResidueAtomIter, OBAtomAtomIter
 from ring import *
 from atom_property import *
-from bitarray import bitarray
+#from bitarray import bitarray
 
 def getresiduedict(protein, residuechoice):
 	resdict = {}
