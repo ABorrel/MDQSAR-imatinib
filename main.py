@@ -435,11 +435,10 @@ pathFolder.createFolder(prMDdesc)
 ################################
 #   for not bash  to be clean  #
 ################################
-istart = 0
-computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+10, descLig=1, descBS=0, descFPI=0)
+#istart = 0
+#computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+10, descLig=1, descBS=0, descFPI=0)
 
 
-jjj
 ################################
 ##         for bash           ##
 # uncomment for descriptor run #
@@ -467,27 +466,28 @@ prQSAR = pathFolder.analyses("QSARs")
 varsplit = 0.15
 corcoef = 0.90
 maxQuantile = 95
-typeAff = "Ki"
+typeAff = "All" #Ki
 
-QSARLig2D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-QSARLig2D.builtDataset()
-QSARLig2D.writeDataset()
-QSARLig2D.runQSARModel()
-QSARLig2D.datasetAnalysis()
-
-
-#QSARLig3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D"],corcoef, maxQuantile, varsplit,typeAff, prQSAR)
-#QSARLig3D.builtDataset()
-#QSARLig3D.writeDataset()
-#QSARLig3D.runQSARModel()
-#QSARLig3D.datasetAnalysis()
+#QSARLig2D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLig2D.builtDataset()
+#QSARLig2D.writeDataset()
+#QSARLig2D.runQSARModel()
+#QSARLig2D.datasetAnalysis()
 
 
-#QSARLig2D3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D", "Lig2D"],corcoef, maxQuantile, varsplit,typeAff, prQSAR)
+QSARLig3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
+QSARLig3D.builtDataset()
+QSARLig3D.writeDataset()
+QSARLig3D.runQSARModel()
+QSARLig3D.datasetAnalysis()
+
+
+#QSARLig2D3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D", "Lig2D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
 #QSARLig2D3D.builtDataset()
 #QSARLig2D3D.writeDataset()
 #QSARLig2D3D.runQSARModel()
 #QSARLig2D3D.datasetAnalysis()
+
 
 #QSARLig = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
 #QSARLig.builtDataset()
@@ -523,32 +523,36 @@ QSARLig2D.datasetAnalysis()
 #QSARLig2DMD.runQSARModel()
 #QSARLig2DMD.datasetAnalysis()
 
-#QSARLig2DMDBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLig2DMDBS.builtDataset()
-#QSARLig2DMDBS.writeDataset()
-#QSARLig2DMDBS.runQSARModel()
-#QSARLig2DMDBS.datasetAnalysis()
+
+QSARLig2DMDBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+QSARLig2DMDBS.builtDataset()
+QSARLig2DMDBS.writeDataset()
+QSARLig2DMDBS.runQSARModel()
+QSARLig2DMDBS.datasetAnalysis()
 
 
-#QSARLig2DMDFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLig2DMDFPI.builtDataset()
-#QSARLig2DMDFPI.writeDataset()
-#QSARLig2DMDFPI.runQSARModel()
-#QSARLig2DMDFPI.datasetAnalysis()
+QSARLig2DMDFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+QSARLig2DMDFPI.builtDataset()
+QSARLig2DMDFPI.writeDataset()
+QSARLig2DMDFPI.runQSARModel()
+QSARLig2DMDFPI.datasetAnalysis()
 
 
-#QSARLigFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLigFPIBS.builtDataset()
-#QSARLigFPIBS.writeDataset()
-#QSARLigFPIBS.runQSARModel()
-#QSARLigFPIBS.datasetAnalysis()
+QSARLigFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+QSARLigFPIBS.builtDataset()
+QSARLigFPIBS.writeDataset()
+QSARLigFPIBS.runQSARModel()
+QSARLigFPIBS.datasetAnalysis()
 
 
-#QSARAll = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D", "Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARAll.builtDataset()
-#QSARAll.writeDataset()
-#QSARAll.runQSARModel()
-#QSARAll.datasetAnalysis()
+QSARAll = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D", "Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+QSARAll.builtDataset()
+QSARAll.writeDataset()
+QSARAll.runQSARModel()
+QSARAll.datasetAnalysis()
+
+
+
 
 
 ##########################################

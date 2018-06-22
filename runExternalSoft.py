@@ -4,6 +4,7 @@ from re import search
 from time import sleep
 import subprocess
 
+
 import toolbox
 import PDB
 import pathFolder
@@ -549,10 +550,19 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="
 def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
 
     cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " >" + prout + "perf.txt"
-    print cmd_QSAR
-    system(cmd_QSAR)
+
+    runRQSARModeling(cmd_QSAR)
 
     return prout + "perf.txt"
+
+
+def runRQSARModeling(cmd):
+
+    workdir = getcwd()
+    chdir("/home/borrela2/QSARPR/source/")
+    print(cmd)
+    system(cmd)
+    chdir(workdir)
 
 
 def QSARsVisuData(pdescglobal, paff, prout, corcoef, maxQuantile, logAff):
