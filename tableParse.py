@@ -123,6 +123,7 @@ class CHEMBL:
                 # extract only most present type
                 if len(list(set(l_PUBLISHED_TYPE))) != 1:
                     typetoextract = collections.Counter(l_PUBLISHED_TYPE).most_common()[0][0]
+                    typetoextract = "Ki" # favorize most common Ki
                     t = 0
                     tmax = len(l_PUBLISHED_TYPE)
                     while t < tmax:

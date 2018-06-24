@@ -2,26 +2,16 @@ from os import listdir, remove, makedirs, path
 from shutil import rmtree
 
 
-# for personal computer
-#PR_REF = "/home/aborrel/imitanib/"
-#PR_RESULT = "/home/aborrel/imitanib/results/"
-#PR_TEMP3D = "/home/aborrel/imitanib/results/temp3D/"
-#PR_COMPOUNDS = "/home/aborrel/imitanib/results/compounds/"
-#PR_ANALYSIS = "/home/aborrel/imitanib/results/analysis/"
 
-# persomal NIH
-PR_REF = "/home/borrela2/imatinib/"
-PR_RESULT = "/home/borrela2/imatinib/results/"
-PR_TEMP3D = "/home/borrela2/imatinib/results/temp3D/"
-PR_COMPOUNDS = "/home/borrela2/imatinib/results/compounds/"
-PR_ANALYSIS = "/home/borrela2/imatinib/results/analysis/"
+PR_HOME = "/home/borrela2/" #NIEHS
+#PR_HOME = "/home/aborrel/" #NCSU
+#PR_HOME = "/data/aborrel/" #Monster
 
-# for monster
-#PR_REF = "/data/aborrel/imatinib/"
-#PR_RESULT = "/data/aborrel/imatinib/results/"
-#PR_TEMP3D = "/data/aborrel/imatinib/results/temp3D/"
-#PR_COMPOUNDS = "/data/aborrel/imatinib/results/compounds/"
-#PR_ANALYSIS = "/data/aborrel/imatinib/results/analysis/"
+PR_REF = PR_HOME + "imatinib/"
+PR_RESULT = PR_HOME + "imatinib/results/"
+PR_TEMP3D = PR_HOME + "imatinib/results/temp3D/"
+PR_COMPOUNDS = PR_HOME + "imatinib/results/compounds/"
+PR_ANALYSIS = PR_HOME + "imatinib/results/analysis/"
 
 
 def cleanFolder(prin=PR_TEMP3D):

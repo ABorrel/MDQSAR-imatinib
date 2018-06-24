@@ -97,16 +97,19 @@ def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
 
     pfilout = prout + "ScoreVSAff.txt"
     filout = open(pfilout, "w")
-    filout.write("IDCHEMBL\tDock_score\temodel\tAff\n")
+    filout.write("IDCHEMBL\tDock_score\temodel\tAff\ttypeAff\n")
 
     for daff in ltabCHEMBL:
         try: filout.write(str(daff["CMPD_CHEMBLID"]) + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_docking_score"])
                           + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_glide_emodel"])
-                          + "\t" + str(daff["PCHEMBL_VALUE"]) + "\n")
+                          + "\t" + str(daff["PCHEMBL_VALUE"]) + str(daff["STANDARD_TYPE"]) + "\n")
         except: pass
     filout.close()
 
-    runExternalSoft.corPlot(pfilout, ptableCHEMBL)
+    print pfilout
+    ddd
+
+    runExternalSoft.corPlot(pfilout, ptableCHEMBL) # redo with type of affinity
 
 
 def FPIMatrix(sdocking, pprotein, prFPI):
@@ -244,8 +247,7 @@ def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 
 # TABLE CHEMBL #
 ################
 
-#prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
-
+prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
 pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
 pCHEMBLout = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
 laffselected = ["IC50", "Ki", "Kd"]
@@ -253,22 +255,21 @@ lBAout = ["CHEMBL3705971"]
 lBAout = []
 
 
-#ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
-#paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
-#ctabAll.analysisTable(prCHEMBL)
+ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
+paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
+ctabAll.analysisTable(prCHEMBL)
 
 
-
-###################
-# Docking folder  #
-###################
-
-pprotein = "/home/aborrel/imitanib/2hyy_dock.pdb"
+#####################################
+#####################################
+#  Docking analysis -SP-XP docking  #
+#####################################
+#####################################
 
 # SP-2HYY #
 ###########
 #psdfDokingSP = "/home/aborrel/imitanib/docking/dockingSP_2hyy/dockingpose.sdf"
-prDockingPoseSP = "/home/aborrel/imitanib/results/dockingposeSP_2HYY/"
+#prDockingPoseSP = "/home/aborrel/imitanib/results/dockingposeSP_2HYY/"
 #pprotein_2HYY = "/home/aborrel/imitanib/protein/2HYY_dock.pdb"
 #pranalysis_SP_2HYY = pathFolder.analyses("2HYY_SPdock")
 
@@ -285,7 +286,18 @@ pprotein_2HYY = "/home/aborrel/imitanib/protein/2HYY_dock.pdb"
 pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
 # analysis
-#dockingAnalysis(psdfDokingXP_2HYY, ltab, pCHEMBLClean, prDockingPoseXP_2HYY, pranalysis_XP_2HYY)
+# 1. poses
+sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
+sdocking.parseSDF()
+sdocking.splitPoses(prDockingPoseXP_2HYY)
+pdockingAnalysis = pathFolder.analyses("dockingScoreXP_2HYY")
+
+#2. Score
+dscore = sdocking.get_dockingscore()
+dockingScoreAnalysis(dscore, ctabAll.table, pdockingAnalysis)
+dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, paff, prDockingPoseXP_2HYY, pranalysis_XP_2HYY)
+
+
 
 
 # mutated 3QRJ
@@ -339,9 +351,17 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 #lprpose = [prDockingPoseXP_2HYY, prDockingPoseXP_3QRJ, prDockingPoseXP_2F4J, prDockingPoseXP_2FO0, prDockingPoseXP_2G2H]
 
 
+
+
+
+
+
+#################
 #################
 # Analyse NAMS  #
 #################
+#################
+
 #mcs = MCS.MCSMatrix(ltab, pathFolder.analyses("MCS"))
 #mcs.computeMatrixMCS()
 #mcs.selectAnalogsMatrix(compoundID="CHEMBL941") # select specificaly a compound
@@ -358,25 +378,6 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
 
 
-##################################
-#  Docking analysis -SP docking  #
-##################################
-
-
-# monster #
-###########
-#pprotein = "/data/aborrel/imatinib/2hyy_dock.pdb"
-#psdfDoking = "/data/aborrel/imatinib/results/dockingpose.sdf"
-#prDockingPoseSP = "/data/aborrel/imatinib/results/dockingposeSP/"
-
-#sdocking = parseSDF.sdf(psdfDoking)
-#sdocking.parseSDF()
-#sdocking.splitPoses(prDockingPoseSP)
-#pdockingAnalysis = pathFolder.analyses("docking")
-
-
-#dscore = sdocking.get_dockingscore()
-#dockingScoreAnalysis(dscore, ltab, pdockingAnalysis)
 
 
 
@@ -475,11 +476,11 @@ typeAff = "All" #Ki
 #QSARLig2D.datasetAnalysis()
 
 
-QSARLig3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
-QSARLig3D.builtDataset()
-QSARLig3D.writeDataset()
-QSARLig3D.runQSARModel()
-QSARLig3D.datasetAnalysis()
+#QSARLig3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
+#QSARLig3D.builtDataset()
+#QSARLig3D.writeDataset()
+#QSARLig3D.runQSARModel()
+#QSARLig3D.datasetAnalysis()
 
 
 #QSARLig2D3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D", "Lig2D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
@@ -524,32 +525,32 @@ QSARLig3D.datasetAnalysis()
 #QSARLig2DMD.datasetAnalysis()
 
 
-QSARLig2DMDBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-QSARLig2DMDBS.builtDataset()
-QSARLig2DMDBS.writeDataset()
-QSARLig2DMDBS.runQSARModel()
-QSARLig2DMDBS.datasetAnalysis()
+#QSARLig2DMDBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLig2DMDBS.builtDataset()
+#QSARLig2DMDBS.writeDataset()
+#QSARLig2DMDBS.runQSARModel()
+#QSARLig2DMDBS.datasetAnalysis()
 
 
-QSARLig2DMDFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-QSARLig2DMDFPI.builtDataset()
-QSARLig2DMDFPI.writeDataset()
-QSARLig2DMDFPI.runQSARModel()
-QSARLig2DMDFPI.datasetAnalysis()
+#QSARLig2DMDFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLig2DMDFPI.builtDataset()
+#QSARLig2DMDFPI.writeDataset()
+#QSARLig2DMDFPI.runQSARModel()
+#QSARLig2DMDFPI.datasetAnalysis()
 
 
-QSARLigFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-QSARLigFPIBS.builtDataset()
-QSARLigFPIBS.writeDataset()
-QSARLigFPIBS.runQSARModel()
-QSARLigFPIBS.datasetAnalysis()
+#QSARLigFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARLigFPIBS.builtDataset()
+#QSARLigFPIBS.writeDataset()
+#QSARLigFPIBS.runQSARModel()
+#QSARLigFPIBS.datasetAnalysis()
 
 
-QSARAll = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D", "Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-QSARAll.builtDataset()
-QSARAll.writeDataset()
-QSARAll.runQSARModel()
-QSARAll.datasetAnalysis()
+#QSARAll = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D", "Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
+#QSARAll.builtDataset()
+#QSARAll.writeDataset()
+#QSARAll.runQSARModel()
+#QSARAll.datasetAnalysis()
 
 
 
