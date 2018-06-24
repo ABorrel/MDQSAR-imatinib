@@ -247,9 +247,10 @@ def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 
 # TABLE CHEMBL #
 ################
 
+prHome = pathFolder.PR_HOME
 prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
-pCHEMBL = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
-pCHEMBLout = "/home/aborrel/imitanib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
+pCHEMBL = prHome + "imatinib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
+pCHEMBLout = prHome + "imatinib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
 laffselected = ["IC50", "Ki", "Kd"]
 lBAout = ["CHEMBL3705971"]
 lBAout = []
@@ -280,9 +281,9 @@ ctabAll.analysisTable(prCHEMBL)
 # XP #
 ######
 # native - 2HYY #
-psdfDokingXP_2HYY = "/home/aborrel/imitanib/docking/dockingXP_2hyy/PoseXP.sdf"
-prDockingPoseXP_2HYY = "/home/aborrel/imitanib/results/dockingposeXP_2HYY/"
-pprotein_2HYY = "/home/aborrel/imitanib/protein/2HYY_dock.pdb"
+psdfDokingXP_2HYY = prHome + "imatinib/docking/dockingXP_2hyy/PoseXP.sdf"
+prDockingPoseXP_2HYY = prHome + "imatinib/results/dockingposeXP_2HYY/"
+pprotein_2HYY = prHome + "imatinib/protein/2HYY_dock.pdb"
 pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
 # analysis
