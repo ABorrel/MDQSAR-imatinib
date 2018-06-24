@@ -102,7 +102,7 @@ def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
     for daff in ltabCHEMBL:
         try: filout.write(str(daff["CMPD_CHEMBLID"]) + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_docking_score"])
                           + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_glide_emodel"])
-                          + "\t" + str(daff["PCHEMBL_VALUE"]) + str(daff["STANDARD_TYPE"]) + "\n")
+                          + "\t" + str(daff["PCHEMBL_VALUE"]) + "\t" + str(daff["STANDARD_TYPE"]) + "\n")
         except: pass
     filout.close()
 
@@ -295,7 +295,7 @@ pdockingAnalysis = pathFolder.analyses("dockingScoreXP_2HYY")
 
 #2. Score
 dscore = sdocking.get_dockingscore()
-dockingScoreAnalysis(dscore, ctabAll.table, pdockingAnalysis)
+dockingScoreAnalysis(dscore, ctabAll.table,pCHEMBLout, pdockingAnalysis)
 dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, paff, prDockingPoseXP_2HYY, pranalysis_XP_2HYY)
 
 

@@ -121,9 +121,12 @@ class CHEMBL:
 
                 # combine if same type of affinity
                 # extract only most present type
+                print l_PUBLISHED_TYPE
                 if len(list(set(l_PUBLISHED_TYPE))) != 1:
-                    typetoextract = collections.Counter(l_PUBLISHED_TYPE).most_common()[0][0]
-                    typetoextract = "Ki" # favorize most common Ki
+                    if "Ki" in l_PUBLISHED_TYPE:
+                        typetoextract = "Ki" # favorize most common Ki
+                    else:
+                        typetoextract = collections.Counter(l_PUBLISHED_TYPE).most_common()[0][0]
                     t = 0
                     tmax = len(l_PUBLISHED_TYPE)
                     while t < tmax:

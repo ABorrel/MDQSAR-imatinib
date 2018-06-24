@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 library(ggplot2)
 
 
@@ -56,7 +57,7 @@ args <- commandArgs(TRUE)
 paff = args[1]
 
 
-paff = "/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
+#paff = "/home/aborrel/imitanib/results/CHEMBL/AffAllcurated"
 
 daff = read.table(paff, sep = "\t", header = TRUE)
 multipleHist(daff, paff)
