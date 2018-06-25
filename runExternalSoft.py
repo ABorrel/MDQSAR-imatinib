@@ -116,18 +116,14 @@ def runKrakenX(prtemp, lcpd, pdesc):
     #return pdesc
 
 
-def babelConvertPDBtoSDF(ppdb, pfilout = ""):
+def babelConverttoSDF(ppdb, pfilout =""):
 
     if pfilout == "":
         pfilout = ppdb[:-4] + ".sdf"
 
     cmdconvert = "/usr/bin/babel " + ppdb + " " +  pfilout + " 2>/dev/null"
+    system(cmdconvert)
 
-    if path.exists(pfilout) and path.getsize(pfilout) > 0:
-        return pfilout
-    else:
-        #print cmdconvert
-        system(cmdconvert)
     return pfilout
 
 
@@ -196,9 +192,9 @@ def MDSMCS(pmatrix, paff):
     system(cmdMDS)
 
 
-def corPlot(pfilin, pchembl):
+def corPlot(pfilin, pchembl, prout):
 
-    cmdCor = "./corplot.R " + pfilin + " " + pchembl
+    cmdCor = "./corplot.R " + pfilin + " " + pchembl + " " + prout
     print cmdCor
     system(cmdCor)
 

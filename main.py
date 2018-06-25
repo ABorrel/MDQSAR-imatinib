@@ -105,11 +105,8 @@ def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
                           + "\t" + str(daff["PCHEMBL_VALUE"]) + "\t" + str(daff["STANDARD_TYPE"]) + "\n")
         except: pass
     filout.close()
-
-    print pfilout
-    ddd
-
-    runExternalSoft.corPlot(pfilout, ptableCHEMBL) # redo with type of affinity
+    print ptableCHEMBL
+    runExternalSoft.corPlot(pfilout, ptableCHEMBL, prout)
 
 
 def FPIMatrix(sdocking, pprotein, prFPI):
@@ -230,10 +227,9 @@ def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 
 
 
 
-    # have to load only result
 
-
-
+########################################################################################################################
+########################################################################################################################
 
 ##########
 #  MAIN  #
@@ -258,7 +254,7 @@ lBAout = []
 
 ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
 paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
-ctabAll.analysisTable(prCHEMBL)
+#ctabAll.analysisTable(prCHEMBL)
 
 
 #####################################
@@ -288,15 +284,13 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
 # analysis
 # 1. poses
-sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
-sdocking.parseSDF()
-sdocking.splitPoses(prDockingPoseXP_2HYY)
-pdockingAnalysis = pathFolder.analyses("dockingScoreXP_2HYY")
+#sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
+#sdocking.parseSDF()
+#sdocking.splitPoses(prDockingPoseXP_2HYY)
 
 #2. Score
-dscore = sdocking.get_dockingscore()
-dockingScoreAnalysis(dscore, ctabAll.table,pCHEMBLout, pdockingAnalysis)
-dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, paff, prDockingPoseXP_2HYY, pranalysis_XP_2HYY)
+#dscore = sdocking.get_dockingscore()
+#dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, pCHEMBLout, prDockingPoseXP_2HYY, pranalysis_XP_2HYY)
 
 
 
@@ -354,9 +348,6 @@ dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, paff, prDockingPoseXP_2HYY, pr
 
 
 
-
-
-
 #################
 #################
 # Analyse NAMS  #
@@ -367,17 +358,28 @@ dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, paff, prDockingPoseXP_2HYY, pr
 #mcs.computeMatrixMCS()
 #mcs.selectAnalogsMatrix(compoundID="CHEMBL941") # select specificaly a compound
 
-
+####################
 ####################
 #  Molecular Desc  #
 ####################
-#pdesc = pathFolder.analyses(psub="desc") + "tableDesc"
-#plog = pathFolder.analyses(psub="desc") + "log.txt"
-#pdescglobal = liganddescriptors.MolecularDesc(ltab, pdesc, prDockingPoseXP, plog)# add docking XP
-#AnalyseDesc(pdescglobal, pCHEMBLClean, pathFolder.analyses("desc"), corcoef=CORCOEF)
+####################
+
+# set variable
+CORCOEF = 0.90
+prPoses = prDockingPoseXP_2HYY
+maxQuantile = 95
+Desc1D2D = 1
+Desc3D = 1
+prDescLigStatic = pathFolder.analyses(psub="DescLig2D3D")
+
+#compute desc #
+###############
+liganddescriptors.MolecularDesc(ctabAll.table, prDescLigStatic, prPoses, Desc1D2D, Desc3D)# add docking XP
 
 
-
+# analysis desc - clustering # +> to redo
+##############################
+#####AnalyseDesc(pdescglobal, pCHEMBLClean, pathFolder.analyses("desc"), corcoef=CORCOEF)
 
 
 
@@ -466,8 +468,7 @@ prQSAR = pathFolder.analyses("QSARs")
 
 # settings
 varsplit = 0.15
-corcoef = 0.90
-maxQuantile = 95
+
 typeAff = "All" #Ki
 
 #QSARLig2D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)

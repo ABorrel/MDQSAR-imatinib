@@ -44,7 +44,7 @@ class MDdescriptors:
         fdescByFrames.write("Frame" + "\t" + "\t".join(ldesc3D) + "\n")
 
         for lig in llig:
-            pligsdf = runExternalSoft.babelConvertPDBtoSDF(self.prlig + lig, prtemp + lig[0:-4] + ".sdf")
+            pligsdf = runExternalSoft.babelConverttoSDF(self.prlig + lig, prtemp + lig[0:-4] + ".sdf")
             ddesc = descriptors3D.get3Ddesc(pligsdf)
             fdescByFrames.write(lig[0:-4])
             for desc3D in ldesc3D:

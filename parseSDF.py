@@ -1,5 +1,6 @@
 from re import search
 import pathFolder
+import runExternalSoft
 
 
 
@@ -96,5 +97,8 @@ class sdf:
             filout = open(pfilout, "w")
             filout.write(pose["sdf"])
             filout.close()
+
+            #apply a format with babel to have a proper sdf
+            runExternalSoft.babelConverttoSDF(pfilout)
 
             self.lposefiles.append(pfilout)

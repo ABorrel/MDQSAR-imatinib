@@ -16,6 +16,9 @@ from numpy import mean, std
 import toolbox
 import pathFolder
 import runExternalSoft
+import descriptors3D
+
+
 
 LSALT="[Co]"
 LSMILESREMOVE=["[C-]#N", "[Al+3]", "[Gd+3]", "[Pt+2]", "[Au+3]", "[Bi+3]", "[Al]", "[Si+4]", "[Fe]", "[Zn]", "[Fe+2]",
@@ -24,9 +27,64 @@ LSMILESREMOVE=["[C-]#N", "[Al+3]", "[Gd+3]", "[Pt+2]", "[Au+3]", "[Bi+3]", "[Al]
                "O=O", "Cl[Ra]Cl", "[Mn+2]", "N#[N+][O-]", "II", "[Ga+3]", "[Mo+10]", "[Zn]", "[Fe]", "[Si+4]", "[Al]"]
 
 
+
+LKAPA = ['kappa1', 'kappa2', 'kappa3', 'kappam1', 'kappam2', 'kappam3', 'phi']
+LBUCUT =["bcutp16","bcutp15","bcutp14","bcutp13","bcutp12","bcutp11","bcutp10",
+        "bcutp9","bcutp8","bcutp7","bcutp6","bcutp5","bcutp4","bcutp3",
+        "bcutp2","bcutp1"]
+LESTATE = ['Smax38', 'Smax39', 'Smax34', 'Smax35', 'Smax36', 'S43', 'Smax30', 'Smax31', 'Smax32', 'Smax33', 'S57',
+           'S56', 'S55', 'S54', 'S53', 'S52', 'S51', 'S50', 'Smin49', 'S59', 'S58', 'Smin69', 'Smin68', 'Smin27',
+           'Sfinger30', 'Sfinger31', 'Sfinger32', 'Sfinger33', 'Sfinger34', 'Sfinger35', 'Sfinger36', 'Sfinger37',
+           'Sfinger38', 'Sfinger39', 'Smax2', 'Smax3', 'Smax4', 'Smax5', 'Smax6', 'Smax7', 'Smin77', 'Smax29', 'Smax37',
+           'Smax23', 'Smax22', 'Smax21', 'Smax20', 'Smax27', 'Smax26', 'Smax25', 'Smax24', 'S44', 'S45', 'S46', 'S47',
+           'S40', 'S41', 'S42', 'S17', 'Smin44', 'S48', 'S49', 'Smin8', 'Smin29', 'Smin28', 'Sfinger45', 'Sfinger44',
+           'Sfinger47', 'Sfinger46', 'Sfinger41', 'Sfinger40', 'Sfinger43', 'Sfinger42', 'Smax47', 'Smin73', 'Smin70',
+           'Smin71', 'Sfinger49', 'Sfinger48', 'Smin74', 'Smin75', 'Smin67', 'Smin6', 'Smin9', 'Smin7', 'Smin47',
+           'Smax41', 'S79', 'S78', 'Smin19', 'Smax58', 'Smax59', 'S71', 'S70', 'S73', 'S72', 'S75', 'S74', 'S77',
+           'S76', 'Smax73', 'Smin78', 'Sfinger56', 'Sfinger57', 'Sfinger54', 'Sfinger55', 'Sfinger52', 'Sfinger53',
+           'Sfinger50', 'Sfinger51', 'Smin61', 'Smin60', 'Smin63', 'Smin62', 'Smin65', 'Smin64', 'Sfinger58',
+           'Sfinger59', 'Smin48', 'Smin42', 'Smin76', 'Smin41', 'Smin72', 'Smax40', 'Smin40', 'Smax49', 'Smax48',
+           'S68', 'S69', 'S66', 'S67', 'S64', 'S65', 'S62', 'S63', 'S60', 'S61', 'Smin54', 'Smax52', 'Sfinger69',
+           'Sfinger68', 'Smin50', 'Smin51', 'Smin52', 'Smin53', 'Sfinger63', 'Sfinger62', 'Sfinger61', 'Sfinger60',
+           'Sfinger67', 'S10', 'Sfinger65', 'Sfinger64', 'S13', 'S12', 'Sfinger76', 'Smin56', 'S9', 'S8', 'S3', 'S2',
+           'S1', 'Smin55', 'S7', 'S6', 'S5', 'S4', 'Smax78', 'Smax45', 'Smax11', 'Sfinger72', 'Smin66', 'Smax44',
+           'Smax70', 'Smax71', 'Smax72', 'S14', 'Smax74', 'Smax75', 'Smax76', 'Smax77', 'Smin43', 'Smax8', 'S19',
+           'S18', 'Sfinger78', 'Sfinger79', 'Smin45', 'Smax9', 'Sfinger74', 'Sfinger75', 'S11', 'Sfinger77',
+           'Sfinger70', 'Sfinger71', 'S15', 'Sfinger73', 'Smax43', 'Smin16', 'Smax42', 'Smax53', 'Smax66', 'Smax65',
+           'Smax64', 'Smax63', 'Smax62', 'Smax61', 'Smax60', 'Smin26', 'Smax69', 'Smax68', 'Smax0', 'Smin57', 'Smax1',
+           'Smin17', 'Smin36', 'Smin37', 'Smin34', 'Smin35', 'Smin32', 'Smin33', 'Smin30', 'Smin31', 'Smax67', 'Smin46',
+           'Smax51', 'Smin38', 'Smin39', 'Smax12', 'Smax13', 'Smax10', 'S16', 'Smax16', 'Smax17', 'Smax14', 'Smax15',
+           'Smin20', 'Smax18', 'Smax19', 'Sfinger66', 'Smax56', 'Smax28', 'Smax57', 'Smax54', 'Smin58', 'Smax55', 'S39',
+           'S38', 'Smax46', 'S35', 'S34', 'S37', 'S36', 'S31', 'S30', 'S33', 'S32', 'Smin25', 'Smin24', 'Sfinger18',
+           'Sfinger19', 'Smin21', 'Smax50', 'Smin23', 'Smin22', 'Sfinger12', 'Sfinger13', 'Sfinger10', 'Sfinger11',
+           'Sfinger16', 'Sfinger17', 'Sfinger14', 'Sfinger15', 'Sfinger8', 'Sfinger9', 'Smin4', 'Smin5', 'Smin2',
+           'Smin3', 'Smin0', 'Smin1', 'Sfinger1', 'Sfinger2', 'Sfinger3', 'Sfinger4', 'Sfinger5', 'Sfinger6',
+           'Sfinger7', 'S22', 'S23', 'S20', 'S21', 'S26', 'S27', 'S24', 'S25', 'Smin59', 'S28', 'S29', 'Smin18',
+           'Smin10', 'Smin11', 'Smin12', 'Smin13', 'Smin14', 'Smin15', 'Sfinger29', 'Sfinger28', 'Sfinger27',
+           'Sfinger26', 'Sfinger25', 'Sfinger24', 'Sfinger23', 'Sfinger22', 'Sfinger21', 'Sfinger20']
+LMOREAUBROTO = ['ATSe1', 'ATSe2', 'ATSe3', 'ATSe4', 'ATSe5', 'ATSe6', 'ATSe7', 'ATSe8', 'ATSp8', 'ATSp3', 'ATSv8',
+                'ATSp1', 'ATSp7', 'ATSp6', 'ATSp5', 'ATSp4', 'ATSv1', 'ATSp2', 'ATSv3', 'ATSv2', 'ATSv5', 'ATSv4',
+                'ATSv7', 'ATSv6', 'ATSm8', 'ATSm1', 'ATSm2', 'ATSm3', 'ATSm4', 'ATSm5', 'ATSm6', 'ATSm7']
+LMORAN = ['MATSv8', 'MATSp4', 'MATSp8', 'MATSv1', 'MATSp6', 'MATSv3', 'MATSv2', 'MATSv5', 'MATSv4', 'MATSv7', 'MATSv6',
+          'MATSm8', 'MATSp1', 'MATSm4', 'MATSm5', 'MATSm6', 'MATSm7', 'MATSm1', 'MATSm2', 'MATSm3', 'MATSe4', 'MATSe5',
+          'MATSe6', 'MATSe7', 'MATSe1', 'MATSe2', 'MATSe3', 'MATSe8', 'MATSp3', 'MATSp7', 'MATSp5', 'MATSp2']
+LGEARY = ['GATSp8', 'GATSv3', 'GATSv2', 'GATSv1', 'GATSp6', 'GATSv7', 'GATSv6', 'GATSv5', 'GATSv4', 'GATSe2', 'GATSe3',
+          'GATSv8', 'GATSe6', 'GATSe7', 'GATSe4', 'GATSe5', 'GATSp5', 'GATSp4', 'GATSp7', 'GATSe1', 'GATSp1', 'GATSp3',
+          'GATSp2', 'GATSe8', 'GATSm2', 'GATSm3', 'GATSm1', 'GATSm6', 'GATSm7', 'GATSm4', 'GATSm5', 'GATSm8']
+LMOE = ['EstateVSA8', 'EstateVSA9', 'EstateVSA4', 'EstateVSA5', 'EstateVSA6', 'EstateVSA7', 'EstateVSA0', 'EstateVSA1',
+        'EstateVSA2', 'EstateVSA3', 'PEOEVSA13', 'PEOEVSA12', 'PEOEVSA11', 'PEOEVSA10', 'MTPSA', 'VSAEstate0',
+        'VSAEstate1', 'VSAEstate2', 'VSAEstate3', 'VSAEstate4', 'VSAEstate5', 'VSAEstate6', 'VSAEstate7', 'VSAEstate8',
+        'LabuteASA', 'PEOEVSA3', 'PEOEVSA2', 'PEOEVSA1', 'PEOEVSA0', 'PEOEVSA7', 'PEOEVSA6', 'PEOEVSA5', 'PEOEVSA4',
+        'MRVSA5', 'MRVSA4', 'PEOEVSA9', 'PEOEVSA8', 'MRVSA1', 'MRVSA0', 'MRVSA3', 'MRVSA2', 'MRVSA9', 'slogPVSA10',
+        'slogPVSA11', 'MRVSA8', 'MRVSA7', 'MRVSA6', 'EstateVSA10', 'slogPVSA2', 'slogPVSA3', 'slogPVSA0', 'slogPVSA1',
+        'slogPVSA6', 'slogPVSA7', 'slogPVSA4', 'slogPVSA5', 'slogPVSA8', 'slogPVSA9', 'VSAEstate9', 'VSAEstate10']
+
+
+
 class Descriptors:
     def __init__(self, dcompound, logfile, writecheck=1, kSMILES="CANONICAL_SMILES", kID="CMPD_CHEMBLID"):
         self.compound = dcompound
+        self.kID = kID
         loader = pydrug.PyDrug()
 
         # if SMILES, load using SMILES code
@@ -188,15 +246,15 @@ class Descriptors:
         self.l1D2D = self.l1D2D + molproperty.MolecularProperty.keys()
         self.l1D2D = self.l1D2D +topology._Topology.keys()
         self.l1D2D = self.l1D2D + connectivity._connectivity.keys()
-        self.l1D2D = self.l1D2D + kappa._kapa.keys()
-        self.l1D2D = self.l1D2D + bcut._bcut
+        self.l1D2D = self.l1D2D + LKAPA
+        self.l1D2D = self.l1D2D + LBUCUT
         self.l1D2D = self.l1D2D + basak._basak.keys()
-        self.l1D2D = self.l1D2D + estate._estate.keys()
-        self.l1D2D = self.l1D2D + moreaubroto._moreaubroto.keys()
-        self.l1D2D = self.l1D2D + moran._moran.keys()
-        self.l1D2D = self.l1D2D + geary._geary.keys()
+        self.l1D2D = self.l1D2D + LESTATE
+        self.l1D2D = self.l1D2D + LMOREAUBROTO
+        self.l1D2D = self.l1D2D + LMORAN
+        self.l1D2D = self.l1D2D + LGEARY
         self.l1D2D = self.l1D2D + charge._Charge.keys()
-        self.l1D2D = self.l1D2D + moe._moe.keys()
+        self.l1D2D = self.l1D2D + LMOE
 
         # combine all 1D-2D
         self.all1D2D = dict()
@@ -215,178 +273,53 @@ class Descriptors:
         self.all1D2D.update(deepcopy(self.charges))
         self.all1D2D.update(deepcopy(self.MOE))
 
-    def get_fingerprints(self):
-        # fingerprint based on rdkit
-        self.fingerAtomPairs = fingerprint.CalculateAtomPairsFingerprint(self.mol)
-        self.fingerDaylight = fingerprint.CalculateDaylightFingerprint(self.mol)
-        self.fingerEstate = fingerprint.CalculateEstateFingerprint(self.mol)
-        self.fingerFP4 = fingerprint.CalculateFP4Fingerprint(self.mol)
-        self.fingerMACCS = fingerprint.CalculateMACCSFingerprint(self.mol)
-        self.fingerMorgan = fingerprint.CalculateMorganFingerprint(self.mol)
-        self.fingerTorsion = fingerprint.CalculateTopologicalTorsionFingerprint(self.mol)
 
-    def get_descriptor3D(self, lcpd, pdesc, pr3D=""):
-        """
-        Compute descriptors 3D from SMILES code and generate the 3D using ligprep
-        :return: dictionary of descriptors in all3D
-        """
+    def get_descriptor3D(self, pr3D):
 
-        # from pose directory
-        if pr3D != "":
-            # extract docking poses
-            lsdf = []
-            prtemp = pathFolder.analyses(psub="desc/temp3D")
-            for cpd in lcpd:
-                psdf3D = pr3D + str(cpd["CMPD_CHEMBLID"]) + ".1.sdf"
-                lsdf.append(str(cpd["CMPD_CHEMBLID"]) + ".1.sdf")
-                print psdf3D, "l.239 - ligand descriptors"
-                if path.exists(psdf3D):
-                    psdftemp = prtemp + psdf3D.split("/")[-1]
-
-                    #format sdf for MDLV3000Reader
-                    cmdbabel = "babel " + psdf3D + " " + prtemp + str(cpd["CMPD_CHEMBLID"]) + ".1.sdf 2>/dev/null"
-                    system(cmdbabel)
-
-            # prepare par file
-            pdesc = runExternalSoft.runKrakenX(prtemp, lsdf, pdesc)
-
-
+        #if pr3D != "":
+        #    self.all3D = {}
         #else:
-            # need to prepare 3D
-            # clean temp folder - used to compute 3D descriptors
-            #prtemp = pathFolder.cleanFolder()
-            #psdf3Dout = pathFolder.PR_COMPOUNDS + str(self.compound["DATABASE_ID"]) + "_3D.sdf"
+            # extract docking poses
+            CHEMBLID = self.compound[self.kID]
+            psdf3D = pr3D + CHEMBLID + ".1.sdf"
 
-            # temp SMILES
-            #pfilesmile = prtemp + "tem.smi"
-            #filesmile = open(pfilesmile, "w")
-            #filesmile.write(self.compound["SMILES"])
-            #filesmile.close()
-
-            # run ligprep - to develop
-            #if not path.exists(psdf3Dout):
-                #psdf3D = runExternalSoft.runLigprep(psmilin=pfilesmile)
-
-                # case error in ligprep
-                #if not path.exists(psdf3D) or path.getsize(psdf3D) == 0:
-                #    pdesc = ""
-                #else:
-                #    psdf3Dout = toolbox.selectMinimalEnergyLigPrep(psdfin=psdf3D,
-                #                                                       psdfout=psdf3Dout)
-                    # take only best energy
-                #    remove(psdf3D)
-                #    remove(pfilesmile)
-                #    copy(psdf3Dout, psdf3D)
-                    #pdesc = runExternalSoft.runKrakenX(prtemp)
-
-        # run 3D descriptor using Padel
-        #self.all3D = toolbox.parseKrakenX(pdesc)
-        #self.l3D = self.all3D.keys()
+            self.all3D = descriptors3D.get3Ddesc(psdf3D)
+            self.l3D = descriptors3D.l3D
 
 
-    def writeTablesDesc(self, prresult, kSMILES="CANONICAL_SMILES", kID="CMPD_CHEMBLID", unique=0):
+
+
+    def writeTablesDesc(self, presult, typeDesc, kSMILES="CANONICAL_SMILES", kID="CMPD_CHEMBLID", unique=0):
 
 
         # case we would like one unique file, if extention is .csv
-        if prresult[-3:] == "csv":
-            if not path.exists(prresult):
-                filout = open(prresult, "w")
-                # header
-                filout.write("ID\tSMILES\t")
-                lheader = []
-                if "all1D" in self.__dict__:
-                    lheader = lheader + self.l1D
-                if "all2D" in self.__dict__:
-                    lheader = lheader + self.l1D2D
-                if "all3D" in self.__dict__:
-                    lheader = lheader + self.l3D
-                filout.write("\t".join(lheader) + "\n")
-            else:
-                filout = open(prresult, "a")
+        if "all1D2D" in self.__dict__ and typeDesc == "1D2D":
+            ldesc = self.l1D2D
+        elif "all3D" in self.__dict__ and typeDesc == "3D":
+            ldesc = self.l3D
+        else:
+            ldesc = self.l1D2D + self.l3D
 
-            filout.write(self.compound[kID] + "\t" + self.compound[kSMILES])
+        if not path.exists(presult):
+            filout = open(presult, "w")
+            # header
+            filout.write("ID\tSMILES\t")
 
-            if "all1D" in self.__dict__:
-                for desc1D in self.l1D:
-                    try:
-                        filout.write("\t" + str(self.all1D2D[desc1D]))
-                    except:
-                        filout.write("\tNA")
-
-            if "all2D" in self.__dict__:
-                for desc2D in self.l1D2D:
-                    try:
-                        filout.write("\t" + str(self.all2D[desc2D]))
-                    except:
-                        filout.write("\tNA")
-
-            if "all3D" in self.__dict__:
-                for desc3D in self.l3D:
-                    try:
-                        filout.write("\t" + str(self.all2D[desc3D]))
-                    except:
-                        filout.write("\tNA")
-
-            filout.write('\n')
-            filout.close()
+            filout.write("\t".join(ldesc) + "\n")
 
         else:
-            # case 1D
-            if "all1D" in self.__dict__:
-                if not path.exists(prresult + "1D.csv"):
-                    self.fil1D = open(prresult + "1D.csv", "w")
-                    # header
-                    self.fil1D.write("ID\tSMILES\t")
-                    self.fil1D.write("\t".join(self.l1D) + "\n")
-                else:
-                    self.fil1D = open(prresult + "1D.csv", "a")
-                self.fil1D.write(self.compound[kID] + "\t" +self.compound[kSMILES])
+            filout = open(presult, "a")
 
-                for desc1D in self.l1D:
-                    try:
-                        self.fil1D.write("\t" + str(self.all1D2D[desc1D]))
-                    except:
-                        self.fil1D.write("\tNA")
-                self.fil1D.write("\n")
-                self.fil1D.close()
+        filout.write(self.compound[kID] + "\t" + self.compound[kSMILES])
 
-            # case 2D
-            if "all2D" in self.__dict__:
-                if not path.exists(prresult + "2D.csv"):
-                    self.fil2D = open(prresult + "2D.csv", "w")
-                    # header
-                    self.fil2D.write("ID\tSMILES\t")
-                    self.fil2D.write("\t".join(self.l1D2D) + "\n")
-                else:
-                    self.fil2D = open(prresult + "2D.csv", "a")
+        for desc in ldesc:
+            try:
+                filout.write("\t" + str(self.all1D2D[desc]))
+            except:
+                filout.write("\t" + str(self.all3D[desc]))
 
-                self.fil2D.write(self.compound[kID] + "\t" + self.compound[kSMILES])
-                for desc2D in self.l1D2D:
-                    try:
-                        self.fil2D.write("\t" + str(self.all2D[desc2D]))
-                    except:
-                        self.fil2D.write("\tNA")
-                self.fil2D.write("\n")
-                self.fil2D.close()
-
-            # case 3D - not work
-            if "all3D" in self.__dict__:
-                if not path.exists(prresult + "3D.csv", ):
-                    self.fil3D = open(prresult + "3D.csv", "w")
-                    # header
-                    self.fil3D.write("ID\tSMILES\t")
-                    self.fil3D.write("\t".join(self.l3D) + "\n")
-                else:
-                    self.fil3D = open(prresult + "3D.csv", "a")
-
-                self.fil3D.write(self.compound[kID] + "\t" + self.compound[kSMILES])
-                for desc3D in self.l3D:
-                    try:
-                        self.fil3D.write("\t" + str(self.all3D[desc3D]))
-                    except:
-                        self.fil3D.write("\tNA")
-                self.fil3D.write("\n")
-                self.fil3D.close()
+        filout.write('\n')
+        filout.close()
 
 
 
@@ -394,44 +327,32 @@ class Descriptors:
 
 
 
+def MolecularDesc(lcpd, prout, prPoses = "", compute1D2D = 1, compute3D = 1):
 
-def MolecularDesc(lcpd, pfiloutdesc, prdocking = "", D1D = 1, D3D = 1, plog = "log.txt"):
 
-    # add criteria not run if all descriptor file exist
-    if path.exists(pfiloutdesc + "all.desc"):
-        return pfiloutdesc + "all.desc"
+    if compute1D2D == 1:
+        pdesc1D2D = prout + "1D2D.csv"
+        if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
+            compute1D2D = 0
 
-    logfile = open(plog, "w")
+    if compute3D == 1:
+        pdesc3D = prout + "3D.csv"
+        if path.exists(pdesc3D) and path.getsize(pdesc3D) > 10:
+            compute3D = 0
 
-    pdesc2D = pfiloutdesc + "2D.csv"
-    if not path.exists(pdesc2D) and not path.getsize(pdesc2D) > 50:
+    if compute1D2D == 1 and compute3D == 1:
+        p1D2D3D = prout + "1D2D3D.csv"
+
+
+    if compute1D2D == 1 or compute3D == 1:
+        logfile = open(prout + "desc.log", "w")
         for compound in lcpd:
-            dcompound = Descriptors(compound, logfile)
-
-            if dcompound.log == "ERROR":
-                continue
-
-            if D1D == 1:
-                dcompound.get_descriptor1D2D()
-
-            dcompound.writeTablesDesc(pdesc2D)
-
-    if D3D == 1:
-        pdesc3D = pfiloutdesc + "3D.csv"
-        if not path.exists(pdesc3D) and not path.getsize(pdesc3D) > 50:
-            dcompound.get_descriptor3D(lcpd, prdocking, pdesc3D)
-            # format table
-
-
-    # combine Table
-    if D3D == 1:
-        d3D = toolbox.parseKrakenX(pdesc3D)
-        print d3D.keys(), "CCCCC"
-        ddesc = toolbox.loadTable(pdesc2D, d3D)
-    else:
-        ddesc = toolbox.loadTable(pdesc2D)
-
-    print ddesc.keys()
-    toolbox.writeTableDesc(ddesc, pfiloutdesc + "all.desc")
-    return pfiloutdesc + "all.desc"
-
+            cDesc = Descriptors(compound, logfile)
+            if compute1D2D == 1:
+                cDesc.get_descriptor1D2D()
+                cDesc.writeTablesDesc(pdesc1D2D, "1D2D")
+            if compute3D == 1:
+                cDesc.get_descriptor3D(prPoses)
+                cDesc.writeTablesDesc(pdesc3D, "3D")
+            if compute3D == 1 and compute1D2D == 1:
+                cDesc.writeTablesDesc(p1D2D3D, "1D2D3D")
