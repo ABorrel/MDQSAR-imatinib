@@ -14,11 +14,23 @@ pdesc = args[1]
 pdata = args[2] #to take affinity
 prout = args[3]
 valcor = as.double(args[4])
-plotPCA = args[5]
-corMatrix = args[6]
-histplot = args[7]
-circularDendo = args[8]
-optimal_clustering = args[9]
+maxQuantile = as.double(args[5])
+plotPCA = args[6]
+corMatrix = args[7]
+histplot = args[8]
+circularDendo = args[9]
+optimal_clustering = args[10]
+
+pdesc = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/1D2D.csv"
+pdata = "/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
+prout = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/dendoAff_1D2D/"
+valcor = 0.9
+maxQuantile = 95
+plotPCA = 0
+corMatrix = 0
+histplot = 0
+circularDendo = 1
+optimal_clustering = 0
 
 
 #pdesc = "/home/aborrel/imitanib/results/analysis/desc/tableDescall.desc"
@@ -32,30 +44,32 @@ optimal_clustering = args[9]
 #valcor = 0.90
 
 # Opening
-ddata = read.csv(pdata, sep = "\t", header = TRUE)
-#print(dim(ddata))
-daffinity = ddata[,c("CMPD_CHEMBLID", "PCHEMBL_VALUE", "ASSAY_CHEMBLID")]
-#print (daffinity)
-#lcolaff <- colorRampPalette(c("white", "red"))
-#lcolaff = lcolaff[dim(daffinity)[1]]
-orderaff = order(daffinity[,2],decreasing=F)
+daff = read.csv(pdata, sep = "\t", header = TRUE)
+rownames(daff) = daff[,1]
 
-daffinity = as.data.frame(daffinity[orderaff,])
-rownames(daffinity) = daffinity[,1]
-#daffinity = as.data.frame(daffinity[,-1])
+orderaff = rownames(daff)[order(daff[,2],decreasing=F)]
+
+daff = as.data.frame(daff[orderaff,])
 
 # desc
-dglobal = openData(pdesc, valcor, prout, c("ID", "SMILES"))
-print (dim(dglobal[[1]]))
-
+dglobal = openData(pdesc, valcor, prout, c(1,2))
 dglobal = dglobal[[1]]
+print("==Matrix after selection==")
+rownames(dglobal) = dglobal[,1]
+dglobal = as.data.frame(dglobal)
+
 # order with affinity
 dglobal = dglobal[orderaff,]
 dglobal = na.omit(dglobal) # remove empty line
-#print(rownames(dglobal))
-#print(colnames(dglobal))
+dglobal = dglobal[,-c(1,2)]
+dglobal =  delnohomogeniousdistribution(dglobal, maxQuantile)
+print("====last filtering====")
+print(dim(dglobal))
+rname = rownames(dglobal)
+dglobal <- mapply(dglobal, FUN=as.numeric)
+rownames(dglobal) = rname
 
-#d1D_data = delnohomogeniousdistribution(d1D_data, 75)
+
 
 if (corMatrix == 1){
   cardMatrixCor(cor(dglobal), paste(prout, "matrixCor_", valcor, sep = ""), 6)
@@ -88,5 +102,5 @@ if (optimal_clustering ==1 ){
 }
 
 if (circularDendo == 1){
-  dendogramCircle(dglobal, daffinity, paste(prout, "dendo_", valcor, sep = ""))
+  dendogramCircleAffinity(dglobal, daff, paste(prout, "dendo_", valcor, "-", maxQuantile, sep = ""))
 }

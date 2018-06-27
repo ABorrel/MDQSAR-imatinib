@@ -322,37 +322,3 @@ class Descriptors:
         filout.close()
 
 
-
-
-
-
-
-def MolecularDesc(lcpd, prout, prPoses = "", compute1D2D = 1, compute3D = 1):
-
-
-    if compute1D2D == 1:
-        pdesc1D2D = prout + "1D2D.csv"
-        if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
-            compute1D2D = 0
-
-    if compute3D == 1:
-        pdesc3D = prout + "3D.csv"
-        if path.exists(pdesc3D) and path.getsize(pdesc3D) > 10:
-            compute3D = 0
-
-    if compute1D2D == 1 and compute3D == 1:
-        p1D2D3D = prout + "1D2D3D.csv"
-
-
-    if compute1D2D == 1 or compute3D == 1:
-        logfile = open(prout + "desc.log", "w")
-        for compound in lcpd:
-            cDesc = Descriptors(compound, logfile)
-            if compute1D2D == 1:
-                cDesc.get_descriptor1D2D()
-                cDesc.writeTablesDesc(pdesc1D2D, "1D2D")
-            if compute3D == 1:
-                cDesc.get_descriptor3D(prPoses)
-                cDesc.writeTablesDesc(pdesc3D, "3D")
-            if compute3D == 1 and compute1D2D == 1:
-                cDesc.writeTablesDesc(p1D2D3D, "1D2D3D")

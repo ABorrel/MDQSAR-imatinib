@@ -363,68 +363,66 @@ separeData = function (data, descriptor_class){
 }
 
 
-openData = function (pfilin, valcor, prout){
-	desc = read.csv (pfilin, header = TRUE, sep = "\t", stringsAsFactors = TRUE)
-	#print("ddddd")
-	#print (desc)
-	#print(dim(desc))
-	#print (rownames(desc))
-	rownames(desc) = desc[,1]
-	
-	desc = desc[,-1]
-	#print (desc)
-
-	# deleted col with NA
-	lcoldel = NULL
-	print (dim(desc))
-	for (icol in seq(1, dim(desc)[2])){
-	  #print (desc[,icol])
-	  if (sum(is.na(as.vector(desc[,icol]))) > 10){
-	    lcoldel = append(lcoldel, icol)
-	  }
-	}
-	
-	if(is.null(lcoldel)){
-	  desc = na.omit(desc)
-	}else{
-	  desc = desc[,-lcoldel]	  
-	  desc = na.omit(desc)  
-	}
-	
-	# dell when sd = 0
-	sd_desc = apply (desc[,1:(dim(desc)[2])], 2, sd)
-
-	#print (sd_desc)
-	#print ("--------")
-	sd_0 = which (sd_desc == 0.0)
-
-	#print ("------------")
-	#print (mode(sd_0))
-	#print (length (sd_0))
-	#print ("------------")
-	if (length(sd_0) != 0){
-		#print (as.factor (sd_0))
-		#desc = desc[,-sd_0]
-		desc=subset(desc,select=-sd_0)
-	}
-	if (valcor != 0){
-	  out_elimcor = elimcor_sansY (desc, valcor)
-		descriptor = out_elimcor$possetap
-
-		MDSElimcor (desc, out_elimcor, paste (prout, "MDSDesc_", valcor, sep = ""), "corr")
-		descriptor = colnames (desc) [descriptor]
-		desc = desc[,descriptor]
-		#print (dim(desc))
-	}
-	
-	# again with SD null
-	sd_desc =apply (desc[,1:(dim(desc)[2])], 2, sd)
-	sd_0 = which (sd_desc == 0)
-	if (length(sd_0) != 0){
-	  desc=subset(desc,select=-sd_0)
-	}
-	return (list((desc),colnames (desc)))
+openData = function (pfilin, valcor, prout, vexclude){
+  
+  desc = read.csv (pfilin, header = TRUE, sep = "\t")
+  print(dim(desc))
+  
+  # remove chemical with only NA
+  desc = delete.na(desc, dim(desc)[2]-20)
+  print(dim(desc))
+  
+  # remove col not well computed
+  desc = t(delete.na(t(desc), 100))
+  print(dim(desc))
+  #print(desc[2,])
+  
+  # deleted line with NA
+  #rownames (desc) = seq (1, dim(desc)[1])
+  desc = na.omit(desc)
+  #print (dim(desc))
+  cexclude = desc[,vexclude]
+  desc = desc[,-vexclude]
+  
+  print(dim(desc))
+  
+  # dell when sd = 0
+  sd_desc = apply (desc[,1:(dim(desc)[2])], 2, sd)
+  
+  #print (sd_desc)
+  #print ("--------")
+  sd_0 = which (sd_desc == 0)
+  
+  #print (sd_0)
+  
+  #print ("------------")
+  #print (mode(sd_0))
+  #print (length (sd_0))
+  #print ("------------")
+  if (length(sd_0) != 0){
+    #print (as.factor (sd_0))
+    #desc = desc[,-sd_0]
+    desc=subset(desc,select=-sd_0)
+    #cexclude = subset(cexclude,select=-sd_0)
+    #print(dim(desc_new))
+  }
+  desc = apply(desc,2,as.double)
+  
+  #print(dim(desc))
+  #print(valcor)
+  if (valcor != 0){
+    out_elimcor = elimcor_sansY (desc, valcor)
+    descriptor = out_elimcor$possetap
+    
+    #MDSElimcor (desc, out_elimcor, paste (prout, "MDSDesc_", valcor, sep = ""), "corr")
+    descriptor = colnames (desc) [descriptor]
+    desc = desc[,descriptor]
+  }
+  
+  desc = cbind(cexclude, desc)
+  return (list((desc),colnames (desc)))
 }
+
 
 delete.na <- function(DF, n=0) {
   DF[rowSums(is.na(DF)) <= n,]
@@ -470,8 +468,7 @@ delnohomogeniousdistribution = function(din, cutoff = 80){
   imax = dim(din)[2]
   while(i <= imax){
     #print (i)
-    #print (din[,i])
-    qt = hist(din[,i], breaks = 10, plot = FALSE)$counts
+    qt = hist(as.double(din[,i]), breaks = 10, plot = FALSE)$counts
       
     for (qtc in qt){
       if (qtc >= countMax){
@@ -485,62 +482,6 @@ delnohomogeniousdistribution = function(din, cutoff = 80){
   }
   return(din)
 }
-
-###############################
-# divise the dataset in folds #
-###############################
-
-samplingDataNgroup = function (t_din, i_nb_group, s_nameclass){
-
-	# divise two classes
-	v_class = as.factor(t_din[,s_nameclass])
-	t_dc0 = t_din [which(v_class == 0),]
-	t_dc1 = t_din [which(v_class == 1),]
-
-
-	# sample data
-	v_sampledc0 = sample (dim (t_dc0)[1])
-	v_sampledc1 = sample (dim (t_dc1)[1])
-
-	# ind limit
-	i_limitc0 = as.integer (dim(t_dc0)[1] / i_nb_group)
-	i_limitc1 = as.integer (dim(t_dc1)[1] / i_nb_group)
-
-	#print (i_limitc0)
-	#print (i_limitc1)
-
-	output = list ()
-	for (g in 1:i_nb_group){
-		#print (g)
-		# start selct 1
-		if (g == 1 ){
-			t_group = rbind (t_dc0[v_sampledc0[1:i_limitc0],], t_dc1[v_sampledc1[1:i_limitc1],])
-		}
-		# last end to number of coulumn
-		else if (g == i_nb_group){
-			#print ("inf")
-			#print (i_limitc0 * (g-1) + 1)
-			#print (i_limitc1 * (g-1) + 1)
-			#print ("sup")
-			#print (length (v_sampledc0))
-			#print (length (v_sampledc1))
-			#print ("**IC**")
-			#print ((i_limitc0 * (g-1) + 1):(length (v_sampledc0)))
-			#print ((i_limitc1 * (g-1) + 1):(length (v_sampledc1)))
-
-
-			t_group = rbind (t_dc0[v_sampledc0[((i_limitc0 * (g-1) + 1):(length (v_sampledc0)))],], t_dc1[(v_sampledc1[(i_limitc1 * (g-1) + 1):(length (v_sampledc1))]),])
-		}
-		else{
-			t_group = rbind (t_dc0[(v_sampledc0[(i_limitc0 * (g-1) + 1):(i_limitc0 * g)]),], t_dc1[(v_sampledc1[(i_limitc1 * (g-1) + 1):(i_limitc1 * g)]),])
-		}
-		# append list
-		output[[g]] = t_group
-	}
-
-	return (output)
-}
-
 
 #######################
 # order data rownames #
@@ -593,43 +534,6 @@ listDescriptorShipshape = function (d.col, l_des){
 		}
 	}
 	return (l_temp)
-}
-
-
-######################
-# Normalization LDA  #
-######################
-
-
-normalizationCoef = function (coef, data_train){
-
-	d_class1 = data_train[which(data_train[,"drugg"]==0),]
-	d_class2 = data_train[which(data_train[,"drugg"]==1),]
-
-	m_class1 = mean (d_class1[,1])
-	m_class2 = mean (d_class2[,1])
-
-	v_c1 =  sum((d_class1[,1]-m_class1) * (d_class1[,1]-m_class1))
-	v_c2 =  sum((d_class2[,1]-m_class2) * (d_class2[,1]-m_class2))
-
-
-	v_out = sqrt((v_c1 + v_c2) / (dim(data_train)[1] - 2))
-
-	return (coef*v_out)
-
-}
-
-
-normalizationScalingLDA = function (scalingLDA, d){
-
-	l_out = NULL
-	l_des = names (scalingLDA)
-
-	for (desc in l_des){
-		l_out = append (l_out, normalizationCoef (scalingLDA[desc], d[,c(desc,"drugg")]))
-	}
-	names (l_out) = names (scalingLDA)
-	return (l_out)
 }
 
 

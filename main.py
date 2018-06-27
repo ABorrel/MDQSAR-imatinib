@@ -1,5 +1,5 @@
 import tableParse
-import liganddescriptors
+import ligand
 import pathFolder
 import runExternalSoft
 import MCS
@@ -10,6 +10,7 @@ import PDB
 import cpdClustering
 import MDdescriptors
 import QSARModeling
+import analyzeDBLig
 
 from os import listdir, makedirs
 from re import search
@@ -83,14 +84,6 @@ def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
 
 
 
-def AnalyseDesc(pdesc, pdata, prout, PCA="1", dendo="1", cormatrix="1", hist="1", clustering="1", corcoef=0.0):
-
-    prout = prout + "CorDesc" + str(corcoef) + "/"
-    try: makedirs(prout)
-    except:pass
-    runExternalSoft.DescAnalysis(pdesc, pdata, prout, corcoef, PCA, cormatrix, hist, dendo, clustering)
-
-    return prout
 
 
 def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
@@ -367,19 +360,22 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 # set variable
 CORCOEF = 0.90
 prPoses = prDockingPoseXP_2HYY
-maxQuantile = 95
+MAXQUANTILE = 95
 Desc1D2D = 1
 Desc3D = 1
 prDescLigStatic = pathFolder.analyses(psub="DescLig2D3D")
 
-#compute desc #
-###############
-liganddescriptors.MolecularDesc(ctabAll.table, prDescLigStatic, prPoses, Desc1D2D, Desc3D)# add docking XP
+#compute desc and analysis #
+############################
+DescLigs = analyzeDBLig.DescriptorLig(ctabAll.table, prPoses, CORCOEF, MAXQUANTILE, Desc1D2D, Desc3D, prDescLigStatic)
+DescLigs.computeDesc()
+
+#analyze descriptor #
+#####################
+DescLigs.dendoAffinity("1D2D", paff)
 
 
-# analysis desc - clustering # +> to redo
-##############################
-#####AnalyseDesc(pdescglobal, pCHEMBLClean, pathFolder.analyses("desc"), corcoef=CORCOEF)
+
 
 
 

@@ -1,5 +1,6 @@
 from copy import deepcopy
 from numpy import mean, std
+from os import path
 
 import collections
 import runExternalSoft
@@ -316,6 +317,8 @@ class CHEMBL:
 
     def writeTableAff(self, pfilout, kaff = "PCHEMBL_VALUE"):
 
+        if path.exists(pfilout):
+            return pfilout
 
         filout = open(pfilout, "w")
         filout.write("CHEMBLID\tAff\tType\n")
@@ -324,7 +327,7 @@ class CHEMBL:
         filout.close()
 
         self.paff = pfilout
-
+        return pfilout
 
 
 

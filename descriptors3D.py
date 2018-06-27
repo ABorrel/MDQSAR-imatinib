@@ -7,6 +7,7 @@ import whim3D
 
 import scipy
 from re import search
+from os import path
 # compute from CHEMPY
 # replace MOPAC file by sdf parsing
 
@@ -237,6 +238,9 @@ def get3Ddesc(psdf, geometry=1, cpsa=1, rdf=1, morse=1, whim=1):
     ddesc = {}
     lcoordinates = parseSDFfor3D(psdf)
     print psdf
+
+    if not path.exists(psdf):
+        return {}
 
     if geometry == 1:
         ddesc['W3DH'] = geo3D.Calculate3DWienerWithH(lcoordinates)
