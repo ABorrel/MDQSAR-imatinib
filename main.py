@@ -1,4 +1,4 @@
-import tableParse
+import ChEMBLTable
 import ligand
 import pathFolder
 import runExternalSoft
@@ -27,7 +27,7 @@ def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
 
     # add short cut if filtered table exist !!!!!
 
-    table = tableParse.CHEMBL(pfilin)
+    table = ChEMBLTable.CHEMBL(pfilin)
     table.parseCHEMBLFile()
     print len(table.table), "Init"
 
@@ -61,7 +61,7 @@ def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
 
     # add short cut if filtered table exist !!!!!
 
-    table = tableParse.CHEMBL(pfilin)
+    table = ChEMBLTable.CHEMBL(pfilin)
     table.parseCHEMBLFile()
     print len(table.table), "Init"
 
@@ -372,8 +372,9 @@ DescLigs.computeDesc()
 
 #analyze descriptor #
 #####################
+DescLigs.dendoAffinity("1D2D3D", paff)
 DescLigs.dendoAffinity("1D2D", paff)
-
+DescLigs.dendoAffinity("3D", paff)
 
 
 
@@ -450,6 +451,22 @@ pathFolder.createFolder(prMDdesc)
 #    istart = istart[:-1]
 #istart = int(istart)
 #computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=1, descFPI=1)
+
+
+
+###################################
+# develop clustering and quality  #
+###################################
+prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
+paff ="/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
+pdesc2D = "/home/borrela2/imatinib/results/analysis/desc/tableDesc2D.csv"
+pdesc3D = "/home/borrela2/imatinib/results/analysis/desc/table3D.csv"
+prClustering = pathFolder.analyses("ClusteringDescType")
+
+
+
+
+
 
 
 
