@@ -1,53 +1,60 @@
-from re import search
 import pathFolder
 import runExternalSoft
+import toolbox
 
-
+from os import path, listdir
+from re import search
 
 class sdf:
 
 
-    def __init__(self, psdf):
+    def __init__(self, psdf, pbestpose):
         self.psdf = psdf
+        if not path.exists(pbestpose):
+            pathFolder.createFolder(pbestpose)
+        self.pbestpose = pbestpose
+
 
 
     def parseSDF(self):
 
         lout = []
+        if len(listdir(self.pbestpose)) != 0:
+            lfilname = listdir(self.pbestpose)
 
-        filin = open(self.psdf, "r")
-        handle_read = filin.read()
-        # print handle_read
+            for filname in lfilname:
+                fpose = open(self.pbestpose + filname, "r")
+                rpose = fpose.read()
+                fpose.close()
+                dcompound = toolbox.loadPoseInDict(rpose)
+                lout.append(dcompound)
 
-        l_compound = handle_read.split("$$$$\n")[:-1]
-        if len(l_compound) == 0:
-            l_compound = handle_read.split("$$$$\n")
+        else:
+            filin = open(self.psdf, "r")
+            handle_read = filin.read()
+            # print handle_read
 
-        for compound in l_compound:
-            dcompound = {}
-            dcompound["sdf"] = compound + "$$$$"
-            llines = compound.split("\n")
-            i = 0
-            nblines = len(llines)
-            while i < nblines:
-                if search("> <", llines[i]):
-                    kin = llines[i].split("> <")[1]
-                    kin = kin.split(">")[0]
-                    valuek = llines[i + 1].strip()
-                    dcompound[kin] = valuek
-                i += 1
-            lout.append(dcompound)
+            l_compound = handle_read.split("$$$$\n")[:-1]
+            if len(l_compound) == 0:
+                l_compound = handle_read.split("$$$$\n")
+
+            for compound in l_compound:
+                dcompound = toolbox.loadPoseInDict(compound)
+                lout.append(dcompound)
+
         self.lc = lout
-        print len(lout)
+        print len(lout), "Nb pose"
 
 
     def get_dockingscore(self):
         """Keep smaller score"""
 
-        if not "lc" in dir(self):
+        print self.lc[0].keys()
+
+        if not "lc" in self.__dict__:
             self.parseSDF()
 
-        if "docking" in dir(self):
+        if "docking" in self.__dict__:
             return self.docking
 
         dscore = {}
@@ -74,31 +81,57 @@ class sdf:
                     dscore[chemblID]["r_i_docking_score"] = float(compound["r_i_docking_score"])
                     dscore[chemblID]["r_i_glide_emodel"] = float(compound["r_i_glide_emodel"])
 
-
         self.docking = dscore
-
-        return self.docking
-
+        return dscore
 
 
-    def splitPoses(self, prDockingPose):
 
-        pathFolder.createFolder(prDockingPose)
+    def get_bestPose(self):
 
-        self.prposes = prDockingPose
-        self.lposefiles = []
+        if len(self.lc) == len(listdir(self.pbestpose)):
+            print "NB best poses, previously computed:", len(self.lc)
+            return
 
-        if not "lc" in dir(self):
-            self.parseSDF()
+
+
+        for chemblID in self.docking:
+            bestScore = self.docking[chemblID]["r_i_docking_score"]
+
+            ipose = 0
+            nbpose = len(self.lc)
+            while ipose < nbpose:
+                namepose = self.lc[ipose]["s_m_entry_name"]
+                if chemblID == namepose.split(".")[0]:
+                    if bestScore == float(self.lc[ipose]["r_i_docking_score"]):
+                        pfilout = self.pbestpose + namepose + ".sdf"
+                        filout = open(pfilout, "w")
+                        filout.write(self.lc[ipose]["sdf"])
+                        filout.close()
+                        # apply a format with babel to have a proper sdf
+                        runExternalSoft.babelConverttoSDF(pfilout)
+
+                    else:
+                        del self.lc[ipose]
+                        nbpose = nbpose - 1
+                        ipose = ipose - 1
+                ipose = ipose + 1
+
+        print "NB best poses:", len(self.lc)
+
+
+
+    def splitPose(self, prpose):
 
         for pose in self.lc:
             namepose = pose["s_m_entry_name"]
-            pfilout = prDockingPose + namepose + ".sdf"
+            nbpose = 1
+            while path.exists(prpose + namepose + "." + str(nbpose) + ".sdf"):
+                nbpose = nbpose + 1
+
+            pfilout = prpose + namepose + "." + str(nbpose) + ".sdf"
             filout = open(pfilout, "w")
             filout.write(pose["sdf"])
             filout.close()
-
-            #apply a format with babel to have a proper sdf
+            # apply a format with babel to have a proper sdf
             runExternalSoft.babelConverttoSDF(pfilout)
 
-            self.lposefiles.append(pfilout)

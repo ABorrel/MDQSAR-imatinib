@@ -1,10 +1,12 @@
 from copy import deepcopy
 from numpy import mean, std
 from os import path
-
 import collections
+
 import runExternalSoft
 import toolbox
+import pathFolder
+import ligand
 
 class CHEMBL:
     def __init__(self, pfilin):
@@ -18,7 +20,7 @@ class CHEMBL:
         filin.close()
 
         lhead = llines[0].split("\t")[0:-1]
-        print lhead
+        #print lhead
 
         i = 1
         while i < len(llines):
@@ -64,7 +66,7 @@ class CHEMBL:
             else:
                 i += 1
 
-        print len(self.table)
+        #print len(self.table)
 
     def getByTypeOfAff(self, ltypeAff =["IC50"]):
 
@@ -102,7 +104,7 @@ class CHEMBL:
         i = 0
         imax = len(d_CHEMBLID.keys())
         while i < imax:
-            print i, d_CHEMBLID.keys()[i]
+            #print i, d_CHEMBLID.keys()[i]
             # case not problem
             #print d_CHEMBLID.keys()[i]
             if len(d_CHEMBLID[d_CHEMBLID.keys()[i]]) == 1:
@@ -318,6 +320,7 @@ class CHEMBL:
     def writeTableAff(self, pfilout, kaff = "PCHEMBL_VALUE"):
 
         if path.exists(pfilout):
+            self.paff = pfilout
             return pfilout
 
         filout = open(pfilout, "w")
@@ -333,8 +336,109 @@ class CHEMBL:
 
     def analysisTable(self, pranalysis):
 
-        if not "paff" in dir(self):
+        if not "paff" in self.__dict__:
             self.writeTableAff(pranalysis + "affAnalysis")
 
-
         runExternalSoft.histAffinity(self.paff)
+
+
+    def checkIdenticSMI(self):
+
+        lsmi = []
+        i = 0
+        imax = len(self.table)
+        while i < imax:
+            smi = self.table[i]["CANONICAL_SMILES"]
+            smiclean = ligand.standardizeSMILES(smi)
+            print "***", i, smiclean, "***"
+            if smiclean == 1:
+                i += 1
+                continue
+
+            if not smiclean in lsmi:
+                lsmi.append(smiclean)
+            else:
+                del self.table[i]
+                imax = imax - 1
+                continue
+
+            i += 1
+
+
+# main function for filtering
+
+
+def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
+
+    # add short cut if filtered table exist !!!!!
+    table = CHEMBL(pfilin)
+    table.parseCHEMBLFile()
+    print len(table.table), "Init cleaning"
+
+    if path.exists(pfilout):
+        ltable = toolbox.matrixToList(pfilout)
+        table.table = ltable
+        print len(ltable), "Nb selected compounds"
+        return table
+
+    table.selectConfidencecore(cutoff=9)
+    print len(table.table), "prot confidence"
+
+    table.getOnlyExactConstant()
+    print len(table.table), "strict value"
+
+    table.getByTypeOfAff(ltypeAff)
+    print len(table.table), ltypeAff
+
+    table.MergeIdenticCHEMBLIDforACtivity()
+    print len(table.table), "Repetition"
+
+    table.selectAssayType("B")
+    print len(table.table), "Type assay"
+
+    # remove some biassay
+    table.removeBA(lBAout)
+    print len(table.table), "remove bioassay"
+
+    table.checkIdenticSMI()
+    print len(table.table), "Identic SMI"
+
+    table.writeTable(pfilout)
+
+    for chem in table.table:
+        CHEMBLID = chem["CMPD_CHEMBLID"]
+        pfilout = pathFolder.PR_SMI + CHEMBLID + ".smi"
+        filout = open(pfilout, "w")
+        filout.write(chem["CANONICAL_SMILES"])
+        filout.close()
+
+    return table
+
+
+
+def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
+
+    # add short cut if filtered table exist !!!!!
+
+    table = ChEMBLTable.CHEMBL(pfilin)
+    table.parseCHEMBLFile()
+    print len(table.table), "Init"
+
+    table.getOnlyExactConstant()
+    print len(table.table), "strict value"
+
+    table.selectAssayType("F")
+    print len(table.table), "Type assay"
+
+    table.MergeIdenticCHEMBLIDforACtivity()
+    print len(table.table), "Repetition"
+
+    table.getByTypeOfAff(ltypeaff)
+    print len(table.table), ltypeaff
+
+    table.writeTable(pfilout)
+
+
+    return table
+
+

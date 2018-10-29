@@ -138,6 +138,47 @@ def loadMatrix(pfilin):
     return dout
 
 
+def matrixToList(pfilin, sep="\t"):
+
+    filin = open(pfilin, "r")
+    llinesMatrix = filin.readlines()
+    filin.close()
+
+    lheader = llinesMatrix[0].strip().split(sep)
+
+    lout = []
+    for lineMatrix in llinesMatrix[1:]:
+        dtemp = {}
+        lelem = lineMatrix.strip().split(sep)
+        i = 0
+        imax = len(lheader)
+        while i < imax:
+            dtemp[lheader[i]] = lelem[i]
+            i = i + 1
+        lout.append(dtemp)
+    return lout
+
+
+def loadPoseInDict(rpose):
+
+    dpose= {}
+    if not rpose[-1].strip() != "\$":
+        rpose = rpose + "$$$$"
+    dpose["sdf"] = rpose
+    llines = rpose.split("\n")
+    i = 0
+    nblines = len(llines)
+    while i < nblines:
+        if search(">\s+<", llines[i]):
+            kin = llines[i].split("<")[1]
+            kin = kin.split(">")[0]
+            valuek = llines[i + 1].strip()
+            dpose[kin] = valuek
+        i += 1
+
+    return dpose
+
+
 def writeFilesParamaterDesmond(pmsjout, pcfgout, timeMD, intervalFrame):
 
     # CFG file
@@ -360,6 +401,74 @@ def writeTableDesc(ddesc, pfilout):
         filout.write("\n")
 
     filout.close()
+
+
+def loadMatrixToDict(pmatrixIn, sep ="\t"):
+
+    filin = open(pmatrixIn, "r")
+    llinesMat = filin.readlines()
+    filin.close()
+
+    dout = {}
+    line0 = formatLine(llinesMat[0])
+    line1 = formatLine(llinesMat[1])
+    lheaders = line0.split(sep)
+    lval1 = line1.split(sep)
+
+    # case where R written
+    if len(lheaders) == (len(lval1)-1):
+        lheaders.append("val")
+
+    i = 1
+    imax = len(llinesMat)
+    while i < imax:
+        lineMat = formatLine(llinesMat[i])
+        lvalues = lineMat.split(sep)
+        kin = lvalues[0]
+        dout[kin] = {}
+        j = 0
+        if len(lvalues) != len(lheaders):
+            print "Error => nb element"
+            print len(lvalues)
+            print len(lheaders)
+
+        jmax = len(lheaders)
+        while j < jmax:
+            dout[kin][lheaders[j]] = lvalues[j]
+            j += 1
+        i += 1
+
+    return dout
+
+
+
+
+def formatLine(linein):
+
+    linein = linein.strip()
+    linenew = ""
+
+    imax = len(linein)
+    i = 0
+    flagchar = 0
+    while i < imax:
+        if linein[i] == '"' and flagchar == 0:
+            flagchar = 1
+        elif linein[i] == '"' and flagchar == 1:
+            flagchar = 0
+
+        if flagchar == 1 and linein[i] == ",":
+            linenew = linenew + " "
+        elif flagchar == 1 and linein[i] == "\n":
+            linenew = linenew + " "
+        else:
+            linenew = linenew + linein[i]
+        i += 1
+
+    linenew = linenew.replace('\"', "")
+    return linenew
+
+
 
 
 

@@ -10,7 +10,8 @@ PR_HOME = "/home/borrela2/" #NIEHS
 PR_REF = PR_HOME + "imatinib/"
 PR_RESULT = PR_HOME + "imatinib/results/"
 PR_TEMP3D = PR_HOME + "imatinib/results/temp3D/"
-PR_COMPOUNDS = PR_HOME + "imatinib/results/compounds/"
+PR_SMI = PR_HOME + "imatinib/results/SMI/"
+PR_PNG = PR_HOME + "imatinib/results/PNG/"
 PR_ANALYSIS = PR_HOME + "imatinib/results/analysis/"
 
 

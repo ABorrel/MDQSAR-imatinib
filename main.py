@@ -11,6 +11,9 @@ import cpdClustering
 import MDdescriptors
 import QSARModeling
 import analyzeDBLig
+import builderDescMatrix
+import clusterDesc
+import dockingAnalysis
 
 from os import listdir, makedirs
 from re import search
@@ -20,86 +23,9 @@ from time import sleep
 #########################
 ##   MAIN FUNCTIONS    ##
 #########################
-from QSARModeling import QSARModeling
-
-
-def CleanCHEMBLFileProtAff(pfilin, pfilout, ltypeAff, lBAout):
-
-    # add short cut if filtered table exist !!!!!
-
-    table = ChEMBLTable.CHEMBL(pfilin)
-    table.parseCHEMBLFile()
-    print len(table.table), "Init"
-
-    table.selectConfidencecore(cutoff=9)
-    print len(table.table), "prot confidence"
-
-    table.getOnlyExactConstant()
-    print len(table.table), "strict value"
-
-    table.getByTypeOfAff(ltypeAff)
-    print len(table.table), ltypeAff
-
-    table.MergeIdenticCHEMBLIDforACtivity()
-    print len(table.table), "Repetition"
-
-    table.selectAssayType("B")
-    print len(table.table), "Type assay"
-
-    # remove some biassay
-    table.removeBA(lBAout)
-    print len(table.table)
-
-    table.writeTable(pfilout)
-
-
-    return table
 
 
 
-def CleanCHEMBLFileCellLine(pfilin, pfilout, ltypeaff=["IC50"]):
-
-    # add short cut if filtered table exist !!!!!
-
-    table = ChEMBLTable.CHEMBL(pfilin)
-    table.parseCHEMBLFile()
-    print len(table.table), "Init"
-
-    table.getOnlyExactConstant()
-    print len(table.table), "strict value"
-
-    table.selectAssayType("F")
-    print len(table.table), "Type assay"
-
-    table.MergeIdenticCHEMBLIDforACtivity()
-    print len(table.table), "Repetition"
-
-    table.getByTypeOfAff(ltypeaff)
-    print len(table.table), ltypeaff
-
-    table.writeTable(pfilout)
-
-
-    return table
-
-
-
-
-
-def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
-
-    pfilout = prout + "ScoreVSAff.txt"
-    filout = open(pfilout, "w")
-    filout.write("IDCHEMBL\tDock_score\temodel\tAff\ttypeAff\n")
-
-    for daff in ltabCHEMBL:
-        try: filout.write(str(daff["CMPD_CHEMBLID"]) + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_docking_score"])
-                          + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_glide_emodel"])
-                          + "\t" + str(daff["PCHEMBL_VALUE"]) + "\t" + str(daff["STANDARD_TYPE"]) + "\n")
-        except: pass
-    filout.close()
-    print ptableCHEMBL
-    runExternalSoft.corPlot(pfilout, ptableCHEMBL, prout)
 
 
 def FPIMatrix(sdocking, pprotein, prFPI):
@@ -132,15 +58,15 @@ def FPIMatrix(sdocking, pprotein, prFPI):
         i = i + 1
 
 
-def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
+#def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
 
-    sdocking = parseSDF.sdf(psdfDoking)
-    sdocking.parseSDF()
-    sdocking.splitPoses(prpose)
+#    sdocking = parseSDF.sdf(psdfDoking)
+#    sdocking.parseSDF()
+#    sdocking.splitPoses(prpose)
 
-    dscore = sdocking.get_dockingscore()
-    dockingScoreAnalysis(dscore, ltableCpd, ptableCpd, pranalysis)
-    return dscore
+#    dscore = sdocking.get_dockingscore()
+#    dockingScoreAnalysis(dscore, ltableCpd, ptableCpd, pranalysis)
+#    return dscore
 
 
 
@@ -245,8 +171,8 @@ lBAout = ["CHEMBL3705971"]
 lBAout = []
 
 
-ctabAll = CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
-paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
+#ctabAll = ChEMBLTable.CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
+#paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 #ctabAll.analysisTable(prCHEMBL)
 
 
@@ -255,6 +181,7 @@ paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 #  Docking analysis -SP-XP docking  #
 #####################################
 #####################################
+
 
 # SP-2HYY #
 ###########
@@ -266,26 +193,28 @@ paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 # analysis
 #dockingAnalysis(psdfDokingSP, ltab, pCHEMBLClean, prDockingPoseSP, pranalysis_SP_2HYY)
 
-
 # XP #
 ######
 # native - 2HYY #
 psdfDokingXP_2HYY = prHome + "imatinib/docking/dockingXP_2hyy/PoseXP.sdf"
-prDockingPoseXP_2HYY = prHome + "imatinib/results/dockingposeXP_2HYY/"
+prDockingPoseXP_2HYY = prHome + "imatinib/results/dockingbestposeXP_2HYY/"
 pprotein_2HYY = prHome + "imatinib/protein/2HYY_dock.pdb"
 pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
 # analysis
 # 1. poses
-#sdocking = parseSDF.sdf(psdfDokingXP_2HYY)
+#sdocking = parseSDF.sdf(psdfDokingXP_2HYY, prDockingPoseXP_2HYY)
 #sdocking.parseSDF()
-#sdocking.splitPoses(prDockingPoseXP_2HYY)
+#sdocking.get_dockingscore()
+#sdocking.get_bestPose()# based on glide score
 
-#2. Score
-#dscore = sdocking.get_dockingscore()
-#dockingAnalysis(psdfDokingXP_2HYY, ctabAll.table, pCHEMBLout, prDockingPoseXP_2HYY, pranalysis_XP_2HYY)
+#2. Scores correlation scores
+#dockingAnalysis.dockingScoreAnalysis(sdocking.docking, ctabAll.table, pCHEMBLout, pranalysis_XP_2HYY)
 
-
+#3. Top chemical
+#nbrank = 900
+#prrank = pathFolder.createFolder(pranalysis_XP_2HYY + "Rank/")
+#dockingAnalysis.rankingTop(sdocking, ctabAll.table, prDockingPoseXP_2HYY, prrank, nbrank)
 
 
 # mutated 3QRJ
@@ -367,17 +296,17 @@ prDescLigStatic = pathFolder.analyses(psub="DescLig2D3D")
 
 #compute desc and analysis #
 ############################
-DescLigs = analyzeDBLig.DescriptorLig(ctabAll.table, prPoses, CORCOEF, MAXQUANTILE, Desc1D2D, Desc3D, prDescLigStatic)
-DescLigs.computeDesc()
+#DescLigs = analyzeDBLig.DescriptorLig(ctabAll.table, prPoses, CORCOEF, MAXQUANTILE, Desc1D2D, Desc3D, prDescLigStatic)
+#DescLigs.computeDesc()
+
+# generate PNG
+#analyzeDBLig.generatePNG()
 
 #analyze descriptor #
 #####################
-DescLigs.dendoAffinity("1D2D3D", paff)
-DescLigs.dendoAffinity("1D2D", paff)
-DescLigs.dendoAffinity("3D", paff)
-
-
-
+#DescLigs.dendoAffinity("1D2D3D", paff)
+#DescLigs.dendoAffinity("1D2D", paff)
+#DescLigs.dendoAffinity("3D", paff)
 
 
 
@@ -386,8 +315,6 @@ DescLigs.dendoAffinity("3D", paff)
 ###############
 #prFPI = pathFolder.analyses("dockingFPI")
 #FPIMatrix(sdocking, pprotein, prFPI)
-
-
 
 
 ###############################
@@ -424,8 +351,6 @@ pathFolder.createFolder(pranalysis)
 #computeMD(prLig, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU)
 
 
-
-
 ###################
 # MD descriptors  #
 ###################
@@ -453,19 +378,56 @@ pathFolder.createFolder(prMDdesc)
 #computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=1, descFPI=1)
 
 
+##################################
+# Create builder for descriptors #
+##################################
+prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
+paff ="/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
+pdesc2D = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/1D2D.csv"
+pdesc3D = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/3D.csv"
+typeAff = "All" #Ki
+SPLITSET = 0.15
+matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+
 
 ###################################
 # develop clustering and quality  #
 ###################################
-prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
-paff ="/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
-pdesc2D = "/home/borrela2/imatinib/results/analysis/desc/tableDesc2D.csv"
-pdesc3D = "/home/borrela2/imatinib/results/analysis/desc/table3D.csv"
+CUTOFFACT = 7.5
 prClustering = pathFolder.analyses("ClusteringDescType")
 
+cclust = clusterDesc.clusterDesc(["Lig2D"], typeAff, CUTOFFACT, prClustering)
+cclust.prep(matrixDescBuilder, paff)
+cclust.clusterize()
+cclust.clusterizeTopActive(50)
+cclust.clusterizeTopActive(20)
 
 
 
+
+#cclust = clusterDesc.clusterDesc(["Lig3D", "Lig2D"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder)
+#cclust.clusterize(paff)
+
+#cclust = clusterDesc.clusterDesc(["Lig"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder)
+#cclust.clusterize(paff)
+
+#cclust = clusterDesc.clusterDesc(["Lig2D", "Lig3D", "Lig"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder)
+#cclust.clusterize(paff)
+
+#cclust = clusterDesc.clusterDesc(["BS", "FPI"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder)
+#cclust.clusterize(paff)
+
+#cclust = clusterDesc.clusterDesc(["Lig3D"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder)
+#cclust.clusterize(paff)
+
+#cclust = clusterDesc.clusterDesc(["Lig2D", "Lig3D", "Lig", "BS", "FPI"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder)
+#cclust.clusterize(paff)
 
 
 
@@ -475,99 +437,121 @@ prClustering = pathFolder.analyses("ClusteringDescType")
 ######################
 prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
 paff ="/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
-pdesc2D = "/home/borrela2/imatinib/results/analysis/desc/tableDesc2D.csv"
-pdesc3D = "/home/borrela2/imatinib/results/analysis/desc/table3D.csv"
+pdesc2D = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/1D2D.csv"
+pdesc3D = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/3D.csv"
 prQSAR = pathFolder.analyses("QSARs")
 
 # settings
 varsplit = 0.15
 
+
+#######################
+# only 2D descriptor  #
+#######################
+
 typeAff = "All" #Ki
-
-#QSARLig2D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLig2D.builtDataset()
-#QSARLig2D.writeDataset()
+QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+QSARLig2D.prep(matrixDescBuilder)
 #QSARLig2D.runQSARModel()
-#QSARLig2D.datasetAnalysis()
+
+# have to add 
+#typeAff = "Ki"
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+#typeAff = "IC50"
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
 
 
-#QSARLig3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
-#QSARLig3D.builtDataset()
-#QSARLig3D.writeDataset()
-#QSARLig3D.runQSARModel()
-#QSARLig3D.datasetAnalysis()
+################
+# Lig 2D + 3D  #
+################
 
-
-#QSARLig2D3D = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig3D", "Lig2D"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
-#QSARLig2D3D.builtDataset()
-#QSARLig2D3D.writeDataset()
+typeAff = "All" #Ki
+QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
+QSARLig2D3D.prep(matrixDescBuilder)
 #QSARLig2D3D.runQSARModel()
-#QSARLig2D3D.datasetAnalysis()
 
 
-#QSARLig = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig"], corcoef, maxQuantile, varsplit,typeAff, prQSAR)
-#QSARLig.builtDataset()
-#QSARLig.writeDataset()
-#QSARLig.runQSARModel()
-#QSARLig.datasetAnalysis()
+#typeAff = "Ki"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS"],corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARBS.builtDataset()
-#QSARBS.writeDataset()
-#QSARBS.runQSARModel()
-#QSARBS.datasetAnalysis()
+#typeAff = "IC50"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARFPI.builtDataset()
-#QSARFPI.writeDataset()
-#QSARFPI.runQSARModel()
-#QSARFPI.datasetAnalysis()
+
+####################
+# Lig 2D + 3D + MD #
+####################
 
 
-#QSARFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARFPIBS.builtDataset()
-#QSARFPIBS.writeDataset()
-#QSARFPIBS.runQSARModel()
-#QSARFPIBS.datasetAnalysis()
+typeAff = "All"
+QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
+QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
+
+#typeAff = "Ki"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARLig2DMD = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "Lig2D"], corcoef, maxQuantile, varsplit,typeAff,  prQSAR)
-#QSARLig2DMD.builtDataset()
-#QSARLig2DMD.writeDataset()
-#QSARLig2DMD.runQSARModel()
-#QSARLig2DMD.datasetAnalysis()
+#typeAff = "IC50"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARLig2DMDBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["BS", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLig2DMDBS.builtDataset()
-#QSARLig2DMDBS.writeDataset()
-#QSARLig2DMDBS.runQSARModel()
-#QSARLig2DMDBS.datasetAnalysis()
+
+#########################
+# Lig 2D + 3D + MD + BS #
+#########################
+
+#typeAff = "All"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
+
+#typeAff = "Ki"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARLig2DMDFPI = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["FPI", "Lig2D"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLig2DMDFPI.builtDataset()
-#QSARLig2DMDFPI.writeDataset()
-#QSARLig2DMDFPI.runQSARModel()
-#QSARLig2DMDFPI.datasetAnalysis()
+#typeAff = "IC50"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARLigFPIBS = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARLigFPIBS.builtDataset()
-#QSARLigFPIBS.writeDataset()
-#QSARLigFPIBS.runQSARModel()
-#QSARLigFPIBS.datasetAnalysis()
+###############################
+# Lig 2D + 3D + MD + BS + FPI #
+###############################
+
+#typeAff = "All"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS", "FPI"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
+
+#typeAff = "Ki"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS", "FPI"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
-#QSARAll = QSARModeling(prMDdesc, pdesc2D, pdesc3D, paff, ["Lig2D", "Lig", "FPI", "BS"], corcoef, maxQuantile, varsplit, typeAff, prQSAR)
-#QSARAll.builtDataset()
-#QSARAll.writeDataset()
-#QSARAll.runQSARModel()
-#QSARAll.datasetAnalysis()
-
-
+#typeAff = "IC50"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS", "FPI"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 
 

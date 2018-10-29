@@ -139,18 +139,18 @@ def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
     cmd_convert = "babel tempsdf.sdf " + psmile + " 2>/dev/null"
     system(cmd_convert)
 
-    try : filin = open (psmile, "r")
-    except : return "0"
+    try: filin = open (psmile, "r")
+    except: return "0"
     l_Fline = filin.readlines()
     filin.close()
-    try : smile = l_Fline[0].split("\t")[0]
-    except : return "0"
+    try: smile = l_Fline[0].split("\t")[0]
+    except: return "0"
 
     # rewrite path in filout
     if clean_smi == 1:
-        filout = open (psmile, "w")
-        filout.write (str (smile))
-        filout.close ()
+        filout = open(psmile, "w")
+        filout.write(str(smile))
+        filout.close()
 
     if rm_smi == 1:
         system("rm " + psmile)
@@ -162,10 +162,8 @@ def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
 
 def PCAplot(pfildesc, pfildata, corcoef, prout):
 
-    cmdplotPCA = "./PCAplot.R " + str(pfildesc) + " " + str(pfildata) + " " + str(corcoef) + " " + str(prout)
-
-    print cmdplotPCA
-    system(cmdplotPCA)
+    cmd = "./PCAplot.R " + str(pfildesc) + " " + str(pfildata) + " " + str(corcoef) + " " + str(prout)
+    runRscript(cmd)
 
     return
 
@@ -174,36 +172,46 @@ def DescAnalysis(pdesc, paffinity, prout, valcor, maxQuantile, PCA, corMatrix, h
     cmdVisu = "./visualization.R " + str(pdesc) + " " + str(paffinity) + " " + str(prout) + " " + str(valcor) + " " + \
          str(maxQuantile) + " " + str(PCA) + " " + str(corMatrix) + " " + str(hist) + " " + str(dendo) + " " + str(clustering)
 
-    print cmdVisu
-    system(cmdVisu)
+    runRscript(cmdVisu)
 
 
 def MatrixMCS(pmatrix, paff, ptext, probmatrix=1):
 
     cmdmatrix = "./matrixMCS.R " + pmatrix + " " + paff + " " + ptext + " " + str(probmatrix)
-    print cmdmatrix
-    system(cmdmatrix)
+    runRscript(cmdmatrix)
 
 
 def MDSMCS(pmatrix, paff):
 
     cmdMDS = "./MDSMCS.R " + pmatrix + " " + paff
-    print cmdMDS
-    system(cmdMDS)
+    runRscript(cmdMDS)
 
 
 def corPlot(pfilin, pchembl, prout):
 
     cmdCor = "./corplot.R " + pfilin + " " + pchembl + " " + prout
-    print cmdCor
-    system(cmdCor)
+    runRscript(cmdCor)
 
 
 def histAffinity(paff):
 
     cmdHist = "./distributionAff.R " + str(paff)
-    print cmdHist
-    system(cmdHist)
+    runRscript(cmdHist)
+
+
+
+def molconvert(pfilin, pfilout= ""):
+    """Convert with black background"""
+    if pfilout == "":
+        pfilout = pfilin[:-3] + "png"
+
+    if path.exists(pfilout):
+        return pfilout
+    #cmdconvert = "molconvert \"png:w500,Q100,#00000000\" " + pfilin + " -o " + pfilout  # for transparent background
+    #cmdconvert = "molconvert \"png:w500,Q100,#000000\" " + pfilin + " -o " + pfilout # black
+    cmdconvert = "molconvert \"png:w500,Q100,#ffffff\" " + pfilin + " -o " + pfilout  # white
+    system(cmdconvert)
+    return pfilout
 
 
 
@@ -441,29 +449,25 @@ def runShaep(p_struct1, p_struct2, p_out, clean=0):
 def runscatterplotRMSD(pfilout):
 
     cmd = "./plotRMSD.R " + str(pfilout)
-    print cmd
-    system(cmd)
+    runRscript(cmd)
 
 
 def runScatterplotRMSF(pfilin):
 
     cmd = "./plotRMSF.R " + pfilin
-    print cmd
-    system(cmd)
+    runRscript(cmd)
 
 
 def scatterplotShaEP(pfilin):
 
     cmd = "./plotShaEP.R " + pfilin
-    print cmd
-    system(cmd)
+    runRscript(cmd)
 
 
 def RMSFLig(pfilin):
 
     cmd = "./plotRMSFlig.R " + pfilin
-    print cmd
-    system(cmd)
+    runRscript(cmd)
 
 
 
@@ -515,11 +519,36 @@ def runFreeSASA(ppdbin, pfilout, rsa=0):
     return [pfilout]
 
 
+
+def clusterize(pdesc, pAff, cutoff, prout):
+
+    cmd = "./clusterDesc.R " + str(pdesc) + " " + str(pAff) + " " + str(cutoff) + " ward.D2 euclidean hclust " + str(prout)
+    runRscript(cmd)
+
+
+
+
+### FOR MATRIX OF DESC ###
+##########################
+
+def prepareMatrixDesc(pdesc, corcoef, maxQuantile, prout):
+
+
+    cmd = "./DataPrep.R " + pdesc + " " + str(corcoef) + " " + str(maxQuantile) + " " + prout
+    runRscript(cmd)
+
+    return pdesc + "_clean.csv"
+
 #### FOR QSAR ####
 ##################
 
+def createSetFromTable(pdescin, pdescID, pout, prout):
 
-def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="All", logaff=0):
+    cmd = "./splitDatawithID.R " + pdescin + " " + pdescID + " " + pout + " " + prout
+    runRQSARModeling(cmd)
+
+
+def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="All", logaff=0, nbNA = 100):
 
     # extract train and test file
     dfile = {}
@@ -533,10 +562,9 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="
 
     if dfile == {}:
         cmd = "./QSARsPrep.R " + str(pdesc) + " " + str(paff) + " " + prout + " " + str(corcoef) + " " + str(
-            maxQuantile) + " " + str(valSplit) + " " + str(logaff) + " " + str(typeAff)
-        print cmd
-        system(cmd)
-        return prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff, logaff)
+            maxQuantile) + " " + str(valSplit) + " " + str(logaff) + " " + str(typeAff) + " " + str(nbNA)
+        runRQSARModeling(cmd)
+        return prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff, logaff, nbNA)
     else:
         return dfile
 
@@ -545,8 +573,7 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="
 
 def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
 
-    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " >" + prout + "perf.txt"
-
+    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " 1 >" + prout + "perf.txt"
     runRQSARModeling(cmd_QSAR)
 
     return prout + "perf.txt"
@@ -555,10 +582,24 @@ def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
 def runRQSARModeling(cmd):
 
     workdir = getcwd()
-    chdir("/home/borrela2/QSARPR/source/")
+    chdir("/home/borrela2/development/QSARPR/source/")
     print(cmd)
     system(cmd)
     chdir(workdir)
+
+
+def runRscript(cmd, out=0):
+
+    chdir("./../Rscripts/")
+    print cmd
+    if out == 0:
+        system(cmd)
+        output = 0
+    else:
+        import subprocess
+        output = subprocess.check_output(cmd, shell=True)
+    chdir("./../py/")
+    return output
 
 
 def QSARsVisuData(pdescglobal, paff, prout, corcoef, maxQuantile, logAff):
@@ -566,5 +607,4 @@ def QSARsVisuData(pdescglobal, paff, prout, corcoef, maxQuantile, logAff):
     cmdVisu = "./QSARsVisuData.R " + str(pdescglobal) + " " + str(paff) + " " + str(prout) + " " + str(corcoef) + " " +\
               str(maxQuantile) + " " + str(logAff)
 
-    print cmdVisu
-    system(cmdVisu)
+    runRscript(cmdVisu)

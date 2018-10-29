@@ -1,4 +1,4 @@
-from os import path
+from os import path, listdir
 
 import ligand
 import runExternalSoft
@@ -25,18 +25,26 @@ class DescriptorLig:
             self.pdesc["1D2D"] = pdesc1D2D
             if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
                 compute1D2D = 0
+            else:
+                compute1D2D = 1
+        else:
+            compute1D2D = 0
 
         if self.compute3D == 1:
             pdesc3D = self.prout + "3D.csv"
             self.pdesc["3D"] = pdesc3D
             if path.exists(pdesc3D) and path.getsize(pdesc3D) > 10:
                 compute3D = 0
+            else:
+                compute3D = 1
+        else:
+            compute3D = 0
 
-        if self.compute1D2D == 1 and self.compute3D == 1:
+        if compute1D2D == 1 and compute3D == 1:
             p1D2D3D = self.prout + "1D2D3D.csv"
             self.pdesc["1D2D3D"] = p1D2D3D
 
-        if self.compute1D2D == 1 or self.compute3D == 1:
+        if compute1D2D == 1 or compute3D == 1:
             logfile = open(self.prout + "desc.log", "w")
             for compound in self.lccpd:
                 cDesc = ligand.Descriptors(compound, logfile)
@@ -67,3 +75,12 @@ class DescriptorLig:
         runExternalSoft.DescAnalysis(pdesc, paff, prout, self.corVal, self.maxquantile, PCA=0, corMatrix=0, hist=0, dendo=1, clustering=0)
 
         return 0
+
+
+def generatePNG():
+
+    lsmi = listdir(pathFolder.PR_SMI)
+    for smi in lsmi:
+        psmi = pathFolder.PR_SMI + smi
+        ppng = pathFolder.PR_PNG + smi[:-3] + "png"
+        runExternalSoft.molconvert(psmi, ppng)

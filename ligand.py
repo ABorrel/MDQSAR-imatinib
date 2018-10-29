@@ -164,14 +164,14 @@ class Descriptors:
 
         if writecheck == 1:
             # SMILES code
-            pfileSMILES = pathFolder.PR_COMPOUNDS + str(dcompound[kID]) + ".smi"
+            pfileSMILES = pathFolder.PR_SMI + str(dcompound[kID]) + ".smi"
             fileSMILES = open(pfileSMILES, "w")
             fileSMILES.write(self.compound[kSMILES])
             fileSMILES.close()
 
             # SDF input
             if "sdf" in self.compound.keys():
-                pfileSDF = pathFolder.PR_COMPOUNDS + str(dcompound[kID]) + ".sdf"
+                pfileSDF = pathFolder.PR_SMI + str(dcompound[kID]) + ".sdf"
                 fileSDF = open(pfileSDF, "w")
                 fileSDF.write(self.compound["sdf"])
                 fileSDF.close()
@@ -321,4 +321,96 @@ class Descriptors:
         filout.write('\n')
         filout.close()
 
+
+
+LSALTDEF="[Cl,Br,I]\n[Li,Na,K,Ca,Mg]\n[O,N]\n[N](=O)(O)O\n[P](=O)(O)(O)O\n[P](F)(F)(F)(F)(F)F\n[S](=O)(=O)(O)O\n[CH3][S](=O)(=O)(O)\nc1cc([CH3])ccc1[S](=O)(=O)(O)\n[CH3]C(=O)O\nFC(F)(F)C(=O)O\nOC(=O)C=CC(=O)O\nOC(=O)C(=O)O\nOC(=O)C(O)C(O)C(=O)O\nC1CCCCC1[NH]C1CCCCC1\n"
+LSALT="[Co]"
+
+def normalize(mol, lout):
+    s = Standardizer()
+    molstandardized = s.standardize(mol)
+    #print molstandardized
+    lout.append(molstandardized)
+
+import multiprocessing
+import time
+
+def timeFunction(funct, mol):
+
+    manager = multiprocessing.Manager()
+    lout = manager.list()
+
+    p = multiprocessing.Process(target=funct, args=(mol, lout))
+    p.start()
+    time.sleep(2)
+
+    if p.is_alive():
+        p.terminate()
+        p.join()
+        return "ERROR"
+    else:
+        p.join()
+        #print lout
+        return lout[0]
+
+
+def standardizeSMILES(smiIn):
+
+
+        # self.mol = loader.ReadMolFromSmile(self.smi)
+
+        s = Standardizer()
+        mol = Chem.MolFromSmiles(smiIn)
+
+        try:
+            out = timeFunction(normalize, mol)
+            if out == "ERROR":
+                print "Normalize SMILES: ERROR DURING THE PROCESS"
+            else:
+                molstandardized = out
+        except:
+            print "Normalize SMILES: ERROR INPUT SMI"
+
+        if "molstandardized" in locals():
+
+            smilestandadized = Chem.MolToSmiles(molstandardized)
+
+            # remove salt
+            # 1.default
+            remover = SaltRemover(defnFilename="Salts.txt")
+            mol = Chem.MolFromSmiles(smilestandadized)
+            molcleandefault = remover(mol)
+            # 2. Personal remover
+            homeremover = SaltRemover(defnData=LSALT)
+            molclean = homeremover(molcleandefault)
+            smilesclean = Chem.MolToSmiles(molclean)
+            # 3. SMILES remove other manual salts + fragments -> for fragment take one if exactly same compound
+            lelem = smilesclean.split(".")
+            if len(lelem) > 1:
+                # reduce double, case of several salts are included - 255
+                lelem = list(set(lelem))
+                for smilesdel in LSMILESREMOVE:
+                    if smilesdel in lelem:
+                        lelem.remove(smilesdel)
+                try:
+                    lelem.remove("")  # case of bad smile
+                except:
+                    pass
+                if len(lelem) == 1:
+                    smilesclean = str(lelem[0])
+                else:
+                    # 4. Fragments
+                    # Case of fragment -> stock in log file, check after to control
+                    print "Fragments after standardization: " + smilesclean + "\n"
+                    smilesclean = ""
+
+            if smilesclean == "":
+                print "SMILES empty after preparation\n"
+                return 1
+
+            else:
+                print "Prepared SMI :" + str(smilesclean) + "\n"
+
+
+            return smilesclean
 
