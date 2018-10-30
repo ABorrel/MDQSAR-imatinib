@@ -25,6 +25,34 @@ def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
 
 
 
+def plotRMSDVSDockingScore(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout, prMDanalysis):
+
+
+    pfilout = prout + "ScoreVSRMSD"
+    if not path.exists(pfilout):
+        filout = open(pfilout, "w")
+        filout.write("IDCHEMBL\tDock_score\temodel\tAff\ttypeAff\n")
+
+        for daff in ltabCHEMBL:
+            try: filout.write(str(daff["CMPD_CHEMBLID"]) + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_docking_score"])
+                              + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_glide_emodel"])
+                              + "\t" + str(daff["PCHEMBL_VALUE"]) + "\t" + str(daff["STANDARD_TYPE"]) + "\n")
+            except: pass
+        filout.close()
+    runExternalSoft.corPlot(pfilout, ptableCHEMBL, prout)
+
+
+
+
+
+    pfilout = prout + "ScoreVSRMSD"
+    if not path.exists(pfilout):
+        filout = open(pfilout, "w")
+        filout.write("IDCHEMBL\tDock_score\temodel\tAff\ttypeAff\n")
+
+    return
+
+
 def rankingTop(spose, ltabCHEMBL, pbestposes, prout, nrank = 50):
 
     #order value

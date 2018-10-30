@@ -201,6 +201,7 @@ prDockingPoseXP_2HYY = prHome + "imatinib/results/dockingbestposeXP_2HYY/"
 pprotein_2HYY = prHome + "imatinib/protein/2HYY_dock.pdb"
 pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 
+
 # analysis
 # 1. poses
 #sdocking = parseSDF.sdf(psdfDokingXP_2HYY, prDockingPoseXP_2HYY)
@@ -209,12 +210,16 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 #sdocking.get_bestPose()# based on glide score
 
 #2. Scores correlation scores
-#dockingAnalysis.dockingScoreAnalysis(sdocking.docking, ctabAll.table, pCHEMBLout, pranalysis_XP_2HYY)
+dockingAnalysis.dockingScoreAnalysis(sdocking.docking, ctabAll.table, pCHEMBLout, pranalysis_XP_2HYY)
 
 #3. Top chemical
 #nbrank = 900
 #prrank = pathFolder.createFolder(pranalysis_XP_2HYY + "Rank/")
 #dockingAnalysis.rankingTop(sdocking, ctabAll.table, prDockingPoseXP_2HYY, prrank, nbrank)
+
+#4. correlation plot with RMSD
+
+
 
 
 # mutated 3QRJ

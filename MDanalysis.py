@@ -286,3 +286,16 @@ class trajectoryAnalysis:
 
 
         runExternalSoft.runScatterplotRMSF(pfilout)
+
+
+
+
+
+def plotRMSDVSPAff():
+
+    return
+
+
+def histRMSD():
+
+    return
