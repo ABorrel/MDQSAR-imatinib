@@ -10,6 +10,7 @@ import calculate
 import toolbox
 import parseShaep
 import superimposed
+import RMSD
 
 
 class trajectoryAnalysis:
@@ -286,6 +287,38 @@ class trajectoryAnalysis:
 
 
         runExternalSoft.runScatterplotRMSF(pfilout)
+
+
+
+
+    def histRMSD(self, paff, prMDanalysis, prout):
+
+        daff = toolbox.loadMatrixToDict(paff)
+        print daff
+
+        #lig
+        pRMSD = prout + "RMSDprotlig"
+        fRMSD = open(pRMSD, "w")
+        fRMSD.write("CHEMBLid\tRMSDlig\tRMSDca\tRMSDall\tTypeAff\n")
+
+        for CHEMBLid in daff.keys():
+            pRMSDin = prMDanalysis + CHEMBLid + "_2hyy_MD/RMSDs/"
+            if not path.exists(pRMSDin):
+                continue
+
+            RMSDChem = RMSD.RMSD(pRMSDin)
+            RMSDChem.loadRMSDs(["ligand", "protein"])
+            RMSDprot = RMSDChem.MRMSDprot()
+            RMSDlig = RMSDChem.MRMSDlig()
+
+
+            fRMSD.write("%s\t%f\t%f\t%f\t%s\n" % (CHEMBLid, RMSDlig, RMSDprot[0], RMSDprot[1],
+                                                      daff[CHEMBLid]["Type"]))
+
+        fRMSD.close()
+
+        runExternalSoft.histRMSD(pRMSD, prout)
+
 
 
 

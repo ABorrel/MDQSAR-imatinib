@@ -4,6 +4,7 @@ from shutil import copy
 
 import runExternalSoft
 import pathFolder
+import RMSD
 
 font = ImageFont.truetype("OpenSans-Regular.ttf", size=24)
 
@@ -25,32 +26,38 @@ def dockingScoreAnalysis(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout):
 
 
 
-def plotRMSDVSDockingScore(ddockingscore, ltabCHEMBL, ptableCHEMBL, prout, prMDanalysis):
+def plotRMSDVSDockingScore(ddockingscore, ltabCHEMBL, ptableCHEMBL,prMDanalysis, prout):
 
 
     pfilout = prout + "ScoreVSRMSD"
-    if not path.exists(pfilout):
-        filout = open(pfilout, "w")
-        filout.write("IDCHEMBL\tDock_score\temodel\tAff\ttypeAff\n")
+    filout = open(pfilout, "w")
+    filout.write("IDCHEMBL\tDock_score\temodel\tRMSDca\tRMSDall\tDmax\tRMSDlig\tAff\ttypeAff\n")
 
-        for daff in ltabCHEMBL:
-            try: filout.write(str(daff["CMPD_CHEMBLID"]) + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_docking_score"])
-                              + "\t" + str(ddockingscore[daff["CMPD_CHEMBLID"]]["r_i_glide_emodel"])
-                              + "\t" + str(daff["PCHEMBL_VALUE"]) + "\t" + str(daff["STANDARD_TYPE"]) + "\n")
-            except: pass
-        filout.close()
-    runExternalSoft.corPlot(pfilout, ptableCHEMBL, prout)
+    for daff in ltabCHEMBL:
+        CHEMBLid = daff["CMPD_CHEMBLID"]
+        pRMSDin = prMDanalysis + CHEMBLid + "_2hyy_MD/RMSDs/"
+        if not path.exists(pRMSDin):
+            continue
+
+        RMSDChem = RMSD.RMSD(pRMSDin)
+        RMSDChem.loadRMSDs(["ligand", "protein"])
+        RMSDprot = RMSDChem.MRMSDprot()
+        RMSDlig = RMSDChem.MRMSDlig()
+
+        print RMSDprot, RMSDlig
 
 
+        filout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%s\t%s\n"%(CHEMBLid,
+                                                                 ddockingscore[CHEMBLid]["r_i_docking_score"],
+                                                                 ddockingscore[CHEMBLid]["r_i_glide_emodel"],
+                                                                 RMSDprot[0], RMSDprot[1], RMSDprot[2], RMSDlig,
+                                                                 daff["PCHEMBL_VALUE"], daff["STANDARD_TYPE"]))
 
 
+    filout.close()
+    runExternalSoft.corPlot(pfilout, ptableCHEMBL, prout, "RMSD")
 
-    pfilout = prout + "ScoreVSRMSD"
-    if not path.exists(pfilout):
-        filout = open(pfilout, "w")
-        filout.write("IDCHEMBL\tDock_score\temodel\tAff\ttypeAff\n")
 
-    return
 
 
 def rankingTop(spose, ltabCHEMBL, pbestposes, prout, nrank = 50):

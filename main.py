@@ -14,6 +14,7 @@ import analyzeDBLig
 import builderDescMatrix
 import clusterDesc
 import dockingAnalysis
+import MDanalysis
 
 from os import listdir, makedirs
 from re import search
@@ -171,8 +172,8 @@ lBAout = ["CHEMBL3705971"]
 lBAout = []
 
 
-#ctabAll = ChEMBLTable.CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
-#paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
+ctabAll = ChEMBLTable.CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
+paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 #ctabAll.analysisTable(prCHEMBL)
 
 
@@ -200,7 +201,7 @@ psdfDokingXP_2HYY = prHome + "imatinib/docking/dockingXP_2hyy/PoseXP.sdf"
 prDockingPoseXP_2HYY = prHome + "imatinib/results/dockingbestposeXP_2HYY/"
 pprotein_2HYY = prHome + "imatinib/protein/2HYY_dock.pdb"
 pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
-
+prMDanalysis = prHome + "imatinib/results/MDanalysis/"
 
 # analysis
 # 1. poses
@@ -210,7 +211,7 @@ pranalysis_XP_2HYY = pathFolder.analyses("2HYY_XPdock")
 #sdocking.get_bestPose()# based on glide score
 
 #2. Scores correlation scores
-dockingAnalysis.dockingScoreAnalysis(sdocking.docking, ctabAll.table, pCHEMBLout, pranalysis_XP_2HYY)
+#dockingAnalysis.dockingScoreAnalysis(sdocking.docking, ctabAll.table, pCHEMBLout, pranalysis_XP_2HYY)
 
 #3. Top chemical
 #nbrank = 900
@@ -218,9 +219,14 @@ dockingAnalysis.dockingScoreAnalysis(sdocking.docking, ctabAll.table, pCHEMBLout
 #dockingAnalysis.rankingTop(sdocking, ctabAll.table, prDockingPoseXP_2HYY, prrank, nbrank)
 
 #4. correlation plot with RMSD
+#prRMSD = pathFolder.createFolder(pranalysis_XP_2HYY + "MD/")
+#dockingAnalysis.plotRMSDVSDockingScore(sdocking.docking, ctabAll.table, pCHEMBLout, prMDanalysis, prRMSD)
 
 
-
+###############################
+################################
+####### MUTATED PROTEINS  ######
+################################
 
 # mutated 3QRJ
 #psdfDokingXP_3QRJ = "/home/aborrel/imitanib/docking/dockingXP_3QRJ/3QRJ_XP_pose.sdf"
@@ -327,7 +333,7 @@ prDescLigStatic = pathFolder.analyses(psub="DescLig2D3D")
 ###############################
 
 # home
-#prMD = "/home/aborrel/imitanib/results/MD-ABL/"
+prMD = "/home/aborrel/imitanib/results/MD-ABL/"
 #pprotein = "/home/aborrel/imitanib/2hyy_MD.pdb"
 #prLig = prDockingPoseSP
 pranalysis = "/home/borrela2/imatinib/results/MDanalysis/"
@@ -383,6 +389,19 @@ pathFolder.createFolder(prMDdesc)
 #computeMDdesc(pranalysis, prMDdesc,  istart=istart, iend=istart+1, descLig=1, descBS=1, descFPI=1)
 
 
+
+###################
+# Analysis RMSD   #
+###################
+prMDanalysis = prHome + "imatinib/results/MDanalysis/"
+prRMSD = pathFolder.createFolder(prHome + "imatinib/results/RMSDanalysis/")
+
+#cMD = MD.MD(prMD, pranalysis, water, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
+#CMDanalysis = MDanalysis.trajectoryAnalysis(cMD, timeMD, timeframe, stepFrame)
+#CMDanalysis.histRMSD(paff, prMDanalysis, prRMSD)
+
+
+
 ##################################
 # Create builder for descriptors #
 ##################################
@@ -401,11 +420,11 @@ matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, 
 CUTOFFACT = 7.5
 prClustering = pathFolder.analyses("ClusteringDescType")
 
-cclust = clusterDesc.clusterDesc(["Lig2D"], typeAff, CUTOFFACT, prClustering)
-cclust.prep(matrixDescBuilder, paff)
-cclust.clusterize()
-cclust.clusterizeTopActive(50)
-cclust.clusterizeTopActive(20)
+#cclust = clusterDesc.clusterDesc(["Lig2D"], typeAff, CUTOFFACT, prClustering)
+#cclust.prep(matrixDescBuilder, paff)
+#cclust.clusterize()
+#cclust.clusterizeTopActive(50)
+#cclust.clusterizeTopActive(20)
 
 
 
@@ -444,7 +463,7 @@ prMDdesc = "/home/borrela2/imatinib/results/analysis/MDdescriptor/"
 paff ="/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
 pdesc2D = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/1D2D.csv"
 pdesc3D = "/home/borrela2/imatinib/results/analysis/DescLig2D3D/3D.csv"
-prQSAR = pathFolder.analyses("QSARs")
+#prQSAR = pathFolder.analyses("QSARs")
 
 # settings
 varsplit = 0.15
@@ -454,10 +473,106 @@ varsplit = 0.15
 # only 2D descriptor  #
 #######################
 
-typeAff = "All" #Ki
+#typeAff = "All" #Ki
+
+#QSAR1
+typeAff = "IC50"
+prQSAR = pathFolder.analyses("QSARs1")
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+#typeAff = "Ki" #Ki
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+#QSAR2
+#typeAff = "IC50"
+#prQSAR = pathFolder.analyses("QSARs2")
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+#typeAff = "Ki" #Ki
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+#QSAR3
+#typeAff = "IC50"
+#prQSAR = pathFolder.analyses("QSARs3")
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+#typeAff = "Ki" #Ki
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+#QSAR4
+#typeAff = "IC50"
+#prQSAR = pathFolder.analyses("QSARs4")
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+#typeAff = "Ki" #Ki
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+#QSAR5
+typeAff = "IC50"
+prQSAR = pathFolder.analyses("QSARs5")
+matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
 QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
 QSARLig2D.prep(matrixDescBuilder)
+QSARLig2D.runQSARModel()
+
+
+typeAff = "Ki" #Ki
+matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+QSARLig2D.prep(matrixDescBuilder)
+QSARLig2D.runQSARModel()
+
+dddd
+
+#QSAR2
+#typeAff = "All"
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#prQSAR = pathFolder.analyses("QSARs2")
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
 #QSARLig2D.runQSARModel()
+
+
+#QSAR3
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#prQSAR = pathFolder.analyses("QSARs3")
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
+
+
+
+
 
 # have to add 
 #typeAff = "Ki"
@@ -475,9 +590,9 @@ QSARLig2D.prep(matrixDescBuilder)
 # Lig 2D + 3D  #
 ################
 
-typeAff = "All" #Ki
-QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
-QSARLig2D3D.prep(matrixDescBuilder)
+#typeAff = "All" #Ki
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
 #QSARLig2D3D.runQSARModel()
 
 
@@ -499,9 +614,9 @@ QSARLig2D3D.prep(matrixDescBuilder)
 ####################
 
 
-typeAff = "All"
-QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
-QSARLig2D3D.prep(matrixDescBuilder)
+#typeAff = "All"
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
 #QSARLig2D3D.runQSARModel()
 
 #typeAff = "Ki"

@@ -187,15 +187,21 @@ def MDSMCS(pmatrix, paff):
     runRscript(cmdMDS)
 
 
-def corPlot(pfilin, pchembl, prout):
+def corPlot(pfilin, pchembl, prout, typeplot="dockAff"):
 
-    cmdCor = "./corplot.R " + pfilin + " " + pchembl + " " + prout
+    cmdCor = "./corplot.R " + pfilin + " " + pchembl + " " + prout + " " + typeplot
     runRscript(cmdCor)
 
 
 def histAffinity(paff):
 
     cmdHist = "./distributionAff.R " + str(paff)
+    runRscript(cmdHist)
+
+
+def histRMSD(pRMSD, prout):
+
+    cmdHist = "./distributionRMSD.R " + str(pRMSD) + " " + prout
     runRscript(cmdHist)
 
 
