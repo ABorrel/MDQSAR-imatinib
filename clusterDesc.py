@@ -12,6 +12,7 @@ class clusterDesc:
 
         self.ltypedesc = ltypeDesc
         self.cutoff = cutoff
+        self.typeAff = typeAff
 
         # define folder with QSAR
         prout = prout + "-".join(self.ltypedesc) + "_" + str(typeAff) + "/"
@@ -21,19 +22,19 @@ class clusterDesc:
 
 
 
-    def prep(self, builder, paff):
+    def prep(self, builder):
 
-        builder.buildDataset(self.ltypedesc, paff, self.prout)
+        builder.buildDataset(self.ltypedesc, self.typeAff, self.prout)
         pdesc = builder.writeDataset()
         pdescClean = builder.prepMatrixDesc(pdesc, self.prout)
 
-        self.paff = paff
+        self.paff = builder.paff
         self.pdesc = pdescClean
 
 
     def clusterize(self):
 
-        runExternalSoft.clusterize(self.pdesc, self.paff, self.cutoff, self.prout)
+        runExternalSoft.clusterize(self.pdesc, self.paff, self.typeAff, self.cutoff, self.prout)
 
 
     def clusterizeTopActive(self, top):
@@ -63,6 +64,10 @@ class clusterDesc:
                 filout.close()
 
 
-        runExternalSoft.clusterize(self.pdesc, pafftop, self.cutoff, prtop)
+        runExternalSoft.clusterize(self.pdesc, pafftop, self.typeAff, self.cutoff, prtop)
 
 
+    def activityCliff(self):
+
+
+        runExternalSoft.activityCliff(self.pdesc, self.paff, self.typeAff, self.cutoff, self.prout)

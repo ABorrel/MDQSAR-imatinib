@@ -1,6 +1,7 @@
 from os import path, makedirs, listdir
 from shutil import move, copyfile
 from numpy import average
+from copy import deepcopy
 
 import runExternalSoft
 import parseTMalign
@@ -293,8 +294,10 @@ class trajectoryAnalysis:
 
     def histRMSD(self, paff, prMDanalysis, prout):
 
-        daff = toolbox.loadMatrixToDict(paff)
-        print daff
+        if not "paff" in self.__dict__:
+            self.paff = paff
+            daff = toolbox.loadMatrixToDict(paff)
+            self.daff = daff
 
         #lig
         pRMSD = prout + "RMSDprotlig"
@@ -320,15 +323,59 @@ class trajectoryAnalysis:
         runExternalSoft.histRMSD(pRMSD, prout)
 
 
+    def plotDensity(self, paff, ltypeaff, nbframeselect, prMDdesc, prout):
+
+        # create matrix with conformer
+        if not "paff" in self.__dict__:
+            self.paff = paff
+            daff = toolbox.loadMatrixToDict(paff)
+            self.daff = daff
 
 
+        dID = {}
+        for IDChEMBL in self.daff.keys():
+            if self.daff[IDChEMBL]["Type"] in ltypeaff:
+                dID[IDChEMBL] = deepcopy(self.daff[IDChEMBL])
+
+        pMasterMatrix = prout + "masterM_" + "-".join(ltypeaff) + "_" + str(nbframeselect)
+        if not path.exists(pMasterMatrix):
+            fmasterMatrix = open(pMasterMatrix, "w")
+            # header
+            pdescbyFrameh = prMDdesc + dID.keys()[0] + "/Ligbyframe"
+            dh = toolbox.loadMatrixToDict(pdescbyFrameh)
+            lh = dh[dh.keys()[0]].keys()
+            lh.remove("Frame")
+            fmasterMatrix.write("ID\t" + "\t".join(lh) + "\n")
 
 
-def plotRMSDVSPAff():
+            # create masterMatrix
+            i = 0
+            for IDChEMBL in dID.keys():
+                print IDChEMBL, i
+                pdescbyFrame = prMDdesc + IDChEMBL + "/Ligbyframe"
+                dframe = toolbox.loadMatrixToDict(pdescbyFrame)
+                nbframe = len(dframe.keys())
 
-    return
+                if nbframe != 1501:
+                    print IDChEMBL, "Error"
+                    i += 1
+                    continue
+
+                step = int(nbframe/nbframeselect)
+                #print step
+                i = 0
+                while i < nbframe:
+                    print i
+                    idw = str(IDChEMBL) + "_" + str(i)
+                    stframe = str(i)
+                    while len(str(stframe)) < 5:
+                        stframe = "0" + str(stframe)
+                    stframe = "LGD_" + stframe
+                    print stframe, idw
+                    fmasterMatrix.write("%s\t%s\n"%(idw, "\t".join([str(dframe[stframe][h]) for h in lh])))
+                    i = i + step
+            fmasterMatrix.close()
+
+        # plot
 
 
-def histRMSD():
-
-    return

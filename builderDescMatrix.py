@@ -111,25 +111,17 @@ class Builder:
                                                     maxQuantile=self.maxQuantile, valSplit=self.valsplit,
                                                     typeAff=self.typeAff)
 
-            print dfileTrainTest
             self.dtrain = dfileTrainTest["train"]
             self.dtest = dfileTrainTest["test"]
 
         else:
-            dfileTrainTest = {}
-            dtrain = runExternalSoft.createSetFromTable(self.pdescglobal, self.dtrain, self.prout + "trainSet_global.csv", self.prout)
-            dfileTrain = runExternalSoft.prepareDataset(dtrain, self.paff, self.prout,
-                                                            corcoef=self.corcoef,
-                                                            maxQuantile=self.maxQuantile, valSplit=1,
-                                                            typeAff=self.typeAff)
-            dfileTrainTest["train"] = dfileTrain["train"]
+            dfileTrainTest = runExternalSoft.createSetFromTable(self.pdescglobal, self.dtrain, self.dtest, self.paff,
+                                                                self.prout, corcoef=self.corcoef,
+                                                                maxQuantile=self.maxQuantile,  typeAff=self.typeAff)
 
-            dtest = runExternalSoft.createSetFromTable(self.pdescglobal, self.dtest, self.prout + "testSet_global.csv", self.prout)
-            dfileTest = runExternalSoft.prepareDataset(dtest, self.paff, self.prout,
-                                                            corcoef=self.corcoef,
-                                                            maxQuantile=self.maxQuantile, valSplit=1,
-                                                            typeAff=self.typeAff)
-            dfileTrainTest["test"] = dfileTest["train"]
+
+            self.dtrain = dfileTrainTest["train"]
+            self.dtest = dfileTrainTest["test"]
 
         return dfileTrainTest
 

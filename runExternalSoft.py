@@ -526,9 +526,15 @@ def runFreeSASA(ppdbin, pfilout, rsa=0):
 
 
 
-def clusterize(pdesc, pAff, cutoff, prout):
+def clusterize(pdesc, pAff, typeaff, cutoff, prout):
 
-    cmd = "./clusterDesc.R " + str(pdesc) + " " + str(pAff) + " " + str(cutoff) + " ward.D2 euclidean hclust " + str(prout)
+    cmd = "./clusterDesc.R " + str(pdesc) + " " + str(pAff) + " " + str(typeaff) + " " + str(cutoff) + " ward.D2 euclidean hclust " + str(prout)
+    runRscript(cmd)
+
+
+def activityCliff(pdesc, paff, typeAff, Dcutoff, prout):
+
+    cmd = "./activityCliff.R " + pdesc + " " + paff + " " + typeAff + " " + str(Dcutoff) + " ward.D2 euclidean hclust " + prout
     runRscript(cmd)
 
 
@@ -548,10 +554,15 @@ def prepareMatrixDesc(pdesc, corcoef, maxQuantile, prout):
 #### FOR QSAR ####
 ##################
 
-def createSetFromTable(pdescin, pdescID, pout, prout):
+def createSetFromTable(pdescglobal, ptrain, ptest, paff, prout, corcoef, maxQuantile, logAff=0, typeAff='All', nbNA=100):
 
-    cmd = "./splitDatawithID.R " + pdescin + " " + pdescID + " " + pout + " " + prout
+    cmd = "./splitDatawithID.R %s %s %s %s %s %s %s %i %s %i"%(pdescglobal, ptrain, ptest, paff, prout, corcoef, maxQuantile, logAff, typeAff, nbNA)
     runRQSARModeling(cmd)
+    dfile = {}
+    if path.exists(prout + "trainSet.csv") and path.exists(prout + "testSet.csv"):
+        dfile["train"] = prout + "trainSet.csv"
+        dfile["test"] = prout + "testSet.csv"
+    return dfile
 
 
 def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="All", logaff=0, nbNA = 100):
@@ -560,10 +571,10 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="
     dfile = {}
     lfile = listdir(prout)
     for filedir in lfile:
-        if search("^train", filedir):
+        if search("^trainSet.csv", filedir):
             dfile["train"] = prout + filedir
 
-        elif search("^test", filedir):
+        elif search("^testSet.csv", filedir):
             dfile["test"] = prout + filedir
 
     if dfile == {}:

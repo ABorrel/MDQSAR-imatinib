@@ -31,7 +31,7 @@ class MDdescriptors:
         #    return
 
         # folder temp to include sdf
-        prtemp = pathFolder.createFolder(self.prout + "ligtemp/", clean=1)
+        prtemp = pathFolder.createFolder(self.prout + "ligtemp/", clean=0)
 
         #run new script for 3D descriptors
         llig = listdir(self.prlig)
