@@ -588,9 +588,9 @@ def prepareDataset(pdesc, paff, prout, corcoef, maxQuantile, valSplit, typeAff="
 
 
 
-def QSARsReg(ptrain, ptest, pcluster, prout, nbfold=10):
+def QSARsReg(ptrain, ptest, pcluster, prout, internalCV = 0, nbfold=10):
 
-    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " 1 >" + prout + "perf.txt"
+    cmd_QSAR = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prout + " " + str(nbfold) + " " + str(internalCV) + " >" + prout + "perf.txt"
     runRQSARModeling(cmd_QSAR)
 
     return prout + "perf.txt"
@@ -625,3 +625,10 @@ def QSARsVisuData(pdescglobal, paff, prout, corcoef, maxQuantile, logAff):
               str(maxQuantile) + " " + str(logAff)
 
     runRscript(cmdVisu)
+
+
+def computeRegPerf(ppred, name, prout):
+
+
+    cmd = "./PerfReg.R " + ppred + " " + name + " " + prout
+    runRQSARModeling(cmd)
