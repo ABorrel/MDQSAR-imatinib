@@ -2,12 +2,12 @@ from os import listdir, remove, makedirs, path
 from shutil import rmtree
 
 
-
-PR_HOME = "/home/borrela2/" #NIEHS
+PR_HOME = "C:/Users/Aborrel/research/NCSU/" #Laptop
+#PR_HOME = "/home/borrela2/" #NIEHS
 #PR_HOME = "/home/aborrel/" #NCSU
 #PR_HOME = "/data/aborrel/" #Monster
 
-PR_REF = PR_HOME + "imatinib/"
+PR_REF = PR_HOME + "imatinib-MD/"
 PR_RESULT = PR_HOME + "imatinib/results/"
 PR_TEMP3D = PR_HOME + "imatinib/results/temp3D/"
 PR_SMI = PR_HOME + "imatinib/results/SMI/"

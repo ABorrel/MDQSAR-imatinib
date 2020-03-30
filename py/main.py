@@ -1,62 +1,57 @@
 import ChEMBLTable
-import ligand
+#import ligand
 import pathFolder
 import runExternalSoft
-import MCS
-import parseSDF
-import MD
-import FPI
-import PDB
-import cpdClustering
-import MDdescriptors
-import QSARModeling
-import analyzeDBLig
-import builderDescMatrix
-import clusterDesc
-import dockingAnalysis
-import MDanalysis
+#import MCS
+#import parseSDF
+#import MD
+#import FPI
+#import PDB
+#import cpdClustering
+#import MDdescriptors
+#import QSARModeling
+#import analyzeDBLig
+#import builderDescMatrix
+#import clusterDesc
+#import dockingAnalysis
+#import MDanalysis
 
-from os import listdir, makedirs
-from re import search
-from time import sleep
+#from os import listdir, makedirs
+#from re import search
+#from time import sleep
 
 
 #########################
 ##   MAIN FUNCTIONS    ##
 #########################
 
+#def FPIMatrix(cdocking, pprotein, prFPI):
 
+#    pmatrixFPI = prFPI + "MFPI.txt"
 
-
-
-def FPIMatrix(sdocking, pprotein, prFPI):
-
-    pmatrixFPI = prFPI + "MFPI.txt"
-
-    i = 0
-    imax = len(sdocking.lposefiles)
+#    i = 0
+#    imax = len(cdocking.lposefiles)
     #imax = 3
-    while i < imax:
-        j = i + 1
-        while j < imax:
-            cprot = PDB.PDB(PDB_input=pprotein, hydrogen=1)
+#    while i < imax:
+#        j = i + 1
+#        while j < imax:
+#            cprot = PDB.PDB(PDB_input=pprotein, hydrogen=1)
+#            pligPDBi = runExternalSoft.babelConvertSDFtoPDB(cdocking.lposefiles[i])
+#            pligPDBj = runExternalSoft.babelConvertSDFtoPDB(cdocking.lposefiles[j])
 
-            pligPDBi = runExternalSoft.babelConvertSDFtoPDB(sdocking.lposefiles[i])
-            pligPDBj = runExternalSoft.babelConvertSDFtoPDB(sdocking.lposefiles[j])
+#            print pligPDBi
+#            cposei = PDB.PDB(PDB_input=pligPDBi, hydrogen=1)
+#            cposej = PDB.PDB(PDB_input=pligPDBj, hydrogen=1)
 
-            print pligPDBi
-            cposei = PDB.PDB(PDB_input=pligPDBi, hydrogen=1)
-            cposej = PDB.PDB(PDB_input=pligPDBj, hydrogen=1)
+#            sFPIi = FPI.ligFPI(cPDB=cprot, ligin=cposei, prFPI=prFPI)
+#            sFPIj = FPI.ligFPI(cPDB=cprot, ligin=cposej, prFPI=prFPI)
 
-            sFPIi = FPI.ligFPI(cPDB=cprot, ligin=cposei, prFPI=prFPI)
-            sFPIj = FPI.ligFPI(cPDB=cprot, ligin=cposej, prFPI=prFPI)
+#            dout = sFPIi.compareFPI(sFPIj)
 
-            dout = sFPIi.compareFPI(sFPIj)
+#            print dout
 
-            print dout
-
-            j = j + 1
-        i = i + 1
+#            j = j + 1
+#        i = i + 1
 
 
 #def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
@@ -71,79 +66,75 @@ def FPIMatrix(sdocking, pprotein, prFPI):
 
 
 
-def computeMD(prLigand, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU):
-    """
-
-    :param prLigand: folder of ligands or poses
-    :param pprotein: protein in PDB already prepared using the maestro
-    :param timeMD: time MD in ps
-    :param timeframe: time between two frame
-    :param stepWait: time to wait for multiprocess
-    :param stepFrame: frame extraction
-    :param water: extract water molecules
-    :param nbCPU: CPU max in parrallel
-    :param nbGPU: GPU max in paralele, random selection
-    :return:
-    """
-    # 1. Merge poses and proteins
-    cMDs = MD.MD(prMD, pranalysis, water, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
-    cMDs.initialisation(prLigand, pprotein)
-    cMDs.runMultipleMD()# run MD
+#def computeMD(prLigand, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU):
+#    """
+#    :param prLigand: folder of ligands or poses
+#    :param pprotein: protein in PDB already prepared using the maestro
+#    :param timeMD: time MD in ps
+#    :param timeframe: time between two frame
+#    :param stepWait: time to wait for multiprocess
+#    :param stepFrame: frame extraction
+#    :param water: extract water molecules
+#    :param nbCPU: CPU max in parrallel
+#    :param nbGPU: GPU max in paralele, random selection
+#    :return:
+#    """
+#    # 1. Merge poses and proteins
+#    cMDs = MD.MD(prMD, pranalysis, water, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
+#    cMDs.initialisation(prLigand, pprotein)
+#    cMDs.runMultipleMD()# run MD
 
     # 2. Extract frames
     # extract frame
-    cMDs.centerFrame()
-    cMDs.extractFrame()
+#    cMDs.centerFrame()
+#    cMDs.extractFrame()
 
     # extract BS and ligand
-    cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
+#    cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
 
     # for complete run have to control all job done
     #sleep(100)
     # 3. compute RMSD
-    cMDs.analyseRMSD()
+#    cMDs.analyseRMSD()
 
 
 
+#def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 ):
 
+#    lpMDresult = listdir(prMD)
+#    if iend == 0:
+#        iend = len(lpMDresult)
+#    print prMD
 
-
-def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 ):
-
-    lpMDresult = listdir(prMD)
-    if iend == 0:
-        iend = len(lpMDresult)
-    print prMD
-
-    i = istart
-    for MDresult in lpMDresult[istart:iend]:
-        jobname = MDresult.split("_")[0]
-        prlig = prMD + MDresult + "/lig/"
-        prBS = prMD + MDresult + "/BSs/"
-        prframes = prMD + MDresult + "/framesMD/"
-        prMDdesc = pathFolder.createFolder(prout + jobname + "/")
+#    i = istart
+#    for MDresult in lpMDresult[istart:iend]:
+#        jobname = MDresult.split("_")[0]
+#        prlig = prMD + MDresult + "/lig/"
+#        prBS = prMD + MDresult + "/BSs/"
+#        prframes = prMD + MDresult + "/framesMD/"
+#        prMDdesc = pathFolder.createFolder(prout + jobname + "/")
 
 
         # control run
-        print jobname, i
-        i +=1
+#        print jobname, i
+#        i +=1
 
         # compute different descriptors
-        if not "cMD" in locals().keys():
-            cMD = MDdescriptors.MDdescriptors(jobname, prlig, prBS, prframes, prMDdesc)
-        else:
-            cMD.jobname = jobname
-            cMD.prlig = prlig
-            cMD.prBSs = prBS
-            cMD.prframe = prframes
-            cMD.prout = prMDdesc
+#        if not "cMD" in locals().keys():
+#            cMD = MDdescriptors.MDdescriptors(jobname, prlig, prBS, prframes, prMDdesc)
+#        else:
+#            cMD.jobname = jobname
+#            cMD.prlig = prlig
+#            cMD.prBSs = prBS
+#            cMD.prframe = prframes
+#            cMD.prout = prMDdesc
 
-        if descLig == 1:
-            cMD.computeLigDesc()
-        if descBS == 1:
-            cMD.computeBSDesc()
-        if descFPI == 1:
-            cMD.computeFPI()
+#        if descLig == 1:
+#            cMD.computeLigDesc()
+#        if descBS == 1:
+#            cMD.computeBSDesc()
+#        if descFPI == 1:
+#            cMD.computeFPI()
 
 
 
@@ -159,9 +150,9 @@ def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 
 # outlier = CHEMBL2382016
 
 
-################
-# TABLE CHEMBL #
-################
+###################################
+# TABLE CHEMBL  => create dataset #
+###################################
 
 prHome = pathFolder.PR_HOME
 prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
@@ -175,6 +166,8 @@ lBAout = []
 ctabAll = ChEMBLTable.CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
 paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
 #ctabAll.analysisTable(prCHEMBL)
+
+sss
 
 #####################################
 #####################################
