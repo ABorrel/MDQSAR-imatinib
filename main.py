@@ -482,6 +482,7 @@ varsplit = 0.15
 ####################
 #typeAff = "All" #Ki
 
+
 #QSAR1
 #typeAff = "IC50"
 #prQSAR = pathFolder.analyses("QSARs1")
@@ -492,7 +493,6 @@ varsplit = 0.15
 
 
 #typeAff = "Ki" #Ki
-#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
 #QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
 #QSARLig2D.prep(matrixDescBuilder)
 #QSARLig2D.runQSARModel()
@@ -567,7 +567,12 @@ prQSAR = pathFolder.analyses("QSARs")
 ###############
 ### for ki ####
 ###############
-typeAff = "Ki"
+#typeAff = "Ki"
+
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#matrixDescBuilder.dtrain = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D_Ki/trainSet.csv"
+#matrixDescBuilder.dtest = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D_Ki/testSet.csv"
+
 
 #2D
 #QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
@@ -581,22 +586,22 @@ typeAff = "Ki"
 #QSARLig2D3D.runQSARModel()
 
 #2D+3D+MDlig
-#CORCOEF = 0.80
-#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#CORCOEF = 0.85
+#matrixDescBuilder.corcoef = CORCOEF
+
 #QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
 #QSARLig2D3D.prep(matrixDescBuilder)
 #QSARLig2D3D.runQSARModel()
 
-
 #2D+3D+MDlig+BS
+#CORCOEF = 0.80
+#matrixDescBuilder.corcoef = CORCOEF
 #QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
 #QSARLig2D3D.prep(matrixDescBuilder)
 #QSARLig2D3D.runQSARModel()
 
 
 #2D+3D+MDlig+BS+FPI
-#CORCOEF = 0.85
-#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
 #QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS", "FPI"], typeAff, prQSAR)
 #QSARLig2D3D.prep(matrixDescBuilder)
 #QSARLig2D3D.runQSARModel()
@@ -605,8 +610,10 @@ typeAff = "Ki"
 ### for IC50 ####
 #################
 CORCOEF = 0.90
-matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
 typeAff = "IC50"
+matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+matrixDescBuilder.dtrain = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D_IC50/trainSet.csv"
+matrixDescBuilder.dtest = "/home/borrela2/imatinib/results/analysis/QSARs/Lig2D_IC50/testSet.csv"
 
 #2D
 #QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
@@ -615,9 +622,9 @@ typeAff = "IC50"
 
 
 #2D+3D
-#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
-#QSARLig2D3D.prep(matrixDescBuilder)
-#QSARLig2D3D.runQSARModel()
+QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
+QSARLig2D3D.prep(matrixDescBuilder)
+QSARLig2D3D.runQSARModel()
 
 
 #2D+3D+MDlig
@@ -627,9 +634,9 @@ QSARLig2D3D.runQSARModel()
 
 
 #2D+3D+MDlig+BS
-#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
-#QSARLig2D3D.prep(matrixDescBuilder)
-#QSARLig2D3D.runQSARModel()
+QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
+QSARLig2D3D.prep(matrixDescBuilder)
+QSARLig2D3D.runQSARModel()
 
 
 
@@ -642,38 +649,37 @@ dd
 
 ### for All ####
 #################
-matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
+#matrixDescBuilder = builderDescMatrix.Builder(prMDdesc, pdesc2D, pdesc3D, paff, CORCOEF, MAXQUANTILE, SPLITSET, typeAff)
 
-typeAff = "All"
-matrixDescBuilder.dtrain = prQSAR + "-".join(["Lig2D"]) + "_" + str(typeAff) + "/trainSetMerged.csv"
-matrixDescBuilder.dtest = prQSAR + "-".join(["Lig2D"]) + "_" + str(typeAff) + "/testSetMerged.csv"
+#typeAff = "All"
+#matrixDescBuilder.dtrain = prQSAR + "-".join(["Lig2D"]) + "_" + str(typeAff) + "/trainSetMerged.csv"
+#matrixDescBuilder.dtest = prQSAR + "-".join(["Lig2D"]) + "_" + str(typeAff) + "/testSetMerged.csv"
 
 #2D
-QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
-QSARLig2D.prep(matrixDescBuilder)
-QSARLig2D.runQSARModel()
-dd
+#QSARLig2D = QSARModeling.QSARModeling(["Lig2D"], typeAff, prQSAR)
+#QSARLig2D.prep(matrixDescBuilder)
+#QSARLig2D.runQSARModel()
 
 #2D+3D
-QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
-QSARLig2D3D.prep(matrixDescBuilder)
-QSARLig2D3D.runQSARModel()
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 #2D+3D+MDlig
-QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
-QSARLig2D3D.prep(matrixDescBuilder)
-QSARLig2D3D.runQSARModel()
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 #2D+3D+MDlig+BS
-QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
-QSARLig2D3D.prep(matrixDescBuilder)
-QSARLig2D3D.runQSARModel()
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
 
 #2D+3D+MDlig+BS+FPI
-QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS", "FPI"], typeAff, prQSAR)
-QSARLig2D3D.prep(matrixDescBuilder)
-QSARLig2D3D.runQSARModel()
-sss
+#QSARLig2D3D = QSARModeling.QSARModeling(["Lig3D", "Lig2D", "Lig", "BS", "FPI"], typeAff, prQSAR)
+#QSARLig2D3D.prep(matrixDescBuilder)
+#QSARLig2D3D.runQSARModel()
+
 
 
 ##########################################
