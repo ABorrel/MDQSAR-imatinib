@@ -3,11 +3,14 @@ from shutil import copyfile
 from re import search
 from time import sleep
 import subprocess
+import sys
 
 
 import toolbox
-import PDB
 import pathFolder
+# import parser
+sys.path.insert(0, "./Parser/") # for window dev
+import PDB
 
 
 LIGPREP = "/opt/schrodinger2017-1/ligprep"

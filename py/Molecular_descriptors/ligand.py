@@ -377,7 +377,7 @@ def standardizeSMILES(smiIn):
 
             # remove salt
             # 1.default
-            remover = SaltRemover(defnFilename="Salts.txt")
+            remover = SaltRemover()
             mol = Chem.MolFromSmiles(smilestandadized)
             molcleandefault = remover(mol)
             # 2. Personal remover

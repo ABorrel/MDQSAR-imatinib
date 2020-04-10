@@ -74,7 +74,7 @@ def mergeDict(l_dict):
         if lval.count(lval[0]) == len(lval):
             dout[k] = lval[0]
         else:
-            dout[k] = "----".join(lval)
+            dout[k] = ",".join(lval)
 
     return dout
 

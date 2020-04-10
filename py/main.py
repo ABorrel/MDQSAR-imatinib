@@ -1,7 +1,7 @@
 import ChEMBLTable
 #import ligand
 import pathFolder
-import runExternalSoft
+#import runExternalSoft
 #import MCS
 #import parseSDF
 #import MD
@@ -149,10 +149,47 @@ import runExternalSoft
 # gleevec = CHEMBL941
 # outlier = CHEMBL2382016
 
+###################
+# define path  
+###################
+pr_root = "./../../"
+pr_result = pathFolder.createFolder(pr_root + "results/")
+pr_data = pathFolder.createFolder(pr_root + "data/")
 
-###################################
-# TABLE CHEMBL  => create dataset #
-###################################
+######################
+# TABLE CHEMBL  => create dataset from CHEMBL
+######################
+pr_tabin = pr_data + "/bioactivity-TK-ABL_CHEMBL1862.txt"
+pr_result_tabclean = pathFolder.createFolder(pr_result + "CHEMBL_dataset/")
+laffselected = ["IC50", "Ki"] # define affinity selected
+lBAout = ["CHEMBL3705971"] # outlier
+lBAout = []
+ctabChEMBL = ChEMBLTable.ChEMBLTable(pr_tabin, pr_result_tabclean, laffselected, lBAout)
+ctabChEMBL.CleanCHEMBLFileProtAff()# clean table
+ctabChEMBL.writeTableAff() # write the affinity table only
+
+#####
+# Extract SMILES cleaned
+#####
+pr_chem = pathFolder.createFolder(pr_result + "SMI_chem/")
+ctabChEMBL.getChemSMI(pr_chem)
+
+##############
+# Analyse dataset select
+#############
+#ctabAll.analysisTable(prCHEMBL)
+
+
+################
+# Extract chemical
+################
+pr_chem = pathFolder.createFolder(pr_result + "SMI_chem/")
+ctabAll.extractChemSMI(pr_chem)
+ddd
+
+
+
+
 
 prHome = pathFolder.PR_HOME
 prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
