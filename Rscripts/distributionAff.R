@@ -55,10 +55,10 @@ args <- commandArgs(TRUE)
 paff = args[1]
 
 
-paff = "/home/borrela2/imatinib/results/CHEMBL/AffAllcurated"
+paff = "C:/Users/Aborrel/research/NCSU/imatinib-MD/results/CHEMBL_dataset/chem_aff_IC50-Ki"
 
 daff = read.table(paff, sep = "\t", header = TRUE)
-daff = daff[-which(daff$Type == "Kd"),]
+#daff = daff[-which(daff$Type == "Kd"),]
 multipleHist(daff, paff)
 
 

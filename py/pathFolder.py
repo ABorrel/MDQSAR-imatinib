@@ -2,6 +2,12 @@ from os import listdir, remove, makedirs, path
 from shutil import rmtree
 
 
+PR_ROOT = "./../../"
+PR_RESULT = pathFolder.createFolder(pr_root + "results/")
+PR_DATA = pathFolder.createFolder(pr_root + "data/")
+
+
+
 #PR_HOME = "C:/Users/Aborrel/research/NCSU/" #Laptop
 #PR_HOME = "/home/borrela2/" #NIEHS
 #PR_HOME = "/home/aborrel/" #NCSU

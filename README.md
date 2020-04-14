@@ -11,8 +11,18 @@ Scripts developed to compute:
 - pydpi (https://pypi.org/project/pydpi/), $pip install pydpi
 - scipy (https://pypi.org/project/scipy/), $pip install scipy
 - molvs (https://pypi.org/project/MolVS/), $pip install molVS
-- Schrodinger: Glide and GDescmond modules
+- Schrodinger (>2018-4): Glide and GDescmond modules
+
+# organisation
+
+
+# TO DO
+- add dataset in the github repertory
+    - protein prepared
+    - dataset cleaned from ChEMBL
+    - Pose in XP mode
 
 # Updates
 - 3-30-20: upload scripts on github and cleaning
 - 4-8-20: clean scripts to extract data from the CHEMBL 
+- 4-12-20: add analysis of ChEMBL dataset

@@ -21,190 +21,22 @@ import pathFolder
 #from time import sleep
 
 
-#########################
-##   MAIN FUNCTIONS    ##
-#########################
-
-#def FPIMatrix(cdocking, pprotein, prFPI):
-
-#    pmatrixFPI = prFPI + "MFPI.txt"
-
-#    i = 0
-#    imax = len(cdocking.lposefiles)
-    #imax = 3
-#    while i < imax:
-#        j = i + 1
-#        while j < imax:
-#            cprot = PDB.PDB(PDB_input=pprotein, hydrogen=1)
-#            pligPDBi = runExternalSoft.babelConvertSDFtoPDB(cdocking.lposefiles[i])
-#            pligPDBj = runExternalSoft.babelConvertSDFtoPDB(cdocking.lposefiles[j])
-
-#            print pligPDBi
-#            cposei = PDB.PDB(PDB_input=pligPDBi, hydrogen=1)
-#            cposej = PDB.PDB(PDB_input=pligPDBj, hydrogen=1)
-
-#            sFPIi = FPI.ligFPI(cPDB=cprot, ligin=cposei, prFPI=prFPI)
-#            sFPIj = FPI.ligFPI(cPDB=cprot, ligin=cposej, prFPI=prFPI)
-
-#            dout = sFPIi.compareFPI(sFPIj)
-
-#            print dout
-
-#            j = j + 1
-#        i = i + 1
-
-
-#def dockingAnalysis(psdfDoking, ltableCpd, ptableCpd, prpose, pranalysis):
-
-#    sdocking = parseSDF.sdf(psdfDoking)
-#    sdocking.parseSDF()
-#    sdocking.splitPoses(prpose)
-
-#    dscore = sdocking.get_dockingscore()
-#    dockingScoreAnalysis(dscore, ltableCpd, ptableCpd, pranalysis)
-#    return dscore
-
-
-
-#def computeMD(prLigand, prMD, pprotein, pranalysis, nameLig, BSCutoff, timeMD, timeframe, stepWait, stepFrame, water, nbCPU, nbGPU):
-#    """
-#    :param prLigand: folder of ligands or poses
-#    :param pprotein: protein in PDB already prepared using the maestro
-#    :param timeMD: time MD in ps
-#    :param timeframe: time between two frame
-#    :param stepWait: time to wait for multiprocess
-#    :param stepFrame: frame extraction
-#    :param water: extract water molecules
-#    :param nbCPU: CPU max in parrallel
-#    :param nbGPU: GPU max in paralele, random selection
-#    :return:
-#    """
-#    # 1. Merge poses and proteins
-#    cMDs = MD.MD(prMD, pranalysis, water, timeMD, timeframe, stepWait, nbGPU, nbCPU, stepFrame)
-#    cMDs.initialisation(prLigand, pprotein)
-#    cMDs.runMultipleMD()# run MD
-
-    # 2. Extract frames
-    # extract frame
-#    cMDs.centerFrame()
-#    cMDs.extractFrame()
-
-    # extract BS and ligand
-#    cMDs.extractLigBSbyFrame(BSCutoff, nameLig, clean=0)
-
-    # for complete run have to control all job done
-    #sleep(100)
-    # 3. compute RMSD
-#    cMDs.analyseRMSD()
-
-
-
-#def computeMDdesc(prMD, prout, istart=0, iend=0, descLig=1, descBS=1, descFPI=1 ):
-
-#    lpMDresult = listdir(prMD)
-#    if iend == 0:
-#        iend = len(lpMDresult)
-#    print prMD
-
-#    i = istart
-#    for MDresult in lpMDresult[istart:iend]:
-#        jobname = MDresult.split("_")[0]
-#        prlig = prMD + MDresult + "/lig/"
-#        prBS = prMD + MDresult + "/BSs/"
-#        prframes = prMD + MDresult + "/framesMD/"
-#        prMDdesc = pathFolder.createFolder(prout + jobname + "/")
-
-
-        # control run
-#        print jobname, i
-#        i +=1
-
-        # compute different descriptors
-#        if not "cMD" in locals().keys():
-#            cMD = MDdescriptors.MDdescriptors(jobname, prlig, prBS, prframes, prMDdesc)
-#        else:
-#            cMD.jobname = jobname
-#            cMD.prlig = prlig
-#            cMD.prBSs = prBS
-#            cMD.prframe = prframes
-#            cMD.prout = prMDdesc
-
-#        if descLig == 1:
-#            cMD.computeLigDesc()
-#        if descBS == 1:
-#            cMD.computeBSDesc()
-#        if descFPI == 1:
-#            cMD.computeFPI()
-
-
-
-
-########################################################################################################################
 ########################################################################################################################
 
 ##########
 #  MAIN  #
 ##########
+pr_data = pathFolder.PR_DATA
+pr_result = pathFolder.PR_RESULT
 
-# gleevec = CHEMBL941
-# outlier = CHEMBL2382016
+##################
+# 2. docking
+##################
+# doking is realisez with the selected chemicals using Glide software with a XP function score
+# protein is prepared using Maestro on 2HYY chain A. Docking is realised on the Gleevec binding site
+p_protein_prepared = pr_data + "2HYY_dock"
+psdf_docking_pose = pr_data + "docking_XP-2HYY/dockingpose.sdf"
 
-###################
-# define path  
-###################
-pr_root = "./../../"
-pr_result = pathFolder.createFolder(pr_root + "results/")
-pr_data = pathFolder.createFolder(pr_root + "data/")
-
-######################
-# TABLE CHEMBL  => create dataset from CHEMBL
-######################
-pr_tabin = pr_data + "/bioactivity-TK-ABL_CHEMBL1862.txt"
-pr_result_tabclean = pathFolder.createFolder(pr_result + "CHEMBL_dataset/")
-laffselected = ["IC50", "Ki"] # define affinity selected
-lBAout = ["CHEMBL3705971"] # outlier
-lBAout = []
-ctabChEMBL = ChEMBLTable.ChEMBLTable(pr_tabin, pr_result_tabclean, laffselected, lBAout)
-ctabChEMBL.CleanCHEMBLFileProtAff()# clean table
-ctabChEMBL.writeTableAff() # write the affinity table only
-
-#####
-# Extract SMILES cleaned
-#####
-pr_chem = pathFolder.createFolder(pr_result + "SMI_chem/")
-ctabChEMBL.getChemSMI(pr_chem)
-
-##############
-# Analyse dataset select
-#############
-#ctabAll.analysisTable(prCHEMBL)
-
-
-################
-# Extract chemical
-################
-pr_chem = pathFolder.createFolder(pr_result + "SMI_chem/")
-ctabAll.extractChemSMI(pr_chem)
-ddd
-
-
-
-
-
-prHome = pathFolder.PR_HOME
-prCHEMBL = pathFolder.createFolder(pathFolder.PR_RESULT + "CHEMBL/")
-pCHEMBL = prHome + "imatinib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862.txt"
-pCHEMBLout = prHome + "imatinib/CHEMBL/bioactivity-TK-ABL_CHEMBL1862_filtered.txt"
-laffselected = ["IC50", "Ki", "Kd"]
-lBAout = ["CHEMBL3705971"]
-lBAout = []
-
-
-ctabAll = ChEMBLTable.CleanCHEMBLFileProtAff(pCHEMBL, pCHEMBLout, laffselected, lBAout)
-paff = ctabAll.writeTableAff(prCHEMBL + "AffAllcurated")
-#ctabAll.analysisTable(prCHEMBL)
-
-sss
 
 #####################################
 #####################################
@@ -250,6 +82,10 @@ prMDanalysis = prHome + "imatinib/results/MDanalysis/"
 #4. correlation plot with RMSD
 #prRMSD = pathFolder.createFolder(pranalysis_XP_2HYY + "MD/")
 #dockingAnalysis.plotRMSDVSDockingScore(sdocking.docking, ctabAll.table, pCHEMBLout, prMDanalysis, prRMSD)
+
+
+
+
 
 
 ###############################
