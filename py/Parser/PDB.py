@@ -15,6 +15,7 @@ import random
 import runExternalSoft
 import toolbox
 
+# to extract from a internal DB
 PRPDBDATABSE = "/home/PDB/"
 
 R = random.random() # corse random

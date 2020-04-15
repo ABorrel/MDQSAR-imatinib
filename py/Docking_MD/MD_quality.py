@@ -3,15 +3,32 @@ from shutil import move, copyfile
 from numpy import average
 from copy import deepcopy
 
+# from main folder
 import runExternalSoft
-import parseTMalign
 import pathFolder
-import PDB
-import calculate
 import toolbox
+import calculate
+
+
+# from parser
+import sys
+sys.path.insert(0, "./Parser/") 
+import PDB
+import parseTMalign
 import parseShaep
+
+# from MD
+import sys
+sys.path.insert(0, "./Docking_MD/") # for window dev
 import superimposed
 import RMSD
+
+
+
+
+
+
+
 
 
 class trajectoryAnalysis:

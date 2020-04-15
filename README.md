@@ -16,6 +16,7 @@ Scripts developed to compute:
 - Schrodinger (>2018-4): Glide and GDescmond module
 - open babel
 - molconvert
+- TMalign
 
 # organisation
 
