@@ -2,10 +2,6 @@ from os import listdir, remove, makedirs, path
 from shutil import rmtree
 
 
-PR_ROOT = "./../../"
-PR_RESULT = pathFolder.createFolder(pr_root + "results/")
-PR_DATA = pathFolder.createFolder(pr_root + "data/")
-
 
 
 #PR_HOME = "C:/Users/Aborrel/research/NCSU/" #Laptop
@@ -52,3 +48,14 @@ def createFolder(prin, clean=0):
 #        except: pass
 
 #    return PR_ANALYSIS + psub + "/"
+
+
+
+
+###########
+# define directory for analysis
+###########
+
+PR_ROOT = "./../../"
+PR_RESULT = createFolder(PR_ROOT + "results/")
+PR_DATA = createFolder(PR_ROOT + "data/")

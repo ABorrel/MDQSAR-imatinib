@@ -184,11 +184,7 @@ def formatLine(linein):
 
 
 
-
-
-
-
-def loadMatrix(pfilin):
+def loadMatrix(pfilin, sep = "\t"):
     "Case of square matrix"
 
     filin = open(pfilin, "r")
@@ -196,7 +192,7 @@ def loadMatrix(pfilin):
     filin.close()
 
     dout = {}
-    lcompID = llinesMatrix[0].strip().split("\t")
+    lcompID = llinesMatrix[0].strip().split(sep)
     nbComp = len(lcompID)
 
     i = 1
@@ -204,7 +200,7 @@ def loadMatrix(pfilin):
         if not lcompID[i] in dout.keys():
             dout[lcompID[i]] = {}
         j = 1
-        lval = llinesMatrix[i].strip().split("\t")
+        lval = llinesMatrix[i].strip().split(sep)
         while j < nbComp:
             dout[lcompID[i]][lcompID[j]] = lval[j]
             j += 1

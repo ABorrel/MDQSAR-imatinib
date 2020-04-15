@@ -1,8 +1,9 @@
 # Benchmarking 2D/3D/MD-QSAR Models for Imatinib Derivatives
 Scripts developed to compute:
 - the dataset based on the CHEMBL database
-- MD and docking using Schrodinger v. 2017-3
+- MD and docking using Schrodinger v.2017-3
 - descriptors for ligands and binding sites during a MD
+
 
 # Dependancy
 - Python 2.7.X
@@ -11,7 +12,9 @@ Scripts developed to compute:
 - pydpi (https://pypi.org/project/pydpi/), $pip install pydpi
 - scipy (https://pypi.org/project/scipy/), $pip install scipy
 - molvs (https://pypi.org/project/MolVS/), $pip install molVS
-- Schrodinger (>2018-4): Glide and GDescmond modules
+- Pillow (https://docs.plone.org/3/en/develop/plone/images/pil.html), $pip install pillow
+- Schrodinger (>2018-4): Glide and GDescmond module
+- open babel
 
 # organisation
 
