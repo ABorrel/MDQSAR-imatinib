@@ -49,7 +49,9 @@ pr_docking = pathFolder.createFolder(pr_result + "2HYY_XPdock/")
 cDock = Docking_process.Docking_process(psdf_docking_pose, pr_docking)
 cDock.loadSDF()
 cDock.get_bestdockingscore()
-cDock.plot_dockScoreVSActivity(pChEMBLDataset)
+#cDock.plot_dockScoreVSActivity(pChEMBLDataset)
+#cDock.get_bestPoses()
+cDock.get_TopRanking(pChEMBLDataset, 5)
 sss
 
 #####################################

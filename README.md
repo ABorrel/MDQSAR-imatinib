@@ -15,6 +15,7 @@ Scripts developed to compute:
 - Pillow (https://docs.plone.org/3/en/develop/plone/images/pil.html), $pip install pillow
 - Schrodinger (>2018-4): Glide and GDescmond module
 - open babel
+- molconvert
 
 # organisation
 
