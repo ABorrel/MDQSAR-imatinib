@@ -54,7 +54,7 @@ BSCutoff = 6.0 # Binding site
 pr_globalQuality = pathFolder.createFolder(pr_result + "MD-qualityCheck/")
 cMDglobalQuality = MD_globalAnalysis.MD_globalAnalysis(pChEMBLDataset, pr_MDrun, pr_MDout, pr_globalQuality)
 cMDglobalQuality.buildRMDSSheets()
-
+cMDglobalQuality.mergeRMSDSheets()
 # next merge in one pdf for publication
 
 

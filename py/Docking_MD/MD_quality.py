@@ -26,11 +26,6 @@ import RMSD
 
 
 
-
-
-
-
-
 class trajectoryAnalysis:
     def __init__(self, dMD, MDtime, timeframe, stepFrame):
         self.dMD = dMD

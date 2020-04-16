@@ -101,9 +101,9 @@ g = grid.arrange(
                         c(3, 3)),
   top = textGrob(chemid,gp=gpar(fontsize=15,font=3)))
 
-ggsave(paste(pr_out,chemid,".png", sep = ""), plot=g, device = "png", dpi = 300, units = "cm", width = 21, height = 15)
+#ggsave(paste(pr_out,chemid,".png", sep = ""), plot=g, device = "png", dpi = 300, units = "cm", width = 21, height = 15)
 
 
-#ggsave(paste(pr_out,chemid,".pdf", sep = ""), plot=g, device = "pdf", dpi = 300, units = "cm", width = 21, height = 15)
+ggsave(paste(pr_out,chemid,".pdf", sep = ""), plot=g, device = "pdf", dpi = 300, units = "cm", width = 21, height = 15)
 
 
