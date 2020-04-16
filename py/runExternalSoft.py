@@ -208,6 +208,12 @@ def histRMSD(pRMSD, prout):
     runRscript(cmdHist)
 
 
+def RMSD3panels(p_proRMSD, p_ligPRMSD, p_resRMSF, ChEMBL_id, pr_out):
+    
+    cmd = "./RMSD3Panels.R %s %s %s %s %s"%(path.abspath(p_proRMSD), path.abspath(p_ligPRMSD), path.abspath(p_resRMSF), ChEMBL_id, path.abspath(pr_out))
+    runRscript(cmd)
+
+
 
 def molconvert(pfilin, pfilout= ""):
     """Convert with black background"""
@@ -539,6 +545,13 @@ def activityCliff(pdesc, paff, typeAff, Dcutoff, prout):
 
     cmd = "./activityCliff.R " + pdesc + " " + paff + " " + typeAff + " " + str(Dcutoff) + " ward.D2 euclidean hclust " + prout
     runRscript(cmd)
+
+
+def mergepdfs(lpdfs, pout):
+
+    cmd = "pdfunite " + " ".join(lpdfs) + " " + pout
+    print cmd
+    system(cmd)
 
 
 
